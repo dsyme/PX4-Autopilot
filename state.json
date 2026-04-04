@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-04-04T16:10:00Z",
-  "run_id": "23982360437",
+  "last_run": "2026-04-04T16:25:11Z",
+  "run_id": "23982815807",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -9,8 +9,8 @@
       "id": "constrain",
       "name": "math::constrain",
       "file": "src/lib/mathlib/math/Limits.hpp",
-      "phase": 4,
-      "status": "impl+spec done, 7 theorems proved, no sorry",
+      "phase": 5,
+      "status": "impl+spec done, 7 theorems proved (constrain_ge_lo, constrain_le_hi, constrain_in_range, constrain_of_mem, constrain_of_lt_lo, constrain_of_gt_hi, constrain_idempotent, constrain_mono), 0 sorry",
       "lean_file": "formal-verification/lean/FVSquad/MathFunctions.lean",
       "informal_spec": "formal-verification/specs/constrain_informal.md"
     },
@@ -18,40 +18,46 @@
       "id": "signNoZero",
       "name": "math::signNoZero",
       "file": "src/lib/mathlib/math/Functions.hpp",
-      "phase": 4,
-      "status": "impl+spec done, 5 theorems proved, no sorry",
-      "lean_file": "formal-verification/lean/FVSquad/MathFunctions.lean"
+      "phase": 5,
+      "status": "impl+spec done, 6 theorems proved (signNoZero_nonneg, signNoZero_neg, signNoZero_ne_zero, signNoZero_values, signNoZero_zero, signNoZero_sq), 0 sorry",
+      "lean_file": "formal-verification/lean/FVSquad/MathFunctions.lean",
+      "informal_spec": "formal-verification/specs/signNoZero_informal.md"
     },
     {
       "id": "countSetBits",
       "name": "math::countSetBits",
       "file": "src/lib/mathlib/math/Functions.hpp",
-      "phase": 4,
-      "status": "impl+spec done, concrete examples, 1 sorry (pow2 inductive)",
+      "phase": 5,
+      "status": "impl+spec done, 9 concrete examples via native_decide, countSetBits_pow2 proved by induction, 0 sorry",
       "lean_file": "formal-verification/lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "SlewRate",
+      "name": "SlewRate::update",
+      "file": "src/lib/slew_rate/SlewRate.hpp",
+      "phase": 2,
+      "status": "informal spec done at formal-verification/specs/slewrate_informal.md, Lean proof pending",
+      "informal_spec": "formal-verification/specs/slewrate_informal.md"
     },
     {
       "id": "interpolate",
       "name": "math::interpolate",
       "file": "src/lib/mathlib/math/Functions.hpp",
       "phase": 1,
-      "status": "research only"
-    },
-    {
-      "id": "SlewRate",
-      "name": "SlewRate::update",
-      "file": "src/lib/slew_rate/SlewRate.hpp",
-      "phase": 1,
-      "status": "research only, depends on constrain"
+      "status": "research only, float model needed"
     }
   ],
   "open_prs": [],
   "notes": [
     "Mathlib unavailable (network firewall) - using stdlib only",
-    "lake build passes with 1 sorry (countSetBits_pow2)",
+    "lake build passes with 0 sorry (all proofs complete)",
     "CI workflow created at .github/workflows/lean-ci.yml",
-    "omega tactic handles if-then-else on Int well",
+    "split tactic + omega handles Int if-then-else proofs well",
     "native_decide works for countSetBits concrete values",
-    "constrainNat needs by_cases approach due to omega cast limitations on Nat if-then-else"
+    "countSetBits_pow2 proved via countSetBits_unfold helper + Nat.pow_succ rewrite",
+    "constrain_of_mem is key helper: apply first, then prove bounds separately",
+    "For constrain proofs: use split tactic (not split_ifs), then omega/exact",
+    "Next target: SlewRate::update (phase 2->3->4->5)",
+    "After SlewRate: interpolate (needs rational/Int model decision)"
   ]
 }
