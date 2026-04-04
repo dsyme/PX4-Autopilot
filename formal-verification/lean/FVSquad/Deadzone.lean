@@ -162,20 +162,69 @@ theorem deadzone_le_one (x dz : Rat) (hx1 : x ≤ 1) (hdz0 : 0 ≤ dz) (hdz1 : d
           ≤ (1 - dz) * (1 - dz)⁻¹ :=
             Rat.mul_le_mul_of_nonneg_right h2 (Rat.le_of_lt (Rat.inv_pos.mpr h1))
         _ = 1 := Rat.mul_inv_cancel _ (Rat.ne_of_gt h1)
-    · -- Negative branch: output < 0 ≤ 1
-      -- (x + dz) / (1 - dz) < 0, so ≤ 1 is immediate
-      -- TODO: Full proof needs: (1) rewrite signR x = -1, (2) x + dz < 0 (from |x| > dz, x < 0)
-      sorry -- Requires Rat ring arithmetic (Mathlib: linarith)
+    · -- Negative branch: x < 0, so output (x + dz)/(1 − dz) < 0 ≤ 1
+      have hxneg : x < 0 := Rat.not_le.mp hx0
+      -- |x| = −x since x < 0
+      have habs : x.abs = -x := Rat.abs_of_nonpos (Rat.le_of_lt hxneg)
+      -- dz < −x (from |x| > dz)
+      have h' : dz < -x := habs ▸ h
+      -- x < −dz (negate both sides of dz < −x)
+      have hxdz : x < -dz :=
+        Rat.neg_lt_neg_iff.mp (by rw [Rat.neg_neg]; exact h')
+      rw [signR_of_neg x hxneg, Rat.neg_mul, Rat.one_mul,
+          Rat.sub_eq_add_neg, Rat.neg_neg]
+      -- Goal: (x + dz) / (1 − dz) ≤ 1. Show x + dz < 0 first.
+      have hxpdz : x + dz < 0 := by
+        have key : x + dz < -dz + dz := (Rat.add_lt_add_right).mpr hxdz
+        rw [Rat.add_comm (-dz) dz, ← Rat.sub_eq_add_neg, Rat.sub_self] at key
+        exact key
+      apply Rat.le_of_lt
+      apply Std.lt_trans _ (by decide : (0 : Rat) < 1)
+      rw [Rat.div_def]
+      exact (Rat.mul_neg_iff_of_pos_right (Rat.inv_pos.mpr h1)).mpr hxpdz
   · -- In deadzone: output = 0 ≤ 1
     exact Rat.le_of_lt (by decide)
 
 /-- Lower bound: deadzone output is at least −1 when input is at least −1.
 
-    TODO: Prove using odd-symmetry (`deadzone_odd`) + `deadzone_le_one`.
-    Requires the same Rat arithmetic as `deadzone_le_one`. -/
+    Cases:
+    - In deadzone: output = 0 ≥ −1.
+    - Positive branch (x > dz ≥ 0): output > 0 ≥ −1.
+    - Negative branch (x < −dz ≤ 0): output = (x+dz)/(1−dz).
+      Since x ≥ −1, we have x+dz ≥ −1+dz = −(1−dz),
+      so output ≥ −(1−dz)/(1−dz) = −1. -/
 theorem deadzone_ge_neg_one (x dz : Rat) (hxm1 : -1 ≤ x) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
     -1 ≤ deadzone x dz := by
-  sorry -- Requires Rat arithmetic (Mathlib: linarith or use deadzone_odd)
+  simp only [deadzone]
+  split
+  · rename_i h
+    have h1 : (0 : Rat) < 1 - dz := (Rat.lt_iff_sub_pos dz 1).mp hdz1
+    by_cases hx0 : 0 ≤ x
+    · -- Positive branch: output > 0 ≥ −1
+      rw [signR_of_nonneg x hx0, Rat.one_mul]
+      apply Rat.le_of_lt
+      apply Std.lt_trans (by decide : (-1 : Rat) < 0)
+      have hxabs : x.abs = x := Rat.abs_of_nonneg hx0
+      have hnum : 0 < x - dz := (Rat.lt_iff_sub_pos dz x).mp (hxabs ▸ h)
+      rw [Rat.div_def]
+      exact Rat.mul_pos hnum (Rat.inv_pos.mpr h1)
+    · -- Negative branch: −(1−dz) ≤ x+dz, so −1 ≤ (x+dz)/(1−dz)
+      have hxneg : x < 0 := Rat.not_le.mp hx0
+      rw [signR_of_neg x hxneg, Rat.neg_mul, Rat.one_mul,
+          Rat.sub_eq_add_neg, Rat.neg_neg]
+      -- −(1−dz) ≤ x+dz  because −1 ≤ x → −1+dz ≤ x+dz = −(1−dz) ≤ x+dz
+      have hlower : -(1 - dz) ≤ x + dz := by
+        rw [show -(1 - dz) = (-1 : Rat) + dz from by
+          rw [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]]
+        exact (Rat.add_le_add_right).mpr hxm1
+      rw [Rat.div_def]
+      calc (-1 : Rat)
+          = -(1 - dz) * (1 - dz)⁻¹ := by
+            rw [Rat.neg_mul, Rat.mul_inv_cancel _ (Rat.ne_of_gt h1)]
+        _ ≤ (x + dz) * (1 - dz)⁻¹ :=
+            Rat.mul_le_mul_of_nonneg_right hlower (Rat.le_of_lt (Rat.inv_pos.mpr h1))
+  · -- In deadzone: output = 0 ≥ −1
+    exact Rat.le_of_lt (by decide)
 
 /-! ## Special cases -/
 
@@ -225,8 +274,8 @@ theorem deadzone_at_min (dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
   | `deadzone_no_dz_pos`    | `deadzone x 0 = x` (identity, positive case)         | ✅ Proved |
   | `deadzone_at_max`       | `deadzone 1 dz = 1` (for `dz < 1`)                   | ✅ Proved |
   | `deadzone_at_min`       | `deadzone (-1) dz = -1` (for `dz < 1`)               | ✅ Proved |
-  | `deadzone_le_one`       | `x ≤ 1, 0 ≤ dz < 1 → deadzone x dz ≤ 1`             | 🔄 1 sorry (negative branch) |
-  | `deadzone_ge_neg_one`   | `-1 ≤ x, 0 ≤ dz < 1 → -1 ≤ deadzone x dz`           | 🔄 sorry (needs Std.le_of_lt or linarith) |
+  | `deadzone_le_one`       | `x ≤ 1, 0 ≤ dz < 1 → deadzone x dz ≤ 1`             | ✅ Proved |
+  | `deadzone_ge_neg_one`   | `-1 ≤ x, 0 ≤ dz < 1 → -1 ≤ deadzone x dz`           | ✅ Proved |
 -/
 
 end PX4.Deadzone
