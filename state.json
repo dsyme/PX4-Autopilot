@@ -1,9 +1,11 @@
 {
-  "last_run": "2026-04-04T16:52:55Z",
-  "run_id": "23983277650",
+  "last_run": "2026-04-04T17:14:21Z",
+  "run_id": "23983646113",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
+  "mathlib_available": false,
+  "mathlib_note": "lakefile.toml configured; blocked by network firewall (reservoir.lean-lang.org); run lake update when network available",
   "fv_targets": [
     {
       "id": "constrain",
@@ -45,25 +47,69 @@
       "name": "math::interpolate",
       "file": "src/lib/mathlib/math/Functions.hpp",
       "phase": 1,
-      "status": "research only, needs rational/scaled-integer model decision"
+      "status": "research only. Boundary cases tractable with stdlib; interior monotonicity needs Rat or Mathlib.Analysis"
+    },
+    {
+      "id": "deadzone",
+      "name": "math::deadzone",
+      "file": "src/lib/mathlib/math/Functions.hpp",
+      "phase": 1,
+      "status": "research only. Piecewise structure; output-in-range trivial via outer constrain"
+    },
+    {
+      "id": "wrap_pi",
+      "name": "matrix::wrap_pi",
+      "file": "src/lib/matrix/matrix/",
+      "phase": 1,
+      "status": "research only. Highest-priority Mathlib target. Needs Mathlib.Data.Real.Basic + Int.fract"
+    },
+    {
+      "id": "WelfordMean",
+      "name": "WelfordMean online mean/variance",
+      "file": "src/lib/mathlib/math/WelfordMean.hpp",
+      "phase": 1,
+      "status": "research only. Inductive recurrence proof needed"
+    },
+    {
+      "id": "AlphaFilter",
+      "name": "AlphaFilter::update",
+      "file": "src/lib/mathlib/math/filter/AlphaFilter.hpp",
+      "phase": 1,
+      "status": "research only. No-overshoot tractable; convergence needs Mathlib topology"
+    },
+    {
+      "id": "RingBuffer",
+      "name": "RingBuffer circular buffer",
+      "file": "src/modules/sensors/vehicle_optical_flow/RingBuffer.hpp",
+      "phase": 1,
+      "status": "research only. FIFO ordering, index wraparound"
     }
   ],
   "open_prs": [
-    "lean-squad/fv-slewrate-proofs-run2"
+    "lean-squad/fv-slewrate-proofs-run2",
+    "lean-squad/fv-research-mathlib-tools-run3"
   ],
+  "tool_recommendations": {
+    "lean4_mathlib": "primary - pure math functions (all current targets)",
+    "cbmc": "next recommended - C++ integer overflow, array bounds",
+    "infer": "quick wins - memory safety, null dereference",
+    "tla_plus": "arming FSM, mission FSM - temporal properties",
+    "gappa": "EKF floating-point rounding error"
+  },
   "notes": [
-    "Mathlib unavailable (network firewall) - using stdlib only",
+    "Mathlib unavailable (network firewall) - lakefile.toml already configured, run lake update when network available",
+    "Mathlib workarounds: (1) pre-download in Docker, (2) GitHub-hosted runner with internet, (3) wait for firewall exception",
     "lake build passes with 0 sorry (all proofs complete, run 2)",
     "CI workflow created at .github/workflows/lean-ci.yml",
     "split tactic + omega handles Int if-then-else proofs well",
     "native_decide works for countSetBits concrete values",
     "countSetBits_pow2 proved via countSetBits_two_mul helper + Nat.two_pow_pos",
     "countSetBits uses WF recursion (termination_by n); use .eq_def for unfolding",
-    "AVOID /-...-/ inside doc comments (causes parser issues as nested comment)",
-    "AVOID Unicode like +/- (±) and x (×) inside comments - use ASCII",
+    "AVOID Unicode like +/- and x inside comments - use ASCII",
     "SlewRate proofs: use simp only [..., constrain] then split <;> omega for case analysis",
-    "omega handles 2*m/2=m and 2*m%2=0 (linear arithmetic with fixed divisors)",
-    "Previous run (23982815807) PR was blocked by workflows permission - use separate PR without CI next time if needed",
-    "Next target: interpolate (phase 1->5), needs model decision: scaled int or rational approx"
+    "Run 3: updated RESEARCH.md + TARGETS.md with Mathlib analysis, FV tools survey, 8 new targets",
+    "Next target: interpolate (phase 1->5, boundary cases tractable), or deadzone (output-in-range easy)",
+    "wrap_pi is highest-value Mathlib-specific target",
+    "PR for run 2 (slewrate) is still a pending issue/patch - needs manual creation by maintainer due to workflow permission"
   ]
 }
