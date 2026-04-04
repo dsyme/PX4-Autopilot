@@ -1,0 +1,10 @@
+name = "FVSquad"
+version = "0.1.0"
+defaultTargets = ["fvsquad"]
+
+[[lean_lib]]
+name = "FVSquad"
+
+[[lean_exe]]
+name = "fvsquad"
+root = "Main"
