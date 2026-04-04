@@ -78,3 +78,5 @@ Makefile.* text eol=lf
 .gitattributes text eol=lf
 .gitignore     text eol=lf
 Makefile       text eol=lf
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours
