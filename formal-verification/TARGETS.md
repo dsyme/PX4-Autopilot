@@ -13,8 +13,8 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 2 | `math::signNoZero<Int>` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 6 theorems, 0 sorry |
 | 3 | `math::countSetBits` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 9 concrete + pow2 induction |
 | 4 | `SlewRate::update` | `src/lib/slew_rate/SlewRate.hpp` | 5 | ✅ Proved | `lean/FVSquad/SlewRate.lean` | 5 theorems, 0 sorry |
-| 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Needs scaled-int or Mathlib/Rat model |
-| 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Piecewise structure |
+| 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Interpolate.lean` | 10 theorems, 0 sorry |
+| 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | 🔄 In progress | `lean/FVSquad/Deadzone.lean` | 10 proved, 2 sorry (need Mathlib) |
 | 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
 | 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 1 | ⬜ Research | — | Inductive recurrence |
 | 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 1 | ⬜ Research | — | No-overshoot tractable; convergence needs Mathlib |
