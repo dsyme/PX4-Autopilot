@@ -150,18 +150,20 @@ theorem alphaUpdate_ge_sample (state alpha sample : Rat)
   -- ⟺ 1*(sample - state) ≤ alpha*(sample - state)
   -- which follows since (sample - state) ≤ 0 and alpha ≤ 1 (flip inequality for negatives)
   have hd : 0 ≤ state - sample := (Rat.le_iff_sub_nonneg sample state).mp h_le
-  have hdn : sample - state ≤ 0 :=
-    calc sample - state ≤ state - state := by
-            rw [Rat.sub_eq_add_neg, Rat.sub_eq_add_neg]
-            exact (Rat.add_le_add_right (c := -state)).mpr h_le
-      _ = 0 := Rat.sub_self
-  have key : 1 * (sample - state) ≤ alpha * (sample - state) := by
-    sorry -- needs: c ≤ 0 → alpha ≤ 1 → 1*c ≤ alpha*c (mul by nonpositive flips order)
-  rw [Rat.one_mul] at key
-  calc sample
-      = (sample - state) + state   := by rw [Rat.sub_add_cancel]
-    _ ≤ alpha * (sample - state) + state := (Rat.add_le_add_right (c := state)).mpr key
-    _ = state + alpha * (sample - state)  := Rat.add_comm _ _
+  have hd : 0 ≤ state - sample := (Rat.le_iff_sub_nonneg sample state).mp h_le
+  have key1 : alpha * (state - sample) ≤ 1 * (state - sample) :=
+    Rat.mul_le_mul_of_nonneg_right ha1 hd
+  rw [Rat.one_mul] at key1
+  -- key1 : alpha * (state - sample) ≤ state - sample
+  -- Apply Rat.neg_le_neg to flip, then rewrite negations
+  have key2 : -(state - sample) ≤ -(alpha * (state - sample)) := Rat.neg_le_neg key1
+  rw [Rat.neg_sub] at key2
+  rw [show -(alpha * (state - sample)) = alpha * (sample - state) from by
+      rw [← Rat.mul_neg, Rat.neg_sub]] at key2
+  -- key2 : sample - state ≤ alpha * (sample - state)
+  calc sample = sample - state + state := by rw [Rat.sub_add_cancel]
+    _ ≤ alpha * (sample - state) + state := (Rat.add_le_add_right (c := state)).mpr key2
+    _ = state + alpha * (sample - state) := Rat.add_comm _ _
 
 /-- No-overshoot (downward): `sample ≤ new_state ≤ state` when `sample ≤ state`. -/
 theorem alphaUpdate_no_overshoot_down (state alpha sample : Rat)
@@ -195,12 +197,42 @@ theorem alphaUpdate_mono_state (alpha sample : Rat)
   -- ⟺ s1*(1 - alpha) ≤ s2*(1 - alpha)  (cancel alpha*sample, use distributivity)
   -- We show difference is nonneg: (s2 - s1)*(1 - alpha) ≥ 0
   have h1a : 0 ≤ 1 - alpha := (Rat.le_iff_sub_nonneg alpha 1).mp ha1
+  -- Expand both sides using sub_eq_add_neg + mul_add + mul_neg
+  -- sample - s1 = (sample - s2) + (s2 - s1), so alpha*(sample-s1) = alpha*(sample-s2) + alpha*(s2-s1)
+  have split : sample - s1 = (sample - s2) + (s2 - s1) := by
+    rw [Rat.sub_eq_add_neg sample s1, Rat.sub_eq_add_neg sample s2,
+        Rat.sub_eq_add_neg s2 s1, Rat.add_assoc,
+        ← Rat.add_assoc (-s2) s2, Rat.neg_add_cancel, Rat.zero_add]
+  have expand : alpha * (sample - s1) = alpha * (sample - s2) + alpha * (s2 - s1) := by
+    rw [split, Rat.mul_add]
+  rw [expand]
+  -- Rearrange: s1 + (alpha*(sample-s2) + alpha*(s2-s1)) = alpha*(sample-s2) + (s1 + alpha*(s2-s1))
+  rw [show s1 + (alpha * (sample - s2) + alpha * (s2 - s1)) =
+         alpha * (sample - s2) + (s1 + alpha * (s2 - s1)) from by
+    rw [← Rat.add_assoc, Rat.add_comm s1, Rat.add_assoc]]
+  rw [show s2 + alpha * (sample - s2) = alpha * (sample - s2) + s2 from Rat.add_comm _ _]
+  apply (Rat.add_le_add_left (c := alpha * (sample - s2))).mpr
+  -- Goal: s1 + alpha * (s2 - s1) ≤ s2
   have hsd : 0 ≤ s2 - s1 := (Rat.le_iff_sub_nonneg s1 s2).mp hs
-  -- Direct: the difference of the two sides equals (s2 - s1) * (1 - alpha) ≥ 0
-  -- We use the convex form via a sorry for the algebraic identity
-  sorry -- needs ring: s1 + alpha*(sample-s1) ≤ s2 + alpha*(sample-s2)
+  have key : alpha * (s2 - s1) ≤ 1 * (s2 - s1) := Rat.mul_le_mul_of_nonneg_right ha1 hsd
+  rw [Rat.one_mul] at key
+  calc s1 + alpha * (s2 - s1)
+      = alpha * (s2 - s1) + s1 := Rat.add_comm _ _
+    _ ≤ (s2 - s1) + s1 := (Rat.add_le_add_right (c := s1)).mpr key
+    _ = s2 := Rat.sub_add_cancel
 
 /-! ## Iterated update -/
+
+/-- Helper: one alpha update minus the target equals the gap scaled by (1-alpha). -/
+private theorem alphaUpdate_sub_target (state alpha target : Rat) :
+    alphaUpdate state alpha target - target = (state - target) * (1 - alpha) := by
+  simp only [alphaUpdate, Rat.sub_eq_add_neg, Rat.mul_add, Rat.mul_one, Rat.mul_neg,
+             Rat.neg_mul, Rat.add_mul, Rat.add_assoc]
+  congr 1
+  rw [Rat.neg_add, Rat.neg_neg, Rat.mul_comm alpha target, Rat.mul_comm alpha state]
+  rw [Rat.add_left_comm (target * alpha) (-(state * alpha)) (-target)]
+  rw [Rat.add_comm (target * alpha) (-target)]
+  rw [← Rat.add_assoc, Rat.add_comm (-(state * alpha)) (-target), Rat.add_assoc]
 
 /-- Iterated update: `n` steps with constant input `target`. -/
 def alphaIterate (state alpha target : Rat) : Nat → Rat
@@ -214,25 +246,24 @@ def alphaIterate (state alpha target : Rat) : Nat → Rat
 /-- After `n` steps with constant input `target`:
     `state_n = target + (state₀ - target) * (1 - alpha)^n`.
 
-    This is the standard exponential filter closed-form formula, proved by induction.
-
-    TODO: Lean 4 stdlib `Rat` does not expose `ring` or `norm_num` without Mathlib, so the
-    algebraic step in the inductive case requires `sorry`. The formula is correct and
-    matches the `#eval` checks above. -/
+    This is the standard exponential filter closed-form formula, proved by strong induction
+    (generalizing over `state` so the IH applies to the updated state in each step). -/
 theorem alphaIterate_formula (state alpha target : Rat) (n : Nat) :
     alphaIterate state alpha target n =
     target + (state - target) * (1 - alpha) ^ n := by
-  induction n with
+  induction n generalizing state with
   | zero =>
     simp only [alphaIterate]
-    -- Goal: state = target + (state - target) * (1 - alpha) ^ 0
     have h0 : (1 - alpha) ^ (0 : Nat) = 1 := by simp
-    rw [h0, Rat.mul_one,
-        show target + (state - target) = (state - target) + target from Rat.add_comm _ _]
-    exact Rat.sub_add_cancel.symm
+    rw [h0, Rat.mul_one, Rat.add_comm, Rat.sub_add_cancel]
   | succ n ih =>
-    simp only [alphaIterate, ih]
-    sorry -- algebraic step: needs ring over Rat
+    simp only [alphaIterate]
+    rw [ih (alphaUpdate state alpha target)]
+    -- alphaUpdate state alpha target - target = (state - target) * (1 - alpha)
+    rw [alphaUpdate_sub_target state alpha target]
+    -- (state - target) * (1 - alpha) * (1 - alpha)^n = (state - target) * (1 - alpha)^(n+1)
+    congr 1
+    rw [Rat.pow_succ, Rat.mul_assoc, Rat.mul_comm ((1 - alpha) ^ n) (1 - alpha)]
 
 /-! ## Summary of proved properties
 
@@ -245,11 +276,11 @@ theorem alphaIterate_formula (state alpha target : Rat) (n : Nat) :
   | `alphaUpdate_ge_state`         | `s ≤ x, 0 ≤ a → s ≤ update`       (lower bound, ↑ case)   | ✅ Proved |
   | `alphaUpdate_no_overshoot_up`  | `s ≤ x → s ≤ update ≤ x`          (no overshoot ↑)        | ✅ Proved |
   | `alphaUpdate_le_state`         | `x ≤ s, 0 ≤ a → update ≤ s`       (upper bound, ↓ case)   | ✅ Proved |
-  | `alphaUpdate_ge_sample`        | `x ≤ s, 0 ≤ a ≤ 1 → x ≤ update`  (lower bound, ↓ case)   | 🔄 1 sorry (mul by nonpositive) |
-  | `alphaUpdate_no_overshoot_down`| `x ≤ s → x ≤ update ≤ s`          (no overshoot ↓)        | 🔄 sorry (via ge_sample) |
+  | `alphaUpdate_ge_sample`        | `x ≤ s, 0 ≤ a ≤ 1 → x ≤ update`  (lower bound, ↓ case)   | ✅ Proved |
+  | `alphaUpdate_no_overshoot_down`| `x ≤ s → x ≤ update ≤ s`          (no overshoot ↓)        | ✅ Proved |
   | `alphaUpdate_mono_sample`      | `s1 ≤ s2 → update(s1) ≤ update(s2)` (monotone in sample)  | ✅ Proved |
-  | `alphaUpdate_mono_state`       | `s1 ≤ s2 → update_s1 ≤ update_s2` (monotone in state)     | 🔄 sorry (ring step) |
-  | `alphaIterate_formula`         | `state_n = target + (s-target)*(1-a)^n`                    | 🔄 sorry (ring step) |
+  | `alphaUpdate_mono_state`       | `s1 ≤ s2 → update_s1 ≤ update_s2` (monotone in state)     | ✅ Proved |
+  | `alphaIterate_formula`         | `state_n = target + (s-target)*(1-a)^n`                    | ✅ Proved |
 -/
 
 end PX4.AlphaFilter

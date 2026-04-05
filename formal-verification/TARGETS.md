@@ -16,8 +16,8 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Interpolate.lean` | 10 theorems, 0 sorry |
 | 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 12 proved, **0 sorry** |
 | 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
-| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 1 | ⬜ Research | — | Inductive recurrence |
-| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 4 | 🔄 In progress | `lean/FVSquad/AlphaFilter.lean` | 9 proved, 3 sorry (mul-nonpos, ring) |
+| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written; Lean stubs next |
+| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
 | 10 | `RingBuffer` circular buffer | `src/modules/sensors/vehicle_optical_flow/RingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
 
 ## Non-Lean Targets (other tools recommended)
@@ -39,7 +39,11 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 ## Mathlib Dependency Notes
 
-Targets 5, 7, 9 (interpolate, wrap_pi, AlphaFilter convergence) are significantly easier
-with `Mathlib` available. The `lakefile.toml` already requires Mathlib; once network
-access to `reservoir.lean-lang.org` is available, run `lake update` to enable it. No
-other code changes are needed. See `RESEARCH.md §Tool Choice` for details.
+All currently proved targets (1–6, 9) use only Lean 4 stdlib — no Mathlib required.
+The `lakefile.toml` references Mathlib for future use; once network access to
+`reservoir.lean-lang.org` is available, run `lake update` to enable it.
+
+Target 7 (`wrap_pi`) strongly benefits from Mathlib's `Int.fract` or real-number
+modular arithmetic. Target 8 (`WelfordMean`) may use `Mathlib.Algebra.BigOperators`
+for the sum-of-squares invariant, but core recurrence proofs are stdlib-only.
+See `RESEARCH.md §Tool Choice` for details.

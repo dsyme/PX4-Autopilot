@@ -264,20 +264,30 @@ proof needs `Mathlib.Data.Real.Basic` and `Int.fract`.
 
 ---
 
-### 8. `WelfordMean` / online mean and variance (Priority: MEDIUM)
+### 8. `WelfordMean` / online mean and variance (Priority: **HIGH** — now Phase 2)
 
 **File**: `src/lib/mathlib/math/WelfordMean.hpp`
+**Informal spec**: `formal-verification/specs/welfordmean_informal.md`
 
 Welford's online algorithm maintains a running mean and variance in a single pass,
 numerically more stable than naive sum/sum-of-squares.
 
 **Key properties to verify**:
 - After `n` updates with values `v1,...,vn`: `mean = (v1+...+vn)/n` (correctness)
-- Variance is always non-negative
-- Invariant preservation: the internal state satisfies the Welford recurrence
+- Variance is always non-negative: `M2 ≥ 0` (both mathematically and by clamp)
+- M2 invariant: `M2ₙ = Σᵢ(xᵢ - meanₙ)²` (sum of squared deviations)
+- Recurrence: `meanₙ = meanₙ₋₁ + (xₙ - meanₙ₋₁) / n`
 
-**Proof tractability**: Medium — requires inductive argument on update sequence.
-With Mathlib: `Mathlib.Statistics.Variance` has relevant lemmas.
+**Proof tractability**: Medium — inductive argument on update sequence, over `Rat`.
+The mean correctness (property 1) is tractable with stdlib `omega`/`simp` on `Rat`.
+The M2 = sum-of-squares identity (property 3) requires a careful algebraic induction.
+No Mathlib needed for core properties. See `specs/welfordmean_informal.md` for the
+detailed modelling plan.
+
+**Modelling approximations**: Kahan compensators modelled as exact arithmetic; count
+overflow at `UINT16_MAX` modelled as out-of-scope; NaN inputs excluded.
+
+**Next step**: Write Lean 4 spec (`FVSquad/WelfordMean.lean`) with stubs (Task 3).
 
 ---
 
