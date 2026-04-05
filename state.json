@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-04-04T22:18:33Z",
-  "run_id": "23988736323",
+  "last_run": "2026-04-05T03:37:05Z",
+  "run_id": "23993497164",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -12,23 +12,29 @@
     {"id":"SlewRate","phase":5,"status":"8 proved, 0 sorry","lean_file":"lean/FVSquad/SlewRate.lean"},
     {"id":"deadzone","phase":5,"status":"12 proved, 0 sorry (was 2 sorry, fully fixed run7)","lean_file":"lean/FVSquad/Deadzone.lean"},
     {"id":"interpolate","phase":5,"status":"10 proved, 0 sorry","lean_file":"lean/FVSquad/Interpolate.lean"},
-    {"id":"AlphaFilter","phase":4,"status":"9 proved, 3 sorry: ge_sample(mul-nonpos), mono_state(ring), iterate_formula_succ(ring)","lean_file":"lean/FVSquad/AlphaFilter.lean","informal_spec":"specs/alphafilter_informal.md"},
+    {"id":"AlphaFilter","phase":5,"status":"12 proved, 0 sorry (was 3 sorry, fully fixed run8 - ge_sample, mono_state, iterate_formula)","lean_file":"lean/FVSquad/AlphaFilter.lean","informal_spec":"specs/alphafilter_informal.md"},
     {"id":"wrap_pi","phase":1,"status":"research only - needs Mathlib Real"},
     {"id":"WelfordMean","phase":1,"status":"research only"},
     {"id":"RingBuffer","phase":1,"status":"research only"}
   ],
   "open_prs": [
-    {"branch":"lean-squad/fv-alphafilter-deadzone-run7-03a4472311","description":"AlphaFilter spec + Deadzone 0 sorry"}
+    {"branch":"lean-squad/fv-alphafilter-sorry-fix-correspondence-critique-e8d594b512","description":"AlphaFilter 0 sorry + CORRESPONDENCE + CRITIQUE update (run8)"}
   ],
-  "bugs_found": [{"id":"signNoZero_nan","description":"signNoZero<float> returns 0 for NaN, violates ne_zero","status":"documented, issue not filed yet"}],
+  "bugs_found": [{"id":"signNoZero_nan","description":"signNoZero<float> returns 0 for NaN, violates ne_zero","status":"documented in CORRESPONDENCE.md, issue not filed yet"}],
+  "total_theorems": 55,
+  "total_sorry": 0,
   "notes": [
     "Rat.sub_add_cancel/Rat.sub_self: IMPLICIT args - use bare (no explicit args)",
-    "Rat.add_le_add_right: shared term on RIGHT (a+c ≤ b+c). For left-shared: add_comm first.",
+    "Rat.add_le_add_right: shared term on RIGHT (a+c <= b+c). For left-shared: add_comm first.",
     "x^0=1: use 'have h0 := by simp' (simp knows pow_zero)",
-    "For sample-state ≤ 0 from h_le: use calc sub ≤ state-state=0 via add_le_add_right(c:=-state)",
-    "No: Rat.add_le_add_left, Rat.neg_le_iff, ring, linarith, Rat.add_le_add (use Rat.add_le_add_right + add_comm)",
+    "Rat.add_le_add_left: c+a <= c+b iff a<=b (note: c on LEFT unlike add_le_add_right which has c on RIGHT)",
+    "No: Rat.add_le_add_left does NOT exist; use Rat.add_le_add_right + add_comm",
+    "Wait - from run8: Rat.add_le_add_left DOES exist as c+a<=c+b iff a<=b - confirmed working",
     "Deadzone sorry fix key: neg branch uses Rat.abs_of_nonpos + Rat.neg_lt_neg_iff.mp(rw Rat.neg_neg)",
-    "AlphaFilter sorry key: mul_le_mul_of_nonpos_right (for flipped mul inequality) - not in stdlib",
+    "AlphaFilter ge_sample fix: use Rat.neg_le_neg on (alpha*(state-sample) <= state-sample), then rewrite -(alpha*(state-sample)) = alpha*(sample-state) using <- Rat.mul_neg + Rat.neg_sub",
+    "AlphaFilter mono_state fix: split sample-s1 = (sample-s2)+(s2-s1), factor alpha*(sample-s2), reduce to alphaUpdate_le_sample for s1/s2",
+    "AlphaFilter iterate_formula fix: use 'induction n generalizing state' (NOT plain induction - need IH to apply to alphaUpdate state alpha target); helper alphaUpdate_sub_target proved via simp+rw+neg_add+neg_neg+add_left_comm",
+    "algebraic identity key: (state + alpha*(target-state)) - target = (state-target)*(1-alpha) proved by: simp [sub_eq_add_neg, mul_add, mul_neg, neg_mul, add_mul, add_assoc] + congr 1 + rw [neg_add, neg_neg, mul_comm alpha target, mul_comm alpha state] + add_left_comm/add_comm sequence",
     "CI at .github/workflows/lean-ci.yml - working, no Mathlib deps needed"
   ]
 }
