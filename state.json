@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-04-05T16:45:00Z",
-  "run_id": "24005740363",
+  "last_run": "2026-04-05T17:00:00Z",
+  "run_id": "24006041975",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -13,14 +13,18 @@
     {"id":"deadzone","phase":5,"status":"12 proved, 0 sorry (all range theorems proved without Mathlib)","lean_file":"lean/FVSquad/Deadzone.lean"},
     {"id":"interpolate","phase":5,"status":"10 proved, 0 sorry","lean_file":"lean/FVSquad/Interpolate.lean"},
     {"id":"AlphaFilter","phase":5,"status":"12 proved, 0 sorry (ge_sample, mono_state, iterate_formula all proved)","lean_file":"lean/FVSquad/AlphaFilter.lean","informal_spec":"specs/alphafilter_informal.md"},
-    {"id":"wrap_pi","phase":3,"status":"8 proved (wrapInt), 6 sorry (wrapRat needs Mathlib floor). Informal spec written.","lean_file":"lean/FVSquad/WrapAngle.lean","informal_spec":"specs/wrapangle_informal.md","notes":"Part1 wrapInt: all 8 proved. Part2 wrapRat: axiom def + 6 sorry theorems needing Mathlib.Algebra.Order.Floor. Next: add Mathlib dep or prove wrapInt properties suffice."},
-    {"id":"WelfordMean","phase":2,"status":"Informal spec written. Lean file NOT in repo (run10 branch was lost). Needs Task 4 redo.","informal_spec":"specs/welfordmean_informal.md","notes":"Key theorem: welfordFold_mean proved by induction. mean_step_algebra: (m+(x-m)/(n+1))*(n+1) = m*n+x. M2 sorry blocked by @[irreducible] Rat.inv. Fix: needs Mathlib or prove Rat.inv_nonneg manually for nat-cast denominators."},
-    {"id":"RingBuffer","phase":1,"status":"research only - omega for index arithmetic"}
+    {"id":"wrap_pi","phase":1,"status":"Lean file was lost in prior runs. Needs Mathlib for floor/fract. Research only now.","notes":"Needs Mathlib.Algebra.Order.Floor for wrapRat proofs. wrapInt was proved in prior runs but file lost."},
+    {"id":"WelfordMean","phase":5,"status":"7 proved, 1 sorry (M2 non-neg needs div_nonneg from Mathlib)","lean_file":"lean/FVSquad/WelfordMean.lean","informal_spec":"specs/welfordmean_informal.md","notes":"Key theorem: welfordFold_mean proved. welfordFoldFrom_mean_inv is the general inductive invariant. M2 sorry: Rat.inv @[irreducible] blocks div_nonneg without Mathlib."},
+    {"id":"RingBuffer","phase":1,"status":"research only - omega for index arithmetic"},
+    {"id":"lerp","phase":1,"status":"research only - identified run11. HIGH tractability. (1-s)*a+s*b; boundary + convexity","notes":"lerp(a,b,0)=a, lerp(a,b,1)=b, convex hull 0<=s<=1. Ready for Task 3."},
+    {"id":"expo","phase":1,"status":"research only - identified run11. MEDIUM. RC stick expo curve (1-e)*x+e*x^3.","notes":"Odd symmetry, zero at zero, bounded output. Depends on constrain (proved)."},
+    {"id":"negate_int16","phase":1,"status":"research only - identified run11. HIGH tractability. overflow guard for INT16_MAX.","notes":"decide-provable. negate(INT16_MAX)=INT16_MAX; otherwise negate(x)=-x. involution except at INT16_MAX."},
+    {"id":"MedianFilter","phase":1,"status":"research only - identified run11. MEDIUM. sliding window median.","notes":"Model with List.mergeSort instead of qsort. bounded by min/max of window."}
   ],
   "open_prs": [],
   "bugs_found": [{"id":"signNoZero_nan","description":"signNoZero<float> returns 0 for NaN, violates ne_zero. Loop callers: rtl_direct_mission_land.cpp:73, mission_base.cpp:80 get step=0 (infinite loop risk). TECS.cpp:198, FlightTaskOrbit.cpp:138 get 0 (incorrect sign).","status":"GitHub issue filed run9"}],
-  "total_theorems": 61,
-  "total_sorry": 6,
+  "total_theorems": 68,
+  "total_sorry": 1,
   "notes": [
     "Rat.sub_add_cancel/Rat.sub_self: IMPLICIT args - use bare (no obvious args)",
     "Rat.add_le_add_right: shared term on RIGHT (a+c <= b+c). For left-shared: add_comm first.",
@@ -29,13 +33,15 @@
     "AlphaFilter ge_sample fix: use Rat.neg_le_neg on (alpha*(state-sample) <= state-sample), then rewrite -(alpha*(state-sample)) = alpha*(sample-state) using <- Rat.mul_neg + Rat.neg_sub",
     "AlphaFilter iterate_formula fix: use 'induction n generalizing state' (NOT plain induction)",
     "CI at .github/workflows/lean-ci.yml - working, no Mathlib deps needed",
-    "WelfordMean mean_step_algebra: (m+(x-m)/(n+1))*(n+1) = m*n+x; key: Rat.div_mul_cancel hn + Rat.mul_add",
+    "WelfordMean mean_step_algebra: need ↑(n+1) NOT ↑n+1 in function def. 'let nR : Rat := ↑(s.count+1)' keeps cast explicit. Then step1 proves add_mul + div_mul_cancel, then h_cast rewrites ↑(n+1) to ↑n+1.",
+    "WelfordMean wFoldFrom_mean_inv inductive step: after rw [wUpdate_mean_step], goal is a+b+c = a+(b+c) which is exact Rat.add_assoc _ _ _",
     "ring tactic NOT available in Lean 4 stdlib - use omega for linear Int arithmetic",
     "linarith tactic NOT available in Lean 4 stdlib (it's in Mathlib) - use omega for Int",
     "Rat ordering: linarith not available; use Rat.le_of_lt, Rat.lt_trans explicitly",
-    "Int.ediv_add_emod DEPRECATED - use Int.mul_ediv_add_emod instead",
-    "wrapInt_congruent proof: use Int.mul_ediv_add_emod + Int.neg_mul + Int.mul_comm + omega",
-    "wrapInt_periodic proof: omega for heq + Int.add_mul_emod_self_right for the mod step",
-    "wrapRat sorry: needs Mathlib.Algebra.Order.Floor (Int.floor_nonneg, Int.lt_floor_add_one)"
+    "succ_cast_ne_zero: exact_mod_cast Nat.succ_ne_zero n works for (↑(n+1):Rat) ≠ 0",
+    "push_cast; rfl works for ↑(n+1) = ↑n + 1 in Rat",
+    "Rat.inv_mul_cancel (not div_mul_cancel): rw [Rat.div_def, Rat.mul_assoc, Rat.inv_mul_cancel _ hn, Rat.mul_one]",
+    "List.length_ne_zero: use cases xs with | nil => absurd rfl hne | cons => Nat.succ_ne_zero _",
+    "wFold_mean: after wFold_count, use Rat.div_def + Rat.mul_inv_cancel to conclude mean = sum/length"
   ]
 }
