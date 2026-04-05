@@ -15,7 +15,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 4 | `SlewRate::update` | `src/lib/slew_rate/SlewRate.hpp` | 5 | ✅ Proved | `lean/FVSquad/SlewRate.lean` | 5 theorems, 0 sorry |
 | 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Interpolate.lean` | 10 theorems, 0 sorry |
 | 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 12 proved, **0 sorry** |
-| 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
+| 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 3 | 🔄 Lean Spec | `lean/FVSquad/WrapAngle.lean` | 8 proved (wrapInt), 6 sorry (wrapRat needs Mathlib floor); informal spec written |
 | 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written; Lean stubs next |
 | 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
 | 10 | `RingBuffer` circular buffer | `src/modules/sensors/vehicle_optical_flow/RingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
