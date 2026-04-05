@@ -4,21 +4,24 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-05 09:00 UTC
-- **Commit**: `009a1171ad`
+- **Date**: 2026-04-05 16:45 UTC
+- **Commit**: `caf1d3db11`
 
 ---
 
 ## Overall Assessment
 
 Six targets from PX4's mathlib and control library have been formally verified in Lean 4
-(v4.29.0, standard library only). Together they cover **55 proved theorems, zero `sorry`
+(v4.29.0, standard library only). Together they cover **61 proved theorems, zero `sorry`
 remaining** across `constrain`, `signNoZero`, `countSetBits`, `SlewRate::update`,
 `deadzone`, `interpolate`, and `AlphaFilter::updateCalculation`. All range theorems for
 `deadzone` are now fully proved (without Mathlib) using explicit `Rat.mul_neg_iff_of_pos_right`
 and `Rat.mul_le_mul_of_nonneg_right` reasoning. The `AlphaFilter` exponential convergence
-formula `alphaIterate_formula` is proved by strong induction. The proofs characterise the
-*logical structure* of these functions faithfully but operate on `Int` or `Rat` abstractions
+formula `alphaIterate_formula` is proved by strong induction. A new target — **`wrap_pi`
+angle wrapping** — has a Lean spec in progress: Part 1 (`wrapInt` integer model) has 8 fully
+proved theorems using `Int.emod` lemmas and `omega`; Part 2 (`wrapRat` abstract spec) has 6
+theorems stated as sorry-guarded contracts pending Mathlib floor lemmas. The proofs characterise
+the *logical structure* of these functions faithfully but operate on `Int` or `Rat` abstractions
 rather than actual C++ `float`/`double` types. One confirmed bug has been found:
 `signNoZero<float>` returns 0 for NaN, violating the stated safety property.
 
@@ -57,6 +60,12 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
 | `alphaUpdate_mono_sample` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Larger sample → larger output (filter tracks input direction) |
 | `alphaUpdate_mono_state` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Larger initial state → larger output (order-preserving) |
 | `alphaIterate_formula` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Closed-form: `state_n = target + (state₀-target)·(1-α)ⁿ` |
+| `wrapInt_ge_low` / `_lt_high` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | **high** | **high** | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Range invariant: result always in [low, high) |
+| `wrapInt_in_range` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | **high** | **high** | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Identity: in-range input unchanged (no spurious wrapping) |
+| `wrapInt_idempotent` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | **high** | **high** | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Idempotence: wrap(wrap(x)) = wrap(x) |
+| `wrapInt_periodic` / `_periodic_k` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | **high** | **high** | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Period: shifting by k×(high−low) is transparent |
+| `wrapInt_congruent` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | mid | medium | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Congruence: result ≡ input (mod period) |
+| `wrapInt_zero` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | low | low | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Zero maps to zero for symmetric range |
 
 ---
 
@@ -69,49 +78,60 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
    `signNoZero<float>(x)` can divide by zero when `x` is NaN. **Recommendation**: file a
    bug report and add a NaN guard or static_assert.
 
-2. **`interpolate` with `x_low ≥ x_high` (undefined behaviour)**: The C++ does not check
+2. **`wrap_pi` / `wrap_2pi` — wrapRat spec** (6 sorry-guarded theorems): The rational
+   model in Part 2 of `WrapAngle.lean` needs Mathlib's `Int.floor` to complete proofs for
+   `wrapRat_ge_lo`, `_lt_hi`, `_in_range`, `_periodic`, `_congruent`, and `_zero`. Once
+   Mathlib is available, all 6 can be proved by standard `Int.floor_nonneg`,
+   `Int.lt_floor_add_one` lemmas. **Recommendation**: add Mathlib dependency and close
+   the 6 sorry-guarded theorems in the next run.
+
+3. **`wrap_pi` float NaN/infinity**: `wrap_floating` is undefined for NaN (floor(NaN) is
+   undefined). The C++ implementations inherit this; callers in the EKF and flight tasks
+   should guard inputs. The wrapRat spec already excludes this via the rational type.
+   **Recommendation**: add a runtime assert in `wrap_floating` and note in CORRESPONDENCE.
+
+4. **`interpolate` with `x_low ≥ x_high` (undefined behaviour)**: The C++ does not check
    the precondition `x_low < x_high`. Division by zero silently produces NaN/inf in
    floating-point mode. **Recommendation**: use CBMC or a simple runtime assert to verify
    callers always maintain this invariant. Several callers in `interpolateN` and
    `interpolateNXY` compute x values from array indices — worth checking whether index
    arithmetic can ever produce `x_low = x_high`.
 
-3. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
+5. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
    actual C++ uses `float`. The "slew rate exceeded" condition requires a multi-step
    argument about floating-point rounding. **Recommendation**: use Gappa to bound the
    rounding error in `slew_rate * dt_s` and verify the integer-model theorem still applies
    within a tolerance.
 
-4. **`interpolateN` and `interpolateNXY` (unverified)**: These use `interpolate` as a
+6. **`interpolateN` and `interpolateNXY` (unverified)**: These use `interpolate` as a
    subroutine but add index arithmetic (`constrain` on index) and array lookups. The
    `constrain` proof confirms the index is in range, but the `interpolateN` y-range
    containment (`y[0] ≤ result ≤ y[N-1]` for sorted arrays) has not been proved.
    This is a useful compositional proof that combines `constrain` and `interpolate` lemmas.
 
-5. **`WelfordMean` online variance** (`src/lib/mathlib/math/WelfordMean.hpp`): The Welford
+7. **`WelfordMean` online variance** (`src/lib/mathlib/math/WelfordMean.hpp`): The Welford
    online algorithm maintains running mean and M2 (sum of squared deviations). Key property
    to prove: after `n` updates with values `x_1, ..., x_n`, `mean = (x_1 + ... + x_n) / n`
    and `M2 = Σ(x_i - mean)²`. This is a pure recurrence provable by induction over `Rat`
    — no Mathlib needed. The variance safety property (`M2 ≥ 0` for count ≥ 2) is
    directly useful. An informal spec is now available at `specs/welfordmean_informal.md`.
+   Prior work (run10) achieved 6 proved theorems + 2 sorry but the branch was not pushed;
+   this target should be picked up in the next Task 4/5 run.
 
 ### Medium priority
 
-6. **`wrap_pi` / `wrap_2pi`** (angle wrapping in `matrix/`): Used extensively in
-   attitude estimation. Correctness properties: result ∈ (-π, π], idempotence, coherence
-   with `wrap_2pi`. This requires Mathlib's `Int.fract` or modular arithmetic.
-
-7. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
+8. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
    ordering. Index wraparound is an integer arithmetic problem tractable with `omega`.
+   The `wrapInt` idempotence and periodicity theorems are directly applicable here.
 
-8. **Commander arming FSM**: State machine reachability ("armed requires all preflight
+9. **Commander arming FSM**: State machine reachability ("armed requires all preflight
    checks passed") would be a high-value safety property. TLA+ is the right tool here,
    but a Lean 4 finite state machine model is also feasible.
 
-9. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
-   gives the time-domain response. The frequency-domain property (transfer function
-   `H(z) = α / (1 - (1-α)z⁻¹)`) could be stated as a theorem about `alphaUpdate` in
-   the z-transform sense, but requires complex number arithmetic (Mathlib).
+10. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
+    gives the time-domain response. The frequency-domain property (transfer function
+    `H(z) = α / (1 - (1-α)z⁻¹)`) could be stated as a theorem about `alphaUpdate` in
+    the z-transform sense, but requires complex number arithmetic (Mathlib).
 
 ---
 
@@ -198,12 +218,25 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
    to reduce to sign-of-numerator arguments, demonstrating that Mathlib is not strictly
    necessary for this class of rational arithmetic.
 
+6. **`wrapInt` core theorems fully proved (0 sorry)**: All 8 theorems for the integer
+   wrap model — range containment, idempotence, identity-in-range, periodicity (single
+   and multi-period), congruence, and zero-preservation — are proved using `Int.emod`
+   lemmas and `omega`. The `wrapInt_idempotent` proof has the same elegant structure as
+   `slewUpdate_steady_state`: reducing to `wrapInt_in_range` by showing the output is
+   already in range. These theorems establish the mathematical foundation for angle
+   arithmetic used across PX4's flight tasks, EKF, and attitude controllers. The
+   `wrapInt_congruent` theorem is a key correctness property: the wrapped result always
+   has the same residue as the input modulo the period, enabling equational reasoning in
+   angle arithmetic (e.g., proving `wrap_pi(a) - wrap_pi(b) ≡ a - b mod 2π`).
+
 ---
 
 ## Known Sorry-Guarded Theorems
 
-*None. All 55 theorems across 6 targets are fully proved with zero `sorry`.*
+Six theorems in `WrapAngle.lean` Part 2 (`wrapRat` abstract spec) are sorry-guarded:
+`wrapRat_ge_lo`, `wrapRat_lt_hi`, `wrapRat_in_range`, `wrapRat_periodic`,
+`wrapRat_congruent`, and `wrapRat_zero`. All require `Mathlib.Algebra.Order.Floor`
+(specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
+(`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-The full set of proved theorems is listed in the table above. Future `WelfordMean` and
-`wrap_pi` specs (planned) will initially have `sorry`-guarded stubs as targets advance
-from phase 3 to phase 5.
+All other targets (55 theorems across 6 targets) remain at zero sorry.
