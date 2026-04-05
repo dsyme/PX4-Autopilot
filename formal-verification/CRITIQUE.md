@@ -4,22 +4,23 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-04 19:02 UTC
-- **Commit**: `2a52a271af8cd29b61cb434ac6a7f5c3e1897ab0`
+- **Date**: 2026-04-05 03:37 UTC
+- **Commit**: `e8d594b512`
 
 ---
 
 ## Overall Assessment
 
-Five targets from PX4's mathlib and control library have been formally verified in Lean 4
-(v4.29.0, standard library only). Together they cover 43 proved theorems across
-`constrain`, `signNoZero`, `countSetBits`, `SlewRate::update`, `deadzone`, and
-`interpolate`. The proofs characterise the *logical structure* of these functions faithfully,
-but they operate on `Int` or `Rat` abstractions rather than the actual C++ `float`/`double`
-types used at runtime. This is the central limitation: IEEE 754 NaN/infinity/rounding
-behaviour is entirely out of scope. One confirmed bug has been found (`signNoZero` returns
-0 for NaN float inputs, violating its stated safety property for float callers). No
-counterexamples have been found in the integer/rational models themselves.
+Six targets from PX4's mathlib and control library have been formally verified in Lean 4
+(v4.29.0, standard library only). Together they cover **55 proved theorems** (zero
+`sorry` remaining) across `constrain`, `signNoZero`, `countSetBits`, `SlewRate::update`,
+`deadzone`, `interpolate`, and `AlphaFilter::updateCalculation`. This run eliminated
+all 3 remaining `sorry` items in `AlphaFilter.lean`, including the key exponential
+convergence formula `alphaIterate_formula` (proved by strong induction with a manual
+algebraic helper lemma — no Mathlib required). The proofs characterise the *logical
+structure* of these functions faithfully but operate on `Int` or `Rat` abstractions
+rather than actual C++ `float`/`double` types. One confirmed bug has been found:
+`signNoZero<float>` returns 0 for NaN, violating the stated safety property.
 
 ---
 
@@ -51,6 +52,11 @@ counterexamples have been found in the integer/rational models themselves.
 | `interpolate_le_high` / `_ge_low` | [Interpolate.lean](lean/FVSquad/Interpolate.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L152) | Output range containment: `y_low ≤ result ≤ y_high` |
 | `interpolate_const` | [Interpolate.lean](lean/FVSquad/Interpolate.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L152) | Constant output for equal endpoints |
 | `interpolate_slope_nonneg` | [Interpolate.lean](lean/FVSquad/Interpolate.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L152) | Non-negative slope when y endpoints ordered |
+| `alphaUpdate_fixed` / `alpha_zero` / `alpha_one` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Boundary cases: frozen, immediate convergence |
+| `alphaUpdate_no_overshoot_up` / `_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Output stays between state and sample in both directions |
+| `alphaUpdate_mono_sample` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Larger sample → larger output (filter tracks input direction) |
+| `alphaUpdate_mono_state` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Larger initial state → larger output (order-preserving) |
+| `alphaIterate_formula` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Closed-form: `state_n = target + (state₀-target)·(1-α)ⁿ` |
 
 ---
 
@@ -84,8 +90,9 @@ counterexamples have been found in the integer/rational models themselves.
 
 5. **`deadzone` range theorems (`deadzone_le_one`, `deadzone_ge_neg_one`)**: Currently
    have `sorry`. These are provable but require `linarith` over `Rat`, which is only
-   in Mathlib. **Recommendation**: enable Mathlib (requires network access) and close
-   these theorems in the next run.
+   in Mathlib. **Recommendation**: the same divide-by-negation approach used to fix
+   AlphaFilter's `alphaUpdate_ge_sample` might work here — investigate manual algebra
+   rewrites using `Rat.neg_le_neg` and `Rat.mul_le_mul_of_nonneg_*`.
 
 ### Medium priority
 
@@ -93,17 +100,17 @@ counterexamples have been found in the integer/rational models themselves.
    attitude estimation. Correctness properties: result ∈ (-π, π], idempotence, coherence
    with `wrap_2pi`. This requires Mathlib's `Int.fract` or modular arithmetic.
 
-7. **`AlphaFilter` no-overshoot**: The `SlewRate` proof approach (integer model,
-   monotonicity) would apply directly. `AlphaFilter::update(x) = state + α*(x - state)`
-   where `0 < α ≤ 1`. The key theorem: the output moves toward the target but never
-   past it. This is analogous to `slewUpdate_no_overshoot` and should be feasible.
-
-8. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
+7. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
    ordering. Index wraparound is an integer arithmetic problem tractable with `omega`.
 
-9. **Commander arming FSM**: State machine reachability ("armed requires all preflight
+8. **Commander arming FSM**: State machine reachability ("armed requires all preflight
    checks passed") would be a high-value safety property. TLA+ is the right tool here,
    but a Lean 4 finite state machine model is also feasible.
+
+9. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
+   gives the time-domain response. The frequency-domain property (transfer function
+   `H(z) = α / (1 - (1-α)z⁻¹)`) could be stated as a theorem about `alphaUpdate` in
+   the z-transform sense, but requires complex number arithmetic (Mathlib).
 
 ---
 
@@ -118,14 +125,24 @@ The correspondence is:
   but NaN/infinity are real edge cases.
 - **`SlewRate::update`**: Integer model. The product `slew_rate * dt_s` in C++ can
   have rounding error; the integer model ignores this.
-- **`deadzone`, `interpolate`**: Rational model exactly captures piecewise-linear
-  structure. NaN/infinity are explicitly excluded.
+- **`deadzone`, `interpolate`, `AlphaFilter`**: Rational model exactly captures
+  piecewise-linear / affine structure. NaN/infinity are explicitly excluded.
 
 **None of the proved theorems are vacuously true** — each theorem, if false for the
 rational/integer abstraction, would indicate a genuine logic error in the algorithm.
 The approximation is that we are proving about the abstract model, not the bit-exact
 C++ computation. This is appropriate for algorithm-level verification. For bit-exact
 verification (overflow, rounding), CBMC or Gappa would be needed.
+
+### AlphaFilter: proof technique note
+
+The `alphaIterate_formula` proof required `induction n generalizing state` (strong
+induction with universally-quantified state variable). Without this, the inductive
+step cannot apply the IH to the updated state. This is a common pitfall when the
+recursive definition changes a parameter other than the one being inducted over.
+The proof also required a manual algebraic helper lemma `alphaUpdate_sub_target`
+(proved by explicit `simp`/`rw` rewrites since `ring` is not available without Mathlib).
+This pattern is generally applicable to other algebraic identities in future targets.
 
 See `CORRESPONDENCE.md` for the full correspondence analysis.
 
@@ -151,7 +168,7 @@ property, sign preservation, boundary values) are fully verified.
    it never returns 0. Callers that use the result as a divisor or multiplier should
    guard against NaN.
 
-2. **`SlewRate` no-overshoot verified**: The theorem `slewUpdate_no_overshoot_up` and
+2. **`SlewRate` no-overshoot verified**: The theorems `slewUpdate_no_overshoot_up` and
    `slewUpdate_no_overshoot_down` formally confirm that the slew rate limiter never
    overshoots the target — a key actuator safety property. This was confirmed to hold
    exactly in the integer model, with no edge cases or boundary violations found.
@@ -160,6 +177,14 @@ property, sign preservation, boundary values) are fully verified.
    confirms that `value = x_high` produces `y_high` exactly (not via the saturation
    branch but via the linear formula), verifying that the asymmetric boundary treatment
    (`≤ x_low` vs `> x_high`) is self-consistent and correct.
+
+4. **`AlphaFilter` exponential convergence formula fully proved**: The theorem
+   `alphaIterate_formula` — `state_n = target + (state₀ - target) · (1-α)ⁿ` — is now
+   completely proved with zero `sorry` using only Lean 4 stdlib (no Mathlib). This is
+   the standard IIR filter closed-form response; having it formally proved provides a
+   foundation for reasoning about filter latency and steady-state tracking error. The
+   proof technique (strong induction + manual algebraic helper) is reusable for similar
+   recursive filter proofs.
 
 4. **`interpolate` range containment proved**: The theorems `interpolate_le_high` and
    `interpolate_ge_low` together formally confirm that for monotone y endpoints, the

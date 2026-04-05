@@ -17,7 +17,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 12 proved, **0 sorry** |
 | 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
 | 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 1 | ⬜ Research | — | Inductive recurrence |
-| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 4 | 🔄 In progress | `lean/FVSquad/AlphaFilter.lean` | 9 proved, 3 sorry (mul-nonpos, ring) |
+| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
 | 10 | `RingBuffer` circular buffer | `src/modules/sensors/vehicle_optical_flow/RingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
 
 ## Non-Lean Targets (other tools recommended)
