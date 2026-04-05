@@ -1,40 +1,40 @@
 {
-  "last_run": "2026-04-05T03:37:05Z",
-  "run_id": "23993497164",
+  "last_run": "2026-04-05T09:00:07Z",
+  "run_id": "23998219930",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
   "mathlib_available": false,
   "fv_targets": [
     {"id":"constrain","phase":5,"status":"8 proved, 0 sorry","lean_file":"lean/FVSquad/MathFunctions.lean"},
-    {"id":"signNoZero","phase":5,"status":"6 proved, 0 sorry. BUG: NaN returns 0 (violates ne_zero)","lean_file":"lean/FVSquad/MathFunctions.lean"},
+    {"id":"signNoZero","phase":5,"status":"6 proved, 0 sorry. BUG: NaN returns 0 (violates ne_zero) - GitHub issue filed run9","lean_file":"lean/FVSquad/MathFunctions.lean"},
     {"id":"countSetBits","phase":5,"status":"9 concrete + pow2 induction, 0 sorry","lean_file":"lean/FVSquad/MathFunctions.lean"},
     {"id":"SlewRate","phase":5,"status":"8 proved, 0 sorry","lean_file":"lean/FVSquad/SlewRate.lean"},
-    {"id":"deadzone","phase":5,"status":"12 proved, 0 sorry (was 2 sorry, fully fixed run7)","lean_file":"lean/FVSquad/Deadzone.lean"},
+    {"id":"deadzone","phase":5,"status":"12 proved, 0 sorry (all range theorems proved without Mathlib)","lean_file":"lean/FVSquad/Deadzone.lean"},
     {"id":"interpolate","phase":5,"status":"10 proved, 0 sorry","lean_file":"lean/FVSquad/Interpolate.lean"},
-    {"id":"AlphaFilter","phase":5,"status":"12 proved, 0 sorry (was 3 sorry, fully fixed run8 - ge_sample, mono_state, iterate_formula)","lean_file":"lean/FVSquad/AlphaFilter.lean","informal_spec":"specs/alphafilter_informal.md"},
-    {"id":"wrap_pi","phase":1,"status":"research only - needs Mathlib Real"},
-    {"id":"WelfordMean","phase":1,"status":"research only"},
-    {"id":"RingBuffer","phase":1,"status":"research only"}
+    {"id":"AlphaFilter","phase":5,"status":"12 proved, 0 sorry (ge_sample, mono_state, iterate_formula all proved)","lean_file":"lean/FVSquad/AlphaFilter.lean","informal_spec":"specs/alphafilter_informal.md"},
+    {"id":"WelfordMean","phase":2,"status":"informal spec written (run9)","informal_spec":"specs/welfordmean_informal.md","notes":"Lean stubs next (Task 3). Core recurrence over Rat, no Mathlib needed. Key theorems: mean invariant, M2 non-negativity, M2=sum-of-squares."},
+    {"id":"wrap_pi","phase":1,"status":"research only - needs Mathlib Real/fract"},
+    {"id":"RingBuffer","phase":1,"status":"research only - omega for index arithmetic"}
   ],
   "open_prs": [
-    {"branch":"lean-squad/fv-alphafilter-sorry-fix-correspondence-critique-e8d594b512","description":"AlphaFilter 0 sorry + CORRESPONDENCE + CRITIQUE update (run8)"}
+    {"branch":"lean-squad/fv-alphafilter-sorry-fix-correspondence-critique-e8d594b512-20773f57af4d4cd8","description":"AlphaFilter 0 sorry + CORRESPONDENCE + CRITIQUE update (run8) - PR #11"},
+    {"branch":"lean-squad/fv-critique-research-run9-009a1171ad-23998219930","description":"Critique update + WelfordMean informal spec (run9)"}
   ],
-  "bugs_found": [{"id":"signNoZero_nan","description":"signNoZero<float> returns 0 for NaN, violates ne_zero","status":"documented in CORRESPONDENCE.md, issue not filed yet"}],
+  "bugs_found": [{"id":"signNoZero_nan","description":"signNoZero<float> returns 0 for NaN, violates ne_zero. Loop callers: rtl_direct_mission_land.cpp:73, mission_base.cpp:80 get step=0 (infinite loop risk). TECS.cpp:198, FlightTaskOrbit.cpp:138 get 0 (incorrect sign).","status":"GitHub issue filed run9"}],
   "total_theorems": 55,
   "total_sorry": 0,
   "notes": [
     "Rat.sub_add_cancel/Rat.sub_self: IMPLICIT args - use bare (no explicit args)",
     "Rat.add_le_add_right: shared term on RIGHT (a+c <= b+c). For left-shared: add_comm first.",
     "x^0=1: use 'have h0 := by simp' (simp knows pow_zero)",
-    "Rat.add_le_add_left: c+a <= c+b iff a<=b (note: c on LEFT unlike add_le_add_right which has c on RIGHT)",
-    "No: Rat.add_le_add_left does NOT exist; use Rat.add_le_add_right + add_comm",
-    "Wait - from run8: Rat.add_le_add_left DOES exist as c+a<=c+b iff a<=b - confirmed working",
+    "Rat.add_le_add_left: c+a <= c+b iff a<=b (note: c on LEFT)",
     "Deadzone sorry fix key: neg branch uses Rat.abs_of_nonpos + Rat.neg_lt_neg_iff.mp(rw Rat.neg_neg)",
     "AlphaFilter ge_sample fix: use Rat.neg_le_neg on (alpha*(state-sample) <= state-sample), then rewrite -(alpha*(state-sample)) = alpha*(sample-state) using <- Rat.mul_neg + Rat.neg_sub",
     "AlphaFilter mono_state fix: split sample-s1 = (sample-s2)+(s2-s1), factor alpha*(sample-s2), reduce to alphaUpdate_le_sample for s1/s2",
     "AlphaFilter iterate_formula fix: use 'induction n generalizing state' (NOT plain induction - need IH to apply to alphaUpdate state alpha target); helper alphaUpdate_sub_target proved via simp+rw+neg_add+neg_neg+add_left_comm",
-    "algebraic identity key: (state + alpha*(target-state)) - target = (state-target)*(1-alpha) proved by: simp [sub_eq_add_neg, mul_add, mul_neg, neg_mul, add_mul, add_assoc] + congr 1 + rw [neg_add, neg_neg, mul_comm alpha target, mul_comm alpha state] + add_left_comm/add_comm sequence",
-    "CI at .github/workflows/lean-ci.yml - working, no Mathlib deps needed"
+    "CI at .github/workflows/lean-ci.yml - working, no Mathlib deps needed",
+    "Deadzone range bounds (le_one, ge_neg_one): fully proved without Mathlib using Rat.mul_neg_iff_of_pos_right (neg branch) and Rat.mul_le_mul_of_nonneg_right (pos branch)",
+    "WelfordMean Lean plan: welfordUpdate over Rat, ignore Kahan compensator, ignore UINT16_MAX overflow, prove mean_invariant by induction + welfordFold_mean for list. M2=sum-of-squares is the hard theorem."
   ]
 }
