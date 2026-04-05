@@ -15,10 +15,16 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 4 | `SlewRate::update` | `src/lib/slew_rate/SlewRate.hpp` | 5 | ✅ Proved | `lean/FVSquad/SlewRate.lean` | 5 theorems, 0 sorry |
 | 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Interpolate.lean` | 10 theorems, 0 sorry |
 | 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 12 proved, **0 sorry** |
+| 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
+| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 5 | ✅ Proved | `lean/FVSquad/WelfordMean.lean` | 7 proved, 1 sorry (M2 non-neg needs Mathlib) |
 | 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 3 | 🔄 Lean Spec | `lean/FVSquad/WrapAngle.lean` | 8 proved (wrapInt), 6 sorry (wrapRat needs Mathlib floor); informal spec written |
 | 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written; Lean stubs next |
 | 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
-| 10 | `RingBuffer` circular buffer | `src/modules/sensors/vehicle_optical_flow/RingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
+| 10 | `RingBuffer` circular buffer | `src/lib/ringbuffer/TimestampedRingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
+| 11 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | `(1-s)*a + s*b`; boundary + convexity; HIGH tractability |
+| 12 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | RC stick curve `(1-e)*x + e*x³`; odd symmetry, range preservation |
+| 13 | `math::negate<int16_t>` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Overflow-safe negation; concrete decide-proofs |
+| 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 1 | ⬜ Research | — | Sorted window median; bounded by min/max of window |
 
 ## Non-Lean Targets (other tools recommended)
 

@@ -6,4 +6,5 @@ import FVSquad.SlewRate
 import FVSquad.Deadzone
 import FVSquad.Interpolate
 import FVSquad.AlphaFilter
+import FVSquad.WelfordMean
 import FVSquad.WrapAngle
