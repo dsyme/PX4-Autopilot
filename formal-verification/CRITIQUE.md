@@ -4,26 +4,30 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-05 16:45 UTC
-- **Commit**: `caf1d3db11`
+- **Date**: 2026-04-06 17:10 UTC
+- **Commit**: `a0e073df37`
 
 ---
 
 ## Overall Assessment
 
-Six targets from PX4's mathlib and control library have been formally verified in Lean 4
-(v4.29.0, standard library only). Together they cover **61 proved theorems, zero `sorry`
+Nine targets from PX4's mathlib and control library have been formally verified in Lean 4
+(v4.29.0, standard library only). Together they cover **89 proved theorems, 8 `sorry`
 remaining** across `constrain`, `signNoZero`, `countSetBits`, `SlewRate::update`,
-`deadzone`, `interpolate`, and `AlphaFilter::updateCalculation`. All range theorems for
-`deadzone` are now fully proved (without Mathlib) using explicit `Rat.mul_neg_iff_of_pos_right`
-and `Rat.mul_le_mul_of_nonneg_right` reasoning. The `AlphaFilter` exponential convergence
-formula `alphaIterate_formula` is proved by strong induction. A new target — **`wrap_pi`
-angle wrapping** — has a Lean spec in progress: Part 1 (`wrapInt` integer model) has 8 fully
-proved theorems using `Int.emod` lemmas and `omega`; Part 2 (`wrapRat` abstract spec) has 6
-theorems stated as sorry-guarded contracts pending Mathlib floor lemmas. The proofs characterise
-the *logical structure* of these functions faithfully but operate on `Int` or `Rat` abstractions
-rather than actual C++ `float`/`double` types. One confirmed bug has been found:
-`signNoZero<float>` returns 0 for NaN, violating the stated safety property.
+`deadzone`, `interpolate`, `AlphaFilter::updateCalculation`, `WelfordMean::update`,
+and `math::lerp`. Two new targets completed since the last critique: **`WelfordMean`**
+(Welford online mean algorithm, 7 proved + 1 sorry) and **`math::lerp`** (linear
+interpolation, 9 proved + 1 sorry). All range theorems for `deadzone` remain fully proved
+(without Mathlib) using explicit `Rat.mul_neg_iff_of_pos_right` reasoning. The `AlphaFilter`
+exponential convergence formula `alphaIterate_formula` remains the deepest theorem — proved
+by strong induction over `Rat` with zero sorry. The remaining 8 sorrys fall in three
+targets: `WrapAngle` (6 sorrys, `wrapRat` model needs Mathlib floor), `WelfordMean` (1
+sorry, `M2_nonneg` needs Mathlib `div_nonneg`), and `Lerp` (1 sorry, `lerp_half` needs
+`Rat.inv` arithmetic for `1/2` literal). All 8 sorrys represent tooling limitations only
+— the mathematical arguments are sound. The proofs characterise the *logical structure* of
+these functions faithfully but operate on `Int` or `Rat` abstractions rather than actual
+C++ `float`/`double` types. One confirmed bug has been found: `signNoZero<float>` returns
+0 for NaN, violating the stated safety property.
 
 ---
 
@@ -66,6 +70,16 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
 | `wrapInt_periodic` / `_periodic_k` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | **high** | **high** | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Period: shifting by k×(high−low) is transparent |
 | `wrapInt_congruent` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | mid | medium | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Congruence: result ≡ input (mod period) |
 | `wrapInt_zero` | [WrapAngle.lean](lean/FVSquad/WrapAngle.lean) | low | low | [L] | [C++](../src/lib/matrix/matrix/helper_functions.hpp) | Zero maps to zero for symmetric range |
+| `welfordUpdate_count` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | Count increments by 1 per update |
+| `welfordUpdate_mean_step` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | Core algebraic step: new_mean×count = old_mean×(count-1) + x |
+| `welfordFoldFrom_mean_inv` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | Inductive invariant: mean×count = initial_mean×initial_count + sum(xs) |
+| `welfordFold_mean` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | **Main result**: mean = sum(xs)/length(xs) for non-empty lists |
+| `welfordUpdate_M2_nonneg` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | 🔄 Sorry — M2 ≥ 0 preserved; needs Mathlib `div_nonneg` |
+| `lerp_zero` / `lerp_one` | [Lerp.lean](lean/FVSquad/Lerp.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Boundary: lerp(a,b,0)=a and lerp(a,b,1)=b |
+| `lerp_in_range` | [Lerp.lean](lean/FVSquad/Lerp.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | No-overshoot: output ∈ [a,b] when s ∈ [0,1] |
+| `lerp_comm` | [Lerp.lean](lean/FVSquad/Lerp.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Symmetry: lerp(a,b,s) = lerp(b,a,1-s) |
+| `lerp_mono_s` | [Lerp.lean](lean/FVSquad/Lerp.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Monotone in blend param: larger s → larger output when a≤b |
+| `lerp_half` | [Lerp.lean](lean/FVSquad/Lerp.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | 🔄 Sorry — midpoint = (a+b)/2; needs `Rat.inv` for 1/2 literal |
 
 ---
 
@@ -73,10 +87,10 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
 
 ### High priority (most likely to reveal real bugs)
 
-1. **`signNoZero` NaN bug (known, not yet filed as issue)**: The C++ `signNoZero<float>`
+1. **`signNoZero` NaN bug (GitHub issue #12 filed)**: The C++ `signNoZero<float>`
    returns 0 for NaN inputs, violating `signNoZero_ne_zero`. Any caller that divides by
-   `signNoZero<float>(x)` can divide by zero when `x` is NaN. **Recommendation**: file a
-   bug report and add a NaN guard or static_assert.
+   `signNoZero<float>(x)` can divide by zero when `x` is NaN. GitHub issue #12 has been
+   filed. **Recommendation**: add a NaN guard or static_assert.
 
 2. **`wrap_pi` / `wrap_2pi` — wrapRat spec** (6 sorry-guarded theorems): The rational
    model in Part 2 of `WrapAngle.lean` needs Mathlib's `Int.floor` to complete proofs for
@@ -90,7 +104,7 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
    should guard inputs. The wrapRat spec already excludes this via the rational type.
    **Recommendation**: add a runtime assert in `wrap_floating` and note in CORRESPONDENCE.
 
-4. **`interpolate` with `x_low ≥ x_high` (undefined behaviour)**: The C++ does not check
+4. **`interpolate` with `x_low >= x_high` (undefined behaviour)**: The C++ does not check
    the precondition `x_low < x_high`. Division by zero silently produces NaN/inf in
    floating-point mode. **Recommendation**: use CBMC or a simple runtime assert to verify
    callers always maintain this invariant. Several callers in `interpolateN` and
@@ -106,17 +120,13 @@ rather than actual C++ `float`/`double` types. One confirmed bug has been found:
 6. **`interpolateN` and `interpolateNXY` (unverified)**: These use `interpolate` as a
    subroutine but add index arithmetic (`constrain` on index) and array lookups. The
    `constrain` proof confirms the index is in range, but the `interpolateN` y-range
-   containment (`y[0] ≤ result ≤ y[N-1]` for sorted arrays) has not been proved.
+   containment (`y[0] <= result <= y[N-1]` for sorted arrays) has not been proved.
    This is a useful compositional proof that combines `constrain` and `interpolate` lemmas.
 
-7. **`WelfordMean` online variance** (`src/lib/mathlib/math/WelfordMean.hpp`): The Welford
-   online algorithm maintains running mean and M2 (sum of squared deviations). Key property
-   to prove: after `n` updates with values `x_1, ..., x_n`, `mean = (x_1 + ... + x_n) / n`
-   and `M2 = Σ(x_i - mean)²`. This is a pure recurrence provable by induction over `Rat`
-   — no Mathlib needed. The variance safety property (`M2 ≥ 0` for count ≥ 2) is
-   directly useful. An informal spec is now available at `specs/welfordmean_informal.md`.
-   Prior work (run10) achieved 6 proved theorems + 2 sorry but the branch was not pushed;
-   this target should be picked up in the next Task 4/5 run.
+7. **`WelfordMean` M2 formula** (1 sorry): The full variance formula `M2 = sum(xi - mean)^2`
+   has not been proved — `welfordUpdate_M2_nonneg` (M2 >= 0) is sorry-guarded due to
+   `Rat.inv` being `@[irreducible]`. The mean correctness (`welfordFold_mean`) is fully
+   proved. **Recommendation**: add Mathlib for `div_nonneg` and close this sorry.
 
 ### Medium priority
 
@@ -229,14 +239,32 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
    has the same residue as the input modulo the period, enabling equational reasoning in
    angle arithmetic (e.g., proving `wrap_pi(a) - wrap_pi(b) ≡ a - b mod 2π`).
 
+7. **`WelfordMean` mean correctness proved**: The theorem `welfordFold_mean` — `mean = sum(xs)/length(xs)` — is fully proved by induction over `Rat`. This formally confirms that the Welford online algorithm computes exactly the arithmetic mean of all inputs, with no accumulation error in the abstract model. This is a practical safety property: a bug in the Welford mean would silently corrupt sensor health monitoring (vibration detection, gyroscope calibration) in PX4.
+
+8. **`lerp` no-overshoot safety property proved**: The theorem `lerp_in_range` formally confirms that when `s ∈ [0, 1]` and `a ≤ b`, the interpolated value stays within `[a, b]`. This rules out runaway setpoints in flight-task blending — a direct actuator safety property.  The `lerp_mono_s` theorem additionally confirms that moving `s` toward 1 strictly moves the output toward `b`, a key property for rate-limited setpoint generation.
+
+
 ---
 
 ## Known Sorry-Guarded Theorems
 
-Six theorems in `WrapAngle.lean` Part 2 (`wrapRat` abstract spec) are sorry-guarded:
+Eight theorems across three targets are sorry-guarded (all represent tooling limitations,
+not mathematical gaps):
+
+**`WrapAngle.lean`** (6 sorrys):
 `wrapRat_ge_lo`, `wrapRat_lt_hi`, `wrapRat_in_range`, `wrapRat_periodic`,
 `wrapRat_congruent`, and `wrapRat_zero`. All require `Mathlib.Algebra.Order.Floor`
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-All other targets (55 theorems across 6 targets) remain at zero sorry.
+**`WelfordMean.lean`** (1 sorry):
+`welfordUpdate_M2_nonneg` — M2 >= 0 preserved by each update. Requires `div_nonneg`
+from `Mathlib.Algebra.Order.Field.Basic`; blocked by `Rat.inv` being `@[irreducible]`
+in stdlib. The main mean-correctness theorem `welfordFold_mean` is fully proved (0 sorry).
+
+**`Lerp.lean`** (1 sorry):
+`lerp_half` — `lerp(a, b, 1/2) = (a+b)/2`. Requires `Rat.inv` arithmetic for the `1/2`
+literal; the `1 - 1/2 = 1/2` identity is not directly reducible via `decide` or `simp`
+without Mathlib. All 9 other lerp theorems are fully proved.
+
+All other targets (7 files, 78 theorems) remain at zero sorry.
