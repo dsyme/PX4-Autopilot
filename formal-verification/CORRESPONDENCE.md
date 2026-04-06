@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-05 03:37 UTC
-- **Commit**: `e8d594b512`
+- **Date**: 2026-04-06 17:10 UTC
+- **Commit**: `a0e073df37`
 
 This document describes how each Lean 4 definition in `formal-verification/lean/FVSquad/`
 corresponds to the original C++ source. It records the correspondence level, known
@@ -176,6 +176,8 @@ standard IIR filter exponential decay formula as a theorem.
 
 
 
+## `FVSquad/SlewRate.lean`
+
 Source file: `formal-verification/lean/FVSquad/SlewRate.lean`
 
 ### `PX4.SlewRate.slewUpdate`
@@ -245,6 +247,243 @@ violations.
 
 ---
 
+## `FVSquad/Deadzone.lean`
+
+Source file: `formal-verification/lean/FVSquad/Deadzone.lean`
+
+### `PX4.Deadzone.deadzone`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.Deadzone.deadzone` | `math::deadzone<T>` | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) | **abstraction** | Rational model; internal `constrain` calls not modelled |
+
+**C++ source** (condensed):
+```cpp
+const T deadzone(const T &value, const T &dz) {
+    T x   = constrain(value, -1, 1);
+    T dzc = constrain(dz, 0, 0.99);
+    T out = (x - sign(x) * dzc) / (1 - dzc);
+    return out * (fabsf(x) > dzc);
+}
+```
+
+**Lean definition**:
+```lean
+def deadzone (x dz : Rat) : Rat :=
+  if x.abs > dz then (x - signR x * dz) / (1 - dz) else 0
+```
+
+**Divergences**:
+
+1. **Input clamping elided**: The C++ clamps `value` to `[-1, 1]` and `dz` to `[0, 0.99]`
+   via `constrain`. The Lean model assumes these preconditions hold (`|x| ≤ 1`,
+   `0 ≤ dz < 1`). All theorems carry these as explicit preconditions.
+2. **`dz` upper bound**: C++ uses `0.99`; the Lean model allows any `0 ≤ dz < 1`
+   (strictly less than 1 to avoid division by zero).
+3. **`sign` vs `signR`**: The Lean model uses a local helper `signR x = if 0 ≤ x then 1 else -1`.
+   This differs from `math::signNoZero` (which never returns 0) — here the boundary
+   `x = 0` maps to `signR 0 = 1`, consistent with the C++ `sign` used in deadzone
+   (`fabsf(0) > dz` is false so the zero case is already handled by the outer conditional).
+4. **Type**: C++ is templated (`float`, `double`); Lean uses `Rat`. IEEE 754 NaN,
+   infinity, and rounding are not modelled.
+
+**Impact on proofs**: All 12 theorems hold for the rational model. The key safety
+properties — `deadzone_in_dz` (output is 0 inside deadzone), `deadzone_le_one`,
+`deadzone_ge_neg_one` (output range bounded in `[-1, 1]`), and sign preservation —
+are all proved with zero `sorry`. The range bound proofs use
+`Rat.mul_neg_iff_of_pos_right` and `Rat.mul_le_mul_of_nonneg_right` directly
+without Mathlib.
+
+---
+
+## `FVSquad/Interpolate.lean`
+
+Source file: `formal-verification/lean/FVSquad/Interpolate.lean`
+
+### `PX4.Interpolate.interpolate`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.Interpolate.interpolate` | `math::interpolate<T>` | [`src/lib/mathlib/math/Functions.hpp#L152`](../src/lib/mathlib/math/Functions.hpp#L152) | **abstraction** | Rational model; precondition `x_low < x_high` explicit |
+
+**C++ source** (condensed):
+```cpp
+template<typename T>
+const T interpolate(const T &value, const T &x_low, const T &x_high,
+                    const T &y_low, const T &y_high) {
+    if (value <= x_low) return y_low;
+    else if (value > x_high) return y_high;
+    else {
+        T a = (y_high - y_low) / (x_high - x_low);
+        T b = y_low - (a * x_low);
+        return (a * value) + b;
+    }
+}
+```
+
+**Lean definition**:
+```lean
+def interpolate (value x_low x_high y_low y_high : Rat) : Rat :=
+  if value ≤ x_low then y_low
+  else if value > x_high then y_high
+  else let a := (y_high - y_low) / (x_high - x_low)
+       let b := y_low - a * x_low
+       a * value + b
+```
+
+**Divergences**:
+
+1. **Type**: C++ is templated; Lean uses `Rat`. IEEE 754 NaN, infinity, and rounding
+   are not modelled.
+2. **Precondition `x_low < x_high`**: The C++ does not check this; if violated,
+   division by zero produces NaN/infinity silently. All Lean theorems that involve the
+   interior branch require `x_low < x_high` as an explicit hypothesis.
+3. **Asymmetric boundary**: The C++ uses `value <= x_low` (inclusive low) and
+   `value > x_high` (exclusive high) — the Lean model preserves this exactly. The
+   theorem `interpolate_at_high` confirms that `value = x_high` takes the linear
+   branch (not the high saturation branch) and still returns `y_high` exactly.
+4. **`interpolateN` / `interpolateNXY` variants**: Not modelled. These use
+   `interpolate` as a subroutine but add index arithmetic; they are higher-priority
+   targets for future runs.
+
+**Impact on proofs**: All 10 theorems are proved with zero `sorry`. Key results:
+`interpolate_le_high` and `interpolate_ge_low` (range containment),
+`interpolate_mono_interior` (monotonicity), and `interpolate_at_high` (asymmetric
+boundary correctness) are all fully proved. The range containment theorems directly
+apply to sensor scaling and control curve mapping throughout PX4.
+
+---
+
+## `FVSquad/WelfordMean.lean`
+
+Source file: `formal-verification/lean/FVSquad/WelfordMean.lean`
+
+### `PX4.WelfordMean.welfordUpdate`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.WelfordMean.welfordUpdate` | `WelfordMean<T>::update` | [`src/lib/mathlib/math/WelfordMean.hpp`](../src/lib/mathlib/math/WelfordMean.hpp) | **abstraction** | Rational model; Kahan compensators and overflow guard omitted |
+
+**C++ source**:
+```cpp
+template<typename Type>
+bool WelfordMean<Type>::update(const Type new_value)
+{
+    if (_count == 0) { reset(); }
+    _count++;
+    const Type delta_1 = new_value - _mean;
+    _mean += delta_1 / _count;
+    const Type delta_2 = new_value - _mean;
+    _M2 += delta_1 * delta_2;
+    return (_count > 2);
+}
+```
+
+**Lean definition**:
+```lean
+def welfordUpdate (s : WelfordState) (x : Rat) : WelfordState :=
+  let nR  : Rat := ↑(s.count + 1)
+  let δ         := x - s.mean
+  let newMean   := s.mean + δ / nR
+  { count := s.count + 1, mean := newMean, M2 := s.M2 + δ * (x - newMean) }
+```
+
+**Divergences**:
+
+1. **Kahan compensators elided**: The C++ `WelfordMean` maintains `_mean_accum` and
+   `_M2_accum` Kahan compensator fields for numerical stability with float arithmetic.
+   These are omitted from the Lean model — they affect floating-point precision only,
+   not the abstract mathematical recurrence. All mathematical correctness theorems hold
+   for the uncompensated recurrence.
+2. **Count overflow guard**: The C++ has a `UINT16_MAX` overflow guard on `_count`.
+   The Lean model uses unbounded `Nat`; the non-overflow behaviour is what is proved.
+3. **`PX4_ISFINITE` guard**: The C++ discards non-finite inputs. The Lean model assumes
+   all inputs are finite (an explicit precondition).
+4. **Return value**: C++ returns `_count > 2` (a "ready" flag). The Lean model is pure
+   and returns the updated state; the return value is not modelled.
+5. **State mutation**: C++ mutates `_mean`, `_M2`, `_count` in place. The Lean model is
+   pure: each call produces a new state.
+6. **Type**: C++ is templated (`float`, `double`); Lean uses `Rat`. IEEE 754 NaN,
+   infinity, and rounding are not modelled.
+
+**Impact on proofs**:
+
+| Theorem | Validity in C++ context | Notes |
+|---------|------------------------|-------|
+| `welfordUpdate_count` | Exact | Count increment is trivially correct |
+| `welfordUpdate_mean_step` | Valid (no overflow, finite input) | Core algebraic invariant |
+| `welfordFoldFrom_count` | Valid | Count after n updates = n |
+| `welfordFoldFrom_mean_inv` | Valid | General inductive mean invariant |
+| `welfordFold_count` | Exact (for unbounded count) | |
+| `welfordFold_mean_times_count` | Valid | mean × count = sum of all inputs |
+| `welfordFold_mean` | Valid (non-empty list) | **Main result**: mean = sum/length |
+| `welfordUpdate_M2_nonneg` | Valid mathematically | Sorry: blocked by `Rat.inv` being `@[irreducible]` |
+
+The main correctness result `welfordFold_mean` is fully proved: the Welford recurrence
+computes exactly the arithmetic mean of all inputs. The M2 non-negativity sorry is a
+tooling limitation (needs Mathlib `div_nonneg`), not a mathematical gap.
+
+---
+
+## `FVSquad/Lerp.lean`
+
+Source file: `formal-verification/lean/FVSquad/Lerp.lean`
+
+### `PX4.Lerp.lerpRat`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.Lerp.lerpRat` | `math::lerp<T>` | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) (approx. line 127) | **abstraction** | Rational model; IEEE 754 semantics and integer truncation not modelled |
+
+**C++ source**:
+```cpp
+template<typename T>
+const T lerp(const T &a, const T &b, const T &s)
+{
+    return (static_cast<T>(1) - s) * a + s * b;
+}
+```
+
+**Lean definition**:
+```lean
+def lerpRat (a b s : Rat) : Rat := (1 - s) * a + s * b
+```
+
+**Divergences**:
+
+1. **Type**: C++ is templated (`float`, `double`, `int32_t`, etc.); Lean uses `Rat`.
+   IEEE 754 NaN, infinity, and rounding are not modelled.
+2. **Exact formula match**: The Lean `lerpRat a b s := (1 - s) * a + s * b` is an
+   exact lift of the C++ `(T(1) - s) * a + s * b`. Over `Rat` the formula is exact;
+   over `float` there is rounding, and `lerp(a, b, 0.0f)` may not equal `a` exactly
+   when `b = NaN` or `b = ±∞`.
+3. **Out-of-range `s`**: The C++ comment states "Any value for `s` is valid"; range
+   theorems in the Lean spec only apply for `s ∈ [0, 1]`. Extrapolation (`s < 0` or
+   `s > 1`) is mathematically well-defined over `Rat` but not proved bounded.
+4. **Integer truncation**: For integer `T`, `(1 - s) * a` truncates. Not modelled.
+
+**Impact on proofs**:
+
+| Theorem | Validity in C++ context | Notes |
+|---------|------------------------|-------|
+| `lerp_zero` | Exact for finite float | Subject to NaN propagation if `b = NaN` |
+| `lerp_one` | Exact for finite float | |
+| `lerp_const` | Valid | Always returns `a` when `a = b` |
+| `lerp_alt_form` | Valid | Alternative representation `a + s*(b-a)` |
+| `lerp_lower` | Valid (finite, in-range `s`) | Key no-undershoot safety property |
+| `lerp_upper` | Valid (finite, in-range `s`) | Key no-overshoot safety property |
+| `lerp_in_range` | Valid (finite, in-range `s`) | Combined: output stays in `[a,b]` |
+| `lerp_comm` | Valid | `lerp(a,b,s) = lerp(b,a,1-s)` |
+| `lerp_mono_s` | Valid | Monotone in blend parameter |
+| `lerp_half` | Valid mathematically | Sorry: `1 - 1/2 = 1/2` over `Rat` needs `Rat.inv` lemmas |
+
+The key safety property `lerp_in_range` is fully proved: when `s ∈ [0, 1]` and `a ≤ b`,
+`lerp` stays within `[a, b]`, ruling out runaway setpoints in flight-task blending.
+The `lerp_half` sorry is a tooling limitation (needs `Rat.inv` arithmetic for the
+literal `1/2`), not a mathematical gap.
+
+---
+
 ## Known Mismatches
 
 **`signNoZero` and NaN** (severity: medium):
@@ -277,5 +516,7 @@ change the implementation to `return std::isfinite(val) ? ((T(0) <= val) ? 1 : -
 | `deadzone` | `Deadzone.lean` | `Functions.hpp` | abstraction | Float NaN/rounding; internal `constrain` calls not modelled |
 | `interpolate` | `Interpolate.lean` | `Functions.hpp` | abstraction | Float NaN/rounding; precondition `x_low < x_high` explicit |
 | `AlphaFilter::updateCalculation` | `AlphaFilter.lean` | `AlphaFilter.hpp` | abstraction | Float NaN/rounding; quaternion specialisation not modelled |
+| `WelfordMean::update` | `WelfordMean.lean` | `WelfordMean.hpp` | abstraction | Kahan compensators, count overflow guard, non-finite inputs not modelled |
+| `math::lerp` | `Lerp.lean` | `Functions.hpp` | abstraction | IEEE 754 NaN/rounding; integer truncation not modelled |
 
 > 🔬 Generated by Lean Squad automated formal verification.
