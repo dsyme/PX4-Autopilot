@@ -1,10 +1,10 @@
 {
-  "last_run": "2026-04-08T04:05:00Z",
-  "run_id": "24116110160",
+  "last_run": "2026-04-08T09:19:00Z",
+  "run_id": "24127763077",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
-  "ci_has_lake_update": true,
+  "ci_has_lake_update": false,
   "mathlib_available": false,
   "fv_targets": [
     {
@@ -34,7 +34,7 @@
     {
       "id": "deadzone",
       "phase": 5,
-      "status": "12 proved, 0 sorry (all range theorems proved without Mathlib)",
+      "status": "12 proved, 0 sorry",
       "lean_file": "lean/FVSquad/Deadzone.lean"
     },
     {
@@ -53,50 +53,61 @@
     {
       "id": "wrap_pi",
       "phase": 5,
-      "status": "wrapInt: 8 proved 0 sorry. wrapRat: 5 proved 0 sorry, 1 sorry (periodic). No Mathlib needed.",
-      "lean_file": "lean/FVSquad/WrapAngle.lean",
-      "notes": "ratFloor = q.num / q.den uses Int floor div. wrapRat_periodic needs ratFloor(t+1)=ratFloor t + 1.",
-      "pr": "lean-squad/wrapangle-proofs-and-correspondence-run19"
+      "status": "wrapInt: 8 proved 0 sorry. wrapRat: 5 proved 0 sorry, 6 sorry (Mathlib floor needed).",
+      "lean_file": "lean/FVSquad/WrapAngle.lean"
     },
     {
       "id": "WelfordMean",
       "phase": 5,
-      "status": "welfordFold_mean proved, welfordUpdate_M2_nonneg proved. All sorrys closed (run 18).",
+      "status": "all sorrys closed (run18). welfordFold_mean proved, M2_nonneg proved.",
       "lean_file": "lean/FVSquad/WelfordMean.lean",
       "informal_spec": "specs/welfordmean_informal.md"
     },
     {
       "id": "lerp",
       "phase": 5,
-      "status": "7 proved, 0 sorry. lerp_half sorry closed in run 18.",
+      "status": "7 proved, 0 sorry. lerp_half closed in run18.",
       "lean_file": "lean/FVSquad/Lerp.lean",
       "informal_spec": "specs/lerp_informal.md"
     },
     {
       "id": "expo",
       "phase": 5,
-      "status": "9 proved, 0 sorry (all proofs complete including expo_in_range!)",
+      "status": "9 proved, 0 sorry. Fixed simp proofs in run20 (were broken on fresh build).",
       "lean_file": "lean/FVSquad/Expo.lean",
-      "informal_spec": "specs/expo_informal.md",
-      "notes": "expo_in_range proved using cube_le_one + cube_ge_neg_one helpers and rat_add_le_add. All without Mathlib."
+      "informal_spec": "specs/expo_informal.md"
+    },
+    {
+      "id": "negate",
+      "phase": 5,
+      "status": "13 proved, 0 sorry. BUG: INT16_MAX special case incorrect - issue #21 filed.",
+      "lean_file": "lean/FVSquad/Negate.lean",
+      "informal_spec": "specs/negate_informal.md"
+    },
+    {
+      "id": "MedianFilter",
+      "phase": 5,
+      "status": "8 theorems + 9 native_decide examples, 0 sorry. Run20.",
+      "lean_file": "lean/FVSquad/MedianFilter.lean",
+      "informal_spec": "specs/medianfilter_informal.md",
+      "pr": "lean-squad/medianfilter-proofs-run20"
     },
     {
       "id": "RingBuffer",
       "phase": 1,
       "status": "research only - omega for index arithmetic"
-    },
-    {
-      "id": "MedianFilter",
-      "phase": 1,
-      "status": "research only - MEDIUM. sliding window median.",
-      "notes": "Model with List.mergeSort instead of qsort. bounded by min/max of window."
     }
   ],
   "open_prs": [
     {
+      "number": 22,
+      "branch": "lean-squad/expo-proofs-run18-e0455d5dff0ab147",
+      "description": "expo Expo.lean full proof + Lerp lerp_half closed + WelfordMean M2_nonneg closed (run18) - open"
+    },
+    {
       "number": "pending",
-      "branch": "lean-squad/expo-proofs-run18",
-      "description": "expo Expo.lean full proof + Lerp lerp_half closed + WelfordMean M2_nonneg closed (run18)"
+      "branch": "lean-squad/medianfilter-proofs-run20",
+      "description": "MedianFilter Lean spec + 8 proofs + Expo.lean fresh-build fix + FVSquad.lean barrel fix (run20)"
     }
   ],
   "bugs_found": [
@@ -108,43 +119,31 @@
     {
       "id": "negate_int16_not_involution",
       "description": "negate<int16_t> is not a global involution. negate(negate(-32767))=-32768. INT16_MAX special case wrong.",
-      "status": "GitHub issue filed (run 15)"
+      "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 126,
-  "total_proved": 118,
-  "total_sorry": 1,
-  "ci_status": "healthy - toolchain pinned v4.29.0, cache on lake-manifest",
-  "run16_tasks": "Task 2 (expo informal spec) + Task 3 (expo Lean spec: 15 proofs, 1 sorry for expo_in_range)",
+  "total_theorems": 144,
+  "total_proved": 135,
+  "total_sorry": 6,
+  "ci_status": "healthy - barrel file now includes all 12 modules, Expo.lean fresh-build proofs fixed",
+  "run20_tasks": "Task 5 (MedianFilter: 8+9 proofs, 0 sorry) + Task 9 (CI audit: fixed barrel + Expo.lean)",
   "notes": [
-    "set tactic NOT available in Lean 4 stdlib (it's in Mathlib/Std) - avoid it",
-    "norm_num tactic NOT available in Lean 4 stdlib (unreachable if simp closes goal first)",
-    "linarith NOT available, ring NOT available, ring_nf NOT available",
-    "For Rat subtraction: use Rat.sub_eq_add_neg + Rat.neg_zero + Rat.add_zero to prove a-0=a",
-    "Rat.neg_add: -(a+b) = -a + -b (both implicit args). rw [<- Rat.neg_add] rewrites -a+-b to -(a+b)",
-    "Rat.le_iff_lt_or_eq.mp: a <= b -> a < b | a = b (useful for case splits on clamped boundaries)",
-    "Rat.neg_le_iff.mp rfl: proves -1 <= 1",
-    "Rat.not_lt.mpr rfl: proves various \u00ac(a < b) for specific values (e.g. \u00ac0>1, \u00ac1<-1)",
-    "constrainRat neg_symm: use Rat.neg_lt_neg h + rw [Rat.neg_neg], Rat.neg_le_neg",
-    "expo_in_range sorry: needs mul_self_le_one for x^2<=1 when 0<=x<=1",
-    "Rat.sub_add_cancel/Rat.sub_self: IMPLICIT args - use bare (no obvious args)",
-    "Rat.add_le_add_right: shared term on RIGHT (a+c <= b+c). For left-shared: add_comm first.",
-    "x^0=1: use 'have h0 := by simp' (simp knows pow_zero)",
-    "AlphaFilter ge_sample fix: use Rat.neg_le_neg on (alpha*(state-sample) <= state-sample), then rewrite -(alpha*(state-sample)) = alpha*(sample-state) using <- Rat.mul_neg + Rat.neg_sub",
-    "AlphaFilter iterate_formula fix: use 'induction n generalizing state' (NOT plain induction)",
-    "CI at .github/workflows/lean-ci.yml - working, lake update step added run12",
-    "WelfordMean mean_step_algebra: need (n+1) NOT n+1 in function def.",
-    "succ_cast_ne_zero: exact_mod_cast Nat.succ_ne_zero n works for ((n+1):Rat) <> 0",
-    "push_cast; rfl works for (n+1) = n + 1 in Rat",
-    "Rat.inv_mul_cancel (not div_mul_cancel): rw [Rat.div_def, Rat.mul_assoc, Rat.inv_mul_cancel _ hn, Rat.mul_one]",
-    "lerp_half sorry: needs explicit Rat 1/2 = (1:Rat)/(2:Rat) inv arithmetic.",
-    "Next target: MedianFilter or negate_int16 (Lean file not committed yet)",
-    "expo_in_range proved without Mathlib: cube_le_one + cube_ge_neg_one helpers + rat_add_le_add",
-    "constrain_neg_sym: use by_cases on v<-1 and 1<v, then Rat.neg_lt_neg for both cases",
-    "rw [h5] at h4 (not h5 \u25b8 h4): avoids over-substituting -1 literal in constrainRat arguments",
-    "0 \u2264 1-ec from ec\u22641: use Rat.add_le_add_left.mpr (Rat.neg_le_neg hec_hi) then rewrite 1+(-1)=0",
-    "Rat.le_of_eq does NOT exist: use Eq.le or rewrite h at hypothesis instead",
-    "Run 19: wrapRat_periodic sorry remains; needs ratFloor(t+1)=ratFloor(t)+1 via Int.ediv distributivity"
-  ],
-  "run18_tasks": "Task 5 (closed lerp_half, M2_nonneg sorrys) + Task 4 (Expo.lean full implementation + 9 proofs, 0 sorry)"
+    "set tactic NOT available in Lean 4 stdlib",
+    "norm_num tactic NOT available in Lean 4 stdlib",
+    "linarith NOT available, ring NOT available",
+    "simp does NOT reduce (0:Rat) < -1 etc - use `decide` for concrete Rat comparisons in if-then-else",
+    "Pattern: constrainRat_concrete := by simp only [constrainRat]; decide - for specific values",
+    "native_decide works for List.mergeSort with Nat and concrete lists",
+    "List.pairwise_mergeSort: needs trans+total helper functions, then pairwise_iff_getElem for index bounds",
+    "sorted_getElem_le proves sorted[i] <= sorted[j] for i < j via pairwise_mergeSort + pairwise_iff_getElem",
+    "FVSquad.lean barrel must be updated when adding new .lean files (was missing Negate/Lerp/Expo/MedianFilter)",
+    "Expo.lean simp proofs for concrete values (expo_at_zero etc.) need constrainRat_*_* helper lemmas using decide",
+    "WrapAngle wrapRat sorrys: 6 remaining, all need Mathlib.Algebra.Order.Floor - not fixable without Mathlib",
+    "List.ne_nil_iff_length_pos: l != [] <-> 0 < l.length",
+    "List.length_mergeSort: sorting preserves length",
+    "List.mem_mergeSort: membership is preserved by sorting",
+    "List.get_mem: list element is a member",
+    "List.pairwise_iff_getElem: Pairwise R l <-> forall i j hi hj, i<j -> R l[i] l[j]",
+    "Nat.lt_or_eq_of_le: useful for case splits in index bounds proofs"
+  ]
 }
