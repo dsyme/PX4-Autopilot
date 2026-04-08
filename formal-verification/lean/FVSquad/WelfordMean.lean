@@ -51,12 +51,11 @@ We model the pure recurrence over `Rat` (rational numbers) with exact arithmetic
 | `welfordFold_mean` | For non-empty lists: `mean = sum(xs) / length(xs)` | ✅ Proved |
 | `welfordUpdate_M2_nonneg` | `M2 ≥ 0` is preserved by each update | 🔄 Sorry — see below |
 
-**`welfordUpdate_M2_nonneg` is left with `sorry`**: the proof requires showing
-`(x - s.mean) * (x - new_mean) ≥ 0` which is equivalent to
-`delta_old² * (n-1)/n ≥ 0` for `n ≥ 1`. This reduces to showing `(↑(n-1) : Rat) / n ≥ 0`
-which requires `Rat.inv_nonneg` — but `Rat.inv` is `@[irreducible]` in the Lean 4 stdlib,
-blocking this proof without Mathlib. The mathematical argument is clear; the sorry is
-a tooling limitation only.
+**`welfordUpdate_M2_nonneg` is now fully proved** via algebraic factoring: the increment
+`δ * (x - mean_new) = δ² * (1 - nR⁻¹)` where `nR = count + 1`. This is ≥ 0 because
+`δ² ≥ 0` always, and `1 - nR⁻¹ ≥ 0` since `nR ≥ 1` implies `nR⁻¹ ≤ 1`.
+The key insight: `Rat.inv_pos` is available in Lean 4 stdlib (unlike `Rat.inv_nonneg`),
+which allows proving `nR⁻¹ ≤ 1` by multiplying both sides by `nR > 0`.
 -/
 
 namespace PX4.WelfordMean
@@ -226,23 +225,55 @@ theorem welfordFold_mean (xs : List Rat) (hne : xs ≠ []) :
 
 /-! ## M2 non-negativity -/
 
+/-- Helper: `δ * δ ≥ 0` for any rational `δ`.
+    Proved by case split: if `δ ≥ 0` use `mul_nonneg`; if `δ < 0` use `(-δ)*(-δ) = δ*δ`. -/
+private theorem rat_sq_nonneg (δ : Rat) : 0 ≤ δ * δ := by
+  by_cases h : 0 ≤ δ
+  · exact Rat.mul_nonneg h h
+  · have hlt : δ < 0 := Rat.not_le.mp h
+    have hneg0 : (0 : Rat) ≤ -δ := by
+      have := Rat.neg_le_neg (Rat.le_of_lt hlt)
+      simp [Rat.neg_zero] at this; exact this
+    rw [← show (-δ) * (-δ) = δ * δ from by rw [Rat.neg_mul, Rat.mul_neg, Rat.neg_neg]]
+    exact Rat.mul_nonneg hneg0 hneg0
+
+/-- Helper: `nR⁻¹ ≤ 1` when `1 ≤ nR` and `0 < nR`.
+    Proved via: `1 * nR⁻¹ ≤ nR * nR⁻¹ = 1`. -/
+private theorem inv_le_one_of_one_le (nR : Rat) (h1 : 1 ≤ nR) (hpos : 0 < nR) : nR⁻¹ ≤ 1 := by
+  have hne : nR ≠ 0 := fun h0 => by simp [h0] at hpos
+  have h2 : (1 : Rat) * nR⁻¹ ≤ nR * nR⁻¹ :=
+    Rat.mul_le_mul_of_nonneg_right h1 (Rat.le_of_lt (Rat.inv_pos.mpr hpos))
+  rw [Rat.mul_inv_cancel _ hne, Rat.one_mul] at h2; exact h2
+
 /-- `M2 ≥ 0` is preserved by each update.
 
-    **Mathematical argument**: the increment is `δ₁ × δ₂` where:
-    - `δ₁ = x - mean_old`
-    - `δ₂ = x - mean_new = δ₁ × (count / (count+1))`
-    so `δ₁ × δ₂ = δ₁² × count / (count+1) ≥ 0`.
-
-    **Why `sorry`**: proving `δ₁ * δ₂ ≥ 0` requires showing `(↑count : Rat) / (count+1) ≥ 0`.
-    This reduces to `Rat.inv_nonneg` (for non-negative denominator), but `Rat.inv` is
-    `@[irreducible]` in Lean 4 stdlib, which blocks the proof without Mathlib.
-    The mathematical argument is correct; this is a tooling limitation only.
-    Fix: add `import Mathlib.Algebra.Order.Field.Basic` for `div_nonneg`. -/
+    **Proof**: The increment is `δ * (x - mean_new)` where `δ = x - mean_old`.
+    We show `x - mean_new = δ * (1 - nR⁻¹)` (simple algebra), so the increment
+    equals `δ² * (1 - nR⁻¹) ≥ 0` since:
+    - `δ² ≥ 0` (square is non-negative)
+    - `1 - nR⁻¹ ≥ 0` because `nR = count + 1 ≥ 1` implies `nR⁻¹ ≤ 1` -/
 theorem welfordUpdate_M2_nonneg (s : WelfordState) (x : Rat) (h : 0 ≤ s.M2) :
     0 ≤ (welfordUpdate s x).M2 := by
   simp only [welfordUpdate]
-  -- δ₁ * δ₂ = (x - s.mean) * (x - (s.mean + (x - s.mean) / ↑(s.count + 1)))
-  -- = (x - s.mean)² * ↑s.count / ↑(s.count + 1) ≥ 0
-  sorry
+  apply Rat.add_nonneg h
+  -- Goal: 0 ≤ (x - s.mean) * (x - (s.mean + (x - s.mean) / ↑(s.count + 1)))
+  have hne  : (↑(s.count + 1) : Rat) ≠ 0 := succ_cast_ne_zero s.count
+  have hpos : (0 : Rat) < ↑(s.count + 1)  := by exact_mod_cast Nat.succ_pos s.count
+  have h1nR : (1 : Rat) ≤ ↑(s.count + 1)  := by exact_mod_cast Nat.le_add_left 1 s.count
+  -- Simplify: x - (mean + δ/nR) = δ - δ/nR
+  have hx_sub : x - (s.mean + (x - s.mean) / ↑(s.count + 1)) =
+                (x - s.mean) - (x - s.mean) / ↑(s.count + 1) := by
+    simp [Rat.sub_eq_add_neg, Rat.neg_add, Rat.add_assoc]
+  rw [hx_sub]
+  -- Factor: δ - δ/nR = δ * (1 - nR⁻¹)
+  have hfactor : (x - s.mean) - (x - s.mean) / ↑(s.count + 1) =
+                 (x - s.mean) * (1 - (↑(s.count + 1))⁻¹) := by
+    rw [Rat.div_def]
+    simp [Rat.sub_eq_add_neg, Rat.mul_add, Rat.mul_neg, Rat.mul_one]
+  rw [hfactor, ← Rat.mul_assoc]
+  apply Rat.mul_nonneg (rat_sq_nonneg _)
+  -- 0 ≤ 1 - nR⁻¹ since nR⁻¹ ≤ 1
+  exact (Rat.le_iff_sub_nonneg (↑(s.count + 1))⁻¹ 1).mp
+        (inv_le_one_of_one_le _ h1nR hpos)
 
 end PX4.WelfordMean

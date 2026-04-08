@@ -61,7 +61,7 @@ lerpRat a b s := (1 - s) * a + s * b
 | `lerp_in_range` | Range containment (combines lower + upper) | ✅ Proved |
 | `lerp_comm` | `lerp(a,b,s) = lerp(b,a,1-s)` | ✅ Proved |
 | `lerp_mono_s` | Monotone in s when a ≤ b | ✅ Proved |
-| `lerp_half` | `lerp(a,b,½) = (a+b)/2` | 🔄 sorry (needs Rat arithmetic) |
+| `lerp_half` | `lerp(a,b,½) = (a+b)/2` | ✅ Proved |
 
 -/
 
@@ -162,12 +162,11 @@ theorem lerp_mono_s (a b s1 s2 : Rat) (hab : a ≤ b) (hs : s1 ≤ s2) :
 
 /-! ## Midpoint -/
 
-/-- At blend parameter ½, result is the arithmetic mean `(a + b) / 2`.
-    Sorry: proving this requires additional Rat arithmetic lemmas for 1/2. -/
+/-- At blend parameter ½, result is the arithmetic mean `(a + b) / 2`. -/
 theorem lerp_half (a b : Rat) : lerpRat a b (1 / 2) = (a + b) / 2 := by
-  -- lerpRat a b (1/2) = (1/2)*a + (1/2)*b = (a+b)/2
-  -- Requires: (1 - 1/2) = 1/2, and (1/2)*a + (1/2)*b = (a+b)/2
-  -- These hold over Rat but need explicit Rat.inv arithmetic
-  sorry
+  unfold lerpRat
+  have h1 : (1 : Rat) - 1 / 2 = 1 / 2 := by native_decide
+  rw [h1, ← Rat.mul_add, Rat.mul_comm]
+  simp only [Rat.div_def, Rat.one_mul]
 
 end PX4.Lerp
