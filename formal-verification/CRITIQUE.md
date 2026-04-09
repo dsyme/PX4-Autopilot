@@ -4,30 +4,28 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-06 17:10 UTC
-- **Commit**: `a0e073df37`
+- **Date**: 2026-04-08 17:20 UTC
+- **Commit**: `e242435682`
 
 ---
 
 ## Overall Assessment
 
-Nine targets from PX4's mathlib and control library have been formally verified in Lean 4
-(v4.29.0, standard library only). Together they cover **89 proved theorems, 8 `sorry`
-remaining** across `constrain`, `signNoZero`, `countSetBits`, `SlewRate::update`,
-`deadzone`, `interpolate`, `AlphaFilter::updateCalculation`, `WelfordMean::update`,
-and `math::lerp`. Two new targets completed since the last critique: **`WelfordMean`**
-(Welford online mean algorithm, 7 proved + 1 sorry) and **`math::lerp`** (linear
-interpolation, 9 proved + 1 sorry). All range theorems for `deadzone` remain fully proved
-(without Mathlib) using explicit `Rat.mul_neg_iff_of_pos_right` reasoning. The `AlphaFilter`
-exponential convergence formula `alphaIterate_formula` remains the deepest theorem — proved
-by strong induction over `Rat` with zero sorry. The remaining 8 sorrys fall in three
-targets: `WrapAngle` (6 sorrys, `wrapRat` model needs Mathlib floor), `WelfordMean` (1
-sorry, `M2_nonneg` needs Mathlib `div_nonneg`), and `Lerp` (1 sorry, `lerp_half` needs
-`Rat.inv` arithmetic for `1/2` literal). All 8 sorrys represent tooling limitations only
-— the mathematical arguments are sound. The proofs characterise the *logical structure* of
-these functions faithfully but operate on `Int` or `Rat` abstractions rather than actual
-C++ `float`/`double` types. One confirmed bug has been found: `signNoZero<float>` returns
-0 for NaN, violating the stated safety property.
+Eleven targets from PX4's mathlib and control library have been formally verified in Lean 4
+(v4.29.0, standard library only). The library now covers **116 theorem statements, 110
+fully proved, 6 `sorry`-guarded** across `constrain`, `signNoZero`, `countSetBits`,
+`SlewRate::update`, `deadzone`, `interpolate`, `AlphaFilter::updateCalculation`,
+`WelfordMean::update`, `math::lerp`, `math::negate<int16_t>`, and `math::expo`. Three
+significant additions since the last update: **`math::negate<int16_t>`** (13 theorems,
+0 sorry, **real bug found**: INT16_MAX special case is incorrect), **`math::expo`** (12
+theorems, 0 sorry, including odd-symmetry and full range containment), and the closure of
+two previously sorry-guarded theorems (**`lerp_half`** and **`welfordUpdate_M2_nonneg`**
+now proved via algebraic factoring). Also fixed in this run: Expo.lean concrete-value
+proofs were failing on fresh builds (the `simp [constrainRat, ...]` pattern does not
+reduce Rat if-then-else guards; fixed with explicit `native_decide` subgoals). The
+remaining 6 sorrys are all in `WrapAngle.lean` and require Mathlib's `Int.floor`. Two
+confirmed bugs have been found: `signNoZero<float>` returns 0 for NaN, and
+`negate<int16_t>` has a wrong INT16_MAX special case.
 
 ---
 
@@ -74,12 +72,23 @@ C++ `float`/`double` types. One confirmed bug has been found: `signNoZero<float>
 | `welfordUpdate_mean_step` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | Core algebraic step: new_mean×count = old_mean×(count-1) + x |
 | `welfordFoldFrom_mean_inv` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | Inductive invariant: mean×count = initial_mean×initial_count + sum(xs) |
 | `welfordFold_mean` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | **Main result**: mean = sum(xs)/length(xs) for non-empty lists |
-| `welfordUpdate_M2_nonneg` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | 🔄 Sorry — M2 ≥ 0 preserved; needs Mathlib `div_nonneg` |
+| `welfordUpdate_M2_nonneg` | [WelfordMean.lean](lean/FVSquad/WelfordMean.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/WelfordMean.hpp) | ✅ Proved — M2 ≥ 0 preserved; algebraic factoring δ²·(1−nR⁻¹) ≥ 0 |
 | `lerp_zero` / `lerp_one` | [Lerp.lean](lean/FVSquad/Lerp.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Boundary: lerp(a,b,0)=a and lerp(a,b,1)=b |
 | `lerp_in_range` | [Lerp.lean](lean/FVSquad/Lerp.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | No-overshoot: output ∈ [a,b] when s ∈ [0,1] |
 | `lerp_comm` | [Lerp.lean](lean/FVSquad/Lerp.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Symmetry: lerp(a,b,s) = lerp(b,a,1-s) |
 | `lerp_mono_s` | [Lerp.lean](lean/FVSquad/Lerp.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Monotone in blend param: larger s → larger output when a≤b |
-| `lerp_half` | [Lerp.lean](lean/FVSquad/Lerp.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | 🔄 Sorry — midpoint = (a+b)/2; needs `Rat.inv` for 1/2 literal |
+| `lerp_half` | [Lerp.lean](lean/FVSquad/Lerp.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | ✅ Proved — midpoint = (a+b)/2 via `Rat.add_div` |
+| `negate16_MAX_MIN` / `_MIN_MAX` / `_zero` | [Negate.lean](lean/FVSquad/Negate.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L258) | Concrete special-case values by `decide` |
+| `negate16_not_involution` | [Negate.lean](lean/FVSquad/Negate.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L258) | 🐛 **Bug**: negate is NOT a global involution — INT16_MAX case wrong |
+| `negate16_counterexample` | [Negate.lean](lean/FVSquad/Negate.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L258) | Concrete witness: negate16(negate16(32769)) = 32768 ≠ 32769 |
+| `negate16_pos_invol` / `_high_invol` / `_MAX_invol` / `_MIN_invol` | [Negate.lean](lean/FVSquad/Negate.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L258) | Partial involution: on ranges [1,32766] and [32770,65535] it is correct |
+| `negate16_standard` / `_in_range` | [Negate.lean](lean/FVSquad/Negate.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L258) | Standard branch semantics and output bounds |
+| `expo_at_zero` / `_at_pos_one` / `_at_neg_one` | [Expo.lean](lean/FVSquad/Expo.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Fixed points: expo(0,e)=0, expo(±1,e)=±1 |
+| `expo_linear` / `expo_cubic` | [Expo.lean](lean/FVSquad/Expo.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Boundary parameters: e=0→identity, e=1→cube |
+| `expo_odd` | [Expo.lean](lean/FVSquad/Expo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Anti-symmetry: expo(-v,e) = -expo(v,e); stick sign preserved |
+| `expo_in_range` | [Expo.lean](lean/FVSquad/Expo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Range containment: output ∈ [-1,1] for any inputs |
+| `expo_eq_linear_at_zero` | [Expo.lean](lean/FVSquad/Expo.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Centre sensitivity: slope at v=0 is (1-e) |
+| `expo_endpoints_fixed` | [Expo.lean](lean/FVSquad/Expo.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Combines fixed-point theorems |
 
 ---
 
@@ -92,24 +101,22 @@ C++ `float`/`double` types. One confirmed bug has been found: `signNoZero<float>
    `signNoZero<float>(x)` can divide by zero when `x` is NaN. GitHub issue #12 has been
    filed. **Recommendation**: add a NaN guard or static_assert.
 
-2. **`wrap_pi` / `wrap_2pi` — wrapRat spec** (6 sorry-guarded theorems): The rational
+2. **`negate<int16_t>` involution bug (GitHub issue #21 filed)**: The `INT16_MAX → INT16_MIN`
+   special case is wrong. `negate(negate(-32767)) = -32768 ≠ -32767`. The only value
+   needing special treatment is `INT16_MIN`, not `INT16_MAX`. Filed as GitHub issue #21.
+   **Recommendation**: remove the `INT16_MAX` special case.
+
+3. **`wrap_pi` / `wrap_2pi` — wrapRat spec** (6 sorry-guarded theorems): The rational
    model in Part 2 of `WrapAngle.lean` needs Mathlib's `Int.floor` to complete proofs for
    `wrapRat_ge_lo`, `_lt_hi`, `_in_range`, `_periodic`, `_congruent`, and `_zero`. Once
    Mathlib is available, all 6 can be proved by standard `Int.floor_nonneg`,
    `Int.lt_floor_add_one` lemmas. **Recommendation**: add Mathlib dependency and close
    the 6 sorry-guarded theorems in the next run.
 
-3. **`wrap_pi` float NaN/infinity**: `wrap_floating` is undefined for NaN (floor(NaN) is
-   undefined). The C++ implementations inherit this; callers in the EKF and flight tasks
-   should guard inputs. The wrapRat spec already excludes this via the rational type.
-   **Recommendation**: add a runtime assert in `wrap_floating` and note in CORRESPONDENCE.
-
 4. **`interpolate` with `x_low >= x_high` (undefined behaviour)**: The C++ does not check
    the precondition `x_low < x_high`. Division by zero silently produces NaN/inf in
    floating-point mode. **Recommendation**: use CBMC or a simple runtime assert to verify
-   callers always maintain this invariant. Several callers in `interpolateN` and
-   `interpolateNXY` compute x values from array indices — worth checking whether index
-   arithmetic can ever produce `x_low = x_high`.
+   callers always maintain this invariant.
 
 5. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
    actual C++ uses `float`. The "slew rate exceeded" condition requires a multi-step
@@ -117,31 +124,25 @@ C++ `float`/`double` types. One confirmed bug has been found: `signNoZero<float>
    rounding error in `slew_rate * dt_s` and verify the integer-model theorem still applies
    within a tolerance.
 
-6. **`interpolateN` and `interpolateNXY` (unverified)**: These use `interpolate` as a
-   subroutine but add index arithmetic (`constrain` on index) and array lookups. The
-   `constrain` proof confirms the index is in range, but the `interpolateN` y-range
-   containment (`y[0] <= result <= y[N-1]` for sorted arrays) has not been proved.
-   This is a useful compositional proof that combines `constrain` and `interpolate` lemmas.
-
-7. **`WelfordMean` M2 formula** (1 sorry): The full variance formula `M2 = sum(xi - mean)^2`
-   has not been proved — `welfordUpdate_M2_nonneg` (M2 >= 0) is sorry-guarded due to
-   `Rat.inv` being `@[irreducible]`. The mean correctness (`welfordFold_mean`) is fully
-   proved. **Recommendation**: add Mathlib for `div_nonneg` and close this sorry.
-
 ### Medium priority
 
-8. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
+6. **`MedianFilter` spec** (informal spec written this run): The `MedianFilter` now has
+   an informal spec at `specs/medianfilter_informal.md`. Key properties (bounded by
+   min/max of window, middle of sorted window, spike rejection) are tractable with
+   `List.mergeSort` and `native_decide` for concrete cases. **Recommendation**: write
+   the Lean spec in the next run.
+
+7. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
    ordering. Index wraparound is an integer arithmetic problem tractable with `omega`.
    The `wrapInt` idempotence and periodicity theorems are directly applicable here.
 
-9. **Commander arming FSM**: State machine reachability ("armed requires all preflight
-   checks passed") would be a high-value safety property. TLA+ is the right tool here,
-   but a Lean 4 finite state machine model is also feasible.
+8. **`interpolateN` range containment** (unverified): Uses `interpolate` as a subroutine
+   but adds index arithmetic and array lookups. The y-range containment for sorted arrays
+   has not been proved. A useful compositional proof combining `constrain` and `interpolate`.
 
-10. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
-    gives the time-domain response. The frequency-domain property (transfer function
-    `H(z) = α / (1 - (1-α)z⁻¹)`) could be stated as a theorem about `alphaUpdate` in
-    the z-transform sense, but requires complex number arithmetic (Mathlib).
+9. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
+   gives the time-domain response. The z-transform transfer function could be stated
+   and proved with Mathlib complex number support.
 
 ---
 
@@ -197,9 +198,15 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
 1. **`signNoZero` NaN bug confirmed**: The formal spec exposed a genuine safety concern
    in `signNoZero<float>` — it can return 0 for NaN, violating the safety property that
    it never returns 0. Callers that use the result as a divisor or multiplier should
-   guard against NaN.
+   guard against NaN. (GitHub issue #12)
 
-2. **`SlewRate` no-overshoot verified**: The theorems `slewUpdate_no_overshoot_up` and
+2. **`negate<int16_t>` involution bug confirmed**: The formal spec for `negate<int16_t>`
+   revealed that the INT16_MAX special case is incorrect. `negate(negate(-32767)) = -32768`
+   instead of `-32767`. The bug: `INT16_MAX → INT16_MIN` is added unnecessarily (only
+   `INT16_MIN` needs special treatment since `-INT16_MIN` overflows). Proved by
+   `native_decide` in `Negate.lean`. (GitHub issue #21)
+
+3. **`SlewRate` no-overshoot verified**: The theorems `slewUpdate_no_overshoot_up` and
    `slewUpdate_no_overshoot_down` formally confirm that the slew rate limiter never
    overshoots the target — a key actuator safety property. This was confirmed to hold
    exactly in the integer model, with no edge cases or boundary violations found.
@@ -257,14 +264,8 @@ not mathematical gaps):
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-**`WelfordMean.lean`** (1 sorry):
-`welfordUpdate_M2_nonneg` — M2 >= 0 preserved by each update. Requires `div_nonneg`
-from `Mathlib.Algebra.Order.Field.Basic`; blocked by `Rat.inv` being `@[irreducible]`
-in stdlib. The main mean-correctness theorem `welfordFold_mean` is fully proved (0 sorry).
-
-**`Lerp.lean`** (1 sorry):
-`lerp_half` — `lerp(a, b, 1/2) = (a+b)/2`. Requires `Rat.inv` arithmetic for the `1/2`
-literal; the `1 - 1/2 = 1/2` identity is not directly reducible via `decide` or `simp`
-without Mathlib. All 9 other lerp theorems are fully proved.
-
-All other targets (7 files, 78 theorems) remain at zero sorry.
+All other targets (10 files, 104 theorems) remain at zero sorry. Two previously
+sorry-guarded theorems were closed since the last critique:
+- **`WelfordMean.lean`**: `welfordUpdate_M2_nonneg` — proved by algebraic factoring:
+  increment = δ²·(1−nR⁻¹) ≥ 0 since nR ≥ 1 implies nR⁻¹ ≤ 1.
+- **`Lerp.lean`**: `lerp_half` — proved using `Rat.add_div` and `Rat.sub_half`.

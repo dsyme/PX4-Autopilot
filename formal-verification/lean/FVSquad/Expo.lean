@@ -136,27 +136,32 @@ def expoRat (v e : Rat) : Rat :=
 
 /-- `expo(0, e) = 0` for any exponential parameter. -/
 theorem expo_at_zero (e : Rat) : expoRat 0 e = 0 := by
-  simp [expoRat, constrainRat, Rat.mul_zero, Rat.add_zero]
+  have hc : constrainRat 0 (-1) 1 = 0 := by native_decide
+  simp only [expoRat, hc, Rat.mul_zero, Rat.add_zero]
 
 /-- `expo(1, e) = 1`: the value 1 is a fixed point. -/
 theorem expo_at_pos_one (e : Rat) : expoRat 1 e = 1 := by
-  simp [expoRat, constrainRat, Rat.mul_one, Rat.sub_add_cancel]
+  have hc : constrainRat 1 (-1) 1 = 1 := by native_decide
+  simp only [expoRat, hc, Rat.mul_one, Rat.sub_add_cancel]
 
 /-- `expo(-1, e) = -1`: the value -1 is a fixed point. -/
 theorem expo_at_neg_one (e : Rat) : expoRat (-1) e = -1 := by
-  simp [expoRat, constrainRat]
+  have hc : constrainRat (-1) (-1) 1 = -1 := by native_decide
+  simp only [expoRat, hc]
   simp [Rat.sub_eq_add_neg, Rat.mul_neg, Rat.mul_one, Rat.neg_neg,
         Rat.neg_add, Rat.add_assoc, Rat.add_neg_cancel, Rat.add_zero]
 
 /-- When `e = 0`, expo is the identity (linear) on clamped input. -/
 theorem expo_linear (v : Rat) : expoRat v 0 = constrainRat v (-1) 1 := by
-  simp [expoRat, constrainRat, Rat.mul_zero, Rat.add_zero, Rat.one_mul,
-        Rat.sub_zero]
+  have he : constrainRat 0 0 1 = 0 := by native_decide
+  simp only [expoRat, he, Rat.add_zero, Rat.one_mul,
+             Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero, Rat.zero_mul]
 
 /-- When `e = 1`, expo returns the cube of the clamped input. -/
 theorem expo_cubic (v : Rat) :
     expoRat v 1 = constrainRat v (-1) 1 * constrainRat v (-1) 1 * constrainRat v (-1) 1 := by
-  simp [expoRat, constrainRat, Rat.mul_one, Rat.sub_self, Rat.zero_mul, Rat.zero_add]
+  have he : constrainRat 1 0 1 = 1 := by native_decide
+  simp only [expoRat, he, Rat.sub_self, Rat.zero_mul, Rat.zero_add, Rat.mul_one, Rat.one_mul]
 
 /-- `expo` is an odd function: `expo(-v, e) = -expo(v, e)`.
     This preserves the sign of the stick input. -/
@@ -219,6 +224,8 @@ theorem expo_eq_linear_at_zero (e : Rat) (h : 0 < e) (he : e ≤ 1) :
     ∀ δ : Rat, expoRat δ e - expoRat 0 e = (1 - constrainRat e 0 1) * constrainRat δ (-1) 1 +
               constrainRat e 0 1 * constrainRat δ (-1) 1 * constrainRat δ (-1) 1 * constrainRat δ (-1) 1 := by
   intro δ
+  have h0 : expoRat 0 e = 0 := expo_at_zero e
+  rw [h0, Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero]
   simp [expoRat]
 
 /-- Both `1` and `-1` are fixed points of expo. -/

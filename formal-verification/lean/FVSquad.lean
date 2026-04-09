@@ -8,3 +8,6 @@ import FVSquad.Interpolate
 import FVSquad.AlphaFilter
 import FVSquad.WelfordMean
 import FVSquad.WrapAngle
+import FVSquad.Lerp
+import FVSquad.Negate
+import FVSquad.Expo

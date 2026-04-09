@@ -22,9 +22,9 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
 | 10 | `RingBuffer` circular buffer | `src/lib/ringbuffer/TimestampedRingBuffer.hpp` | 1 | ⬜ Research | — | Index arithmetic, FIFO ordering |
 | 11 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Lerp.lean` | 9 proved, 1 sorry (lerp_half needs Rat inv arithmetic); informal spec written |
-| 12 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | RC stick curve `(1-e)*x + e*x³`; odd symmetry, range preservation |
+| 12 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Expo.lean` | RC stick curve; 12 theorems, 0 sorry (odd symmetry, range containment, fixed points) |
 | 13 | `math::negate<int16_t>` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proofs — 🐛 Bug found | `lean/FVSquad/Negate.lean` | Overflow-safe negation; 13 theorems proved; non-involution bug found |
-| 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 1 | ⬜ Research | — | Sorted window median; bounded by min/max of window |
+| 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written (`specs/medianfilter_informal.md`); sorted window median; bounded by min/max |
 
 ## Non-Lean Targets (other tools recommended)
 
