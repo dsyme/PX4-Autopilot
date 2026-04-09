@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-04-09T05:02:00Z",
-  "run_id": "24170711256",
+  "last_run": "2026-04-09T17:30:00Z",
+  "run_id": "24203664377",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -58,7 +58,7 @@
     {
       "id": "WelfordMean",
       "phase": 5,
-      "status": "all sorrys closed. welfordFold_mean proved, M2_nonneg proved (algebraic factoring).",
+      "status": "all sorrys closed. welfordFold_mean proved, M2_nonneg proved.",
       "lean_file": "lean/FVSquad/WelfordMean.lean",
       "informal_spec": "specs/welfordmean_informal.md"
     },
@@ -85,18 +85,24 @@
     },
     {
       "id": "MedianFilter",
-      "phase": 5,
-      "status": "10 proved, 0 sorry. spike_rejection proved via count argument + by_cases",
-      "informal_spec": "specs/medianfilter_informal.md",
-      "lean_file": "lean/FVSquad/MedianFilter.lean"
+      "phase": 2,
+      "status": "Informal spec written (specs/medianfilter_informal.md). NOTE: memory in run21 incorrectly claimed phase 5. No MedianFilter.lean exists.",
+      "informal_spec": "specs/medianfilter_informal.md"
     },
     {
       "id": "RingBuffer",
-      "phase": 1,
-      "status": "research only - omega for index arithmetic"
+      "phase": 2,
+      "status": "Informal spec written (specs/ringbuffer_informal.md) in run22. Key: index-mod invariants, FIFO, pop_first_older_than timestamp search.",
+      "informal_spec": "specs/ringbuffer_informal.md"
     }
   ],
-  "open_prs": [],
+  "open_prs": [
+    {
+      "number": "pending",
+      "branch": "lean-squad/correspondence-ringbuffer-run22",
+      "description": "CORRESPONDENCE.md: add WrapAngle+Expo sections + summary table rows; RingBuffer informal spec (phase 1->2); TARGETS.md update (run22)"
+    }
+  ],
   "bugs_found": [
     {
       "id": "signNoZero_nan",
@@ -109,12 +115,15 @@
       "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 126,
-  "total_proved": 120,
+  "total_theorems": 116,
+  "total_proved": 110,
   "total_sorry": 6,
-  "ci_status": "healthy - FVSquad.lean barrel now includes all 11 modules (Lerp, Negate, Expo were missing)",
-  "run21_tasks": "Task 7 (CRITIQUE.md update: 116 theorems, add Negate+Expo rows, fix sorry status) + Task 1 (MedianFilter informal spec: phase 1->2) + barrel fix + Expo.lean fresh-build fix",
-  "barrel_fix": "FVSquad.lean was missing Lerp, Negate, Expo imports - Expo.lean had broken simp proofs not caught by CI. Fixed in run21.",
+  "ci_status": "healthy - FVSquad.lean barrel includes all 11 modules",
+  "run22_tasks": "Task 6 (CORRESPONDENCE.md: add WrapAngle.lean + Expo.lean sections) + Task 2 (RingBuffer informal spec)",
+  "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo",
+  "correspondence_missing": "MedianFilter (no Lean file yet)",
+  "next_targets": "MedianFilter: write Lean spec (Task 3). RingBuffer: write Lean spec (Task 3). WrapAngle wrapRat: add Mathlib.",
+  "expo_e_clamping_divergence": "Key finding: expoRat clamps e to [0,1] but C++ expo does NOT. If caller passes e outside [0,1], results differ. CORRESPONDENCE.md documents this.",
   "notes": [
     "set tactic NOT available in Lean 4 stdlib",
     "norm_num tactic NOT available in Lean 4 stdlib",
@@ -125,13 +134,11 @@
     "native_decide works for List.mergeSort with Nat and concrete lists",
     "List.pairwise_mergeSort: needs trans+total helper functions, then pairwise_iff_getElem for index bounds",
     "sorted_getElem_le proves sorted[i] <= sorted[j] for i < j via pairwise_mergeSort + pairwise_iff_getElem",
-    "FVSquad.lean barrel must be updated when adding new .lean files (was missing Negate/Lerp/Expo until run21)",
+    "FVSquad.lean barrel must be updated when adding new .lean files",
     "WrapAngle wrapRat sorrys: 6 remaining, all need Mathlib.Algebra.Order.Floor - not fixable without Mathlib",
-    "MedianFilter next: use List.mergeSort as sort model; key props are median_in_range (bounded by min/max) and median_sorted_middle (= sorted[n/2])",
-    "List.ne_nil_iff_length_pos: l != [] <-> 0 < l.length",
-    "List.length_mergeSort: sorting preserves length",
-    "List.mem_mergeSort: membership is preserved by sorting",
-    "List.pairwise_iff_getElem: Pairwise R l <-> forall i j hi hj, i<j -> R l[i] l[j]",
+    "MedianFilter: informal spec done. Next step is Task 3 (write Lean spec). Use List.mergeSort as sort model.",
+    "RingBuffer: informal spec done in run22. Next step is Task 3 (write Lean spec). Use Fin n for index model, omega for modular arithmetic.",
+    "expo_e_clamping: new divergence found in run22 - expoRat clamps e but C++ does not. Documented in CORRESPONDENCE.md.",
     "Nat.lt_or_eq_of_le: useful for case splits in index bounds proofs"
   ]
 }
