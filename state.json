@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-04-09T17:30:00Z",
-  "run_id": "24203664377",
+  "last_run": "run23",
+  "run_id": "run23",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -85,9 +85,10 @@
     },
     {
       "id": "MedianFilter",
-      "phase": 2,
-      "status": "Informal spec written (specs/medianfilter_informal.md). NOTE: memory in run21 incorrectly claimed phase 5. No MedianFilter.lean exists.",
-      "informal_spec": "specs/medianfilter_informal.md"
+      "phase": 5,
+      "status": "17 proved, 2 sorry",
+      "informal_spec": "specs/medianfilter_informal.md",
+      "lean_file": "lean/FVSquad/MedianFilter.lean"
     },
     {
       "id": "RingBuffer",
@@ -115,9 +116,9 @@
       "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 116,
-  "total_proved": 110,
-  "total_sorry": 6,
+  "total_theorems": 135,
+  "total_proved": 127,
+  "total_sorry": 8,
   "ci_status": "healthy - FVSquad.lean barrel includes all 11 modules",
   "run22_tasks": "Task 6 (CORRESPONDENCE.md: add WrapAngle.lean + Expo.lean sections) + Task 2 (RingBuffer informal spec)",
   "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo",
