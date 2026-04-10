@@ -1,6 +1,6 @@
 {
-  "last_run": "run23",
-  "run_id": "run23",
+  "last_run": "run24",
+  "run_id": "24236035396",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -72,7 +72,7 @@
     {
       "id": "expo",
       "phase": 5,
-      "status": "12 proved, 0 sorry. Fixed concrete-value proofs in run21 (native_decide subgoals for constrainRat).",
+      "status": "12 proved, 0 sorry.",
       "lean_file": "lean/FVSquad/Expo.lean",
       "informal_spec": "specs/expo_informal.md"
     },
@@ -86,7 +86,7 @@
     {
       "id": "MedianFilter",
       "phase": 5,
-      "status": "17 proved, 2 sorry",
+      "status": "12 named theorems + 12 concrete examples, 0 sorry. run24.",
       "informal_spec": "specs/medianfilter_informal.md",
       "lean_file": "lean/FVSquad/MedianFilter.lean"
     },
@@ -100,8 +100,8 @@
   "open_prs": [
     {
       "number": "pending",
-      "branch": "lean-squad/correspondence-ringbuffer-run22",
-      "description": "CORRESPONDENCE.md: add WrapAngle+Expo sections + summary table rows; RingBuffer informal spec (phase 1->2); TARGETS.md update (run22)"
+      "branch": "lean-squad/medianfilter-proofs-run24-5814283",
+      "description": "MedianFilter Lean spec + proofs (run24): 12 theorems + 12 concrete, 0 sorry; CRITIQUE.md update; TARGETS.md advance MedianFilter phase 2->5"
     }
   ],
   "bugs_found": [
@@ -116,15 +116,15 @@
       "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 135,
-  "total_proved": 127,
-  "total_sorry": 8,
-  "ci_status": "healthy - FVSquad.lean barrel includes all 11 modules",
-  "run22_tasks": "Task 6 (CORRESPONDENCE.md: add WrapAngle.lean + Expo.lean sections) + Task 2 (RingBuffer informal spec)",
+  "total_theorems": 140,
+  "total_named_theorems": 128,
+  "total_proved": 134,
+  "total_sorry": 6,
+  "ci_status": "healthy - FVSquad.lean barrel includes all 12 modules including MedianFilter",
+  "run24_tasks": "Task 5 (MedianFilter: Lean spec + 12 theorems + 12 concrete examples, 0 sorry) + Task 7 (CRITIQUE.md: add MedianFilter rows, update counts, update gaps)",
   "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo",
-  "correspondence_missing": "MedianFilter (no Lean file yet)",
-  "next_targets": "MedianFilter: write Lean spec (Task 3). RingBuffer: write Lean spec (Task 3). WrapAngle wrapRat: add Mathlib.",
-  "expo_e_clamping_divergence": "Key finding: expoRat clamps e to [0,1] but C++ expo does NOT. If caller passes e outside [0,1], results differ. CORRESPONDENCE.md documents this.",
+  "correspondence_missing": "MedianFilter (not yet in CORRESPONDENCE.md), RingBuffer (no Lean file yet)",
+  "next_targets": "RingBuffer: write Lean spec (Task 3). MedianFilter: add to CORRESPONDENCE.md (Task 6). WrapAngle wrapRat: add Mathlib.",
   "notes": [
     "set tactic NOT available in Lean 4 stdlib",
     "norm_num tactic NOT available in Lean 4 stdlib",
@@ -132,14 +132,20 @@
     "simp does NOT reduce (0:Rat) < -1 etc - use native_decide for concrete Rat comparisons in constrainRat",
     "Pattern for concrete constrainRat: have hc : constrainRat x lo hi = v := by native_decide; simp only [expoRat, hc, ...]",
     "Rat.sub_zero does NOT exist - use Rat.sub_eq_add_neg + Rat.neg_zero + Rat.add_zero",
-    "native_decide works for List.mergeSort with Nat and concrete lists",
+    "native_decide works for List.mergeSort with Int and concrete lists",
     "List.pairwise_mergeSort: needs trans+total helper functions, then pairwise_iff_getElem for index bounds",
-    "sorted_getElem_le proves sorted[i] <= sorted[j] for i < j via pairwise_mergeSort + pairwise_iff_getElem",
+    "sortInts_getElem_le' (non-strict): use rcases Nat.lt_or_eq_of_le + subst heq + Int.le_refl",
+    "List.mergeSort_of_pairwise: correct name (mergeSort_of_sorted is deprecated)",
+    "List.pairwise_replicate: iff form - use rw + simp to prove decide version",
+    "sortInts_replicate: apply mergeSort_of_pairwise; rw pairwise_replicate; simp",
+    "MFState structure: use 'let hwin := ...', 'let hlen'' := ...' before struct literal for field proofs",
+    "mfHead_bound: use (mfInsert s x).hhead directly - the struct already captures invariant",
+    "mfInit hlen: use 'by simp' (not List.length_replicate w 0 as term - that's not a function)",
+    "s.hlen in tactic proof: must extract with 'have hl := s.hlen' or 'let hl := s.hlen' before using",
     "FVSquad.lean barrel must be updated when adding new .lean files",
     "WrapAngle wrapRat sorrys: 6 remaining, all need Mathlib.Algebra.Order.Floor - not fixable without Mathlib",
-    "MedianFilter: informal spec done. Next step is Task 3 (write Lean spec). Use List.mergeSort as sort model.",
     "RingBuffer: informal spec done in run22. Next step is Task 3 (write Lean spec). Use Fin n for index model, omega for modular arithmetic.",
-    "expo_e_clamping: new divergence found in run22 - expoRat clamps e but C++ does not. Documented in CORRESPONDENCE.md.",
-    "Nat.lt_or_eq_of_le: useful for case splits in index bounds proofs"
+    "Nat.lt_or_eq_of_le: useful for case splits in index bounds proofs",
+    "le_of_eq NOT available in Lean 4 stdlib; use Eq.le or omega instead"
   ]
 }
