@@ -4,28 +4,25 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-08 17:20 UTC
-- **Commit**: `e242435682`
+- **Date**: 2026-04-11 03:30 UTC
+- **Commit**: `9e23b0d970`
 
 ---
 
 ## Overall Assessment
 
-Eleven targets from PX4's mathlib and control library have been formally verified in Lean 4
-(v4.29.0, standard library only). The library now covers **116 theorem statements, 110
-fully proved, 6 `sorry`-guarded** across `constrain`, `signNoZero`, `countSetBits`,
-`SlewRate::update`, `deadzone`, `interpolate`, `AlphaFilter::updateCalculation`,
-`WelfordMean::update`, `math::lerp`, `math::negate<int16_t>`, and `math::expo`. Three
-significant additions since the last update: **`math::negate<int16_t>`** (13 theorems,
-0 sorry, **real bug found**: INT16_MAX special case is incorrect), **`math::expo`** (12
-theorems, 0 sorry, including odd-symmetry and full range containment), and the closure of
-two previously sorry-guarded theorems (**`lerp_half`** and **`welfordUpdate_M2_nonneg`**
-now proved via algebraic factoring). Also fixed in this run: Expo.lean concrete-value
-proofs were failing on fresh builds (the `simp [constrainRat, ...]` pattern does not
-reduce Rat if-then-else guards; fixed with explicit `native_decide` subgoals). The
-remaining 6 sorrys are all in `WrapAngle.lean` and require Mathlib's `Int.floor`. Two
-confirmed bugs have been found: `signNoZero<float>` returns 0 for NaN, and
-`negate<int16_t>` has a wrong INT16_MAX special case.
+Twelve targets from PX4's mathlib, control library, and sensor-fusion stack have been
+formally verified in Lean 4 (v4.29.0, standard library only). The library now covers
+**134 theorem statements, 128 fully proved, 6 `sorry`-guarded** across `constrain`,
+`signNoZero`, `countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
+`AlphaFilter::updateCalculation`, `WelfordMean::update`, `math::lerp`,
+`math::negate<int16_t>`, `math::expo`, and the newly added **`TimestampedRingBuffer`**
+index-arithmetic model (18 theorems, 0 sorry). The RingBuffer spec proves key FIFO
+invariants -- head/tail bounds, capacity conservation, fill/overflow behaviour, and
+get-newest correctness -- entirely via `omega` and structural induction. The 6 remaining
+sorrys are all in `WrapAngle.lean` and require `Mathlib.Algebra.Order.Floor`. Two
+confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN, and
+`negate<int16_t>` has an incorrect INT16_MAX special case.
 
 ---
 
@@ -89,6 +86,13 @@ confirmed bugs have been found: `signNoZero<float>` returns 0 for NaN, and
 | `expo_in_range` | [Expo.lean](lean/FVSquad/Expo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Range containment: output ∈ [-1,1] for any inputs |
 | `expo_eq_linear_at_zero` | [Expo.lean](lean/FVSquad/Expo.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Centre sensitivity: slope at v=0 is (1-e) |
 | `expo_endpoints_fixed` | [Expo.lean](lean/FVSquad/Expo.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Combines fixed-point theorems |
+| `rbPush_head` / `rbPush_head_lt` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Head advances mod size; always in bounds |
+| `rbPush_count_le_size` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Capacity invariant: count never exceeds size |
+| `rbPush_count_nonfull` / `_full` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Fill semantics: count increments or stays at cap |
+| `rbPush_tail_nonfull` / `_full` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Eviction: tail advances iff buffer was full |
+| `rbInit_push_count` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | k pushes into empty buffer → count = k (for k ≤ n) |
+| `rbPushN_full_stays_full` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Once full, stays full under any further pushes |
+| `rbDataGetNewest_after_push` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | FIFO correctness: push x then getNewest = x |
 
 ---
 
@@ -250,12 +254,23 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
 
 8. **`lerp` no-overshoot safety property proved**: The theorem `lerp_in_range` formally confirms that when `s ∈ [0, 1]` and `a ≤ b`, the interpolated value stays within `[a, b]`. This rules out runaway setpoints in flight-task blending — a direct actuator safety property.  The `lerp_mono_s` theorem additionally confirms that moving `s` toward 1 strictly moves the output toward `b`, a key property for rate-limited setpoint generation.
 
+9. **`TimestampedRingBuffer` FIFO invariants proved**: The new `RingBuffer.lean` spec
+   proves 18 theorems (0 sorry) covering the index-arithmetic core of
+   `TimestampedRingBuffer<T>`. Key results: `rbInit_push_count` (k pushes into an
+   empty size-n buffer give exactly k entries, for k ≤ n), `rbPushN_full_stays_full`
+   (once full, the buffer never shrinks), `rbPush_count_le_size` (capacity invariant
+   holds under any sequence of pushes), and `rbDataGetNewest_after_push` (the FIFO
+   correctness property: after pushing x, `get_newest` returns x). All proofs use
+   `omega` and structural induction — no Mathlib needed. The 12 concrete `native_decide`
+   examples verify specific head/tail/count values for a size-3 buffer through 5 pushes,
+   including the overwrite/eviction case.
+
 
 ---
 
 ## Known Sorry-Guarded Theorems
 
-Eight theorems across three targets are sorry-guarded (all represent tooling limitations,
+Six theorems in one target are sorry-guarded (all represent tooling limitations,
 not mathematical gaps):
 
 **`WrapAngle.lean`** (6 sorrys):
@@ -264,8 +279,5 @@ not mathematical gaps):
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-All other targets (10 files, 104 theorems) remain at zero sorry. Two previously
-sorry-guarded theorems were closed since the last critique:
-- **`WelfordMean.lean`**: `welfordUpdate_M2_nonneg` — proved by algebraic factoring:
-  increment = δ²·(1−nR⁻¹) ≥ 0 since nR ≥ 1 implies nR⁻¹ ≤ 1.
-- **`Lerp.lean`**: `lerp_half` — proved using `Rat.add_div` and `Rat.sub_half`.
+All other targets (11 files, 122 theorems) are at zero sorry. The new `RingBuffer.lean`
+(18 theorems) was added this run with zero sorry from the start.
