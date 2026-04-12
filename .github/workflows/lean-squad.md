@@ -237,7 +237,7 @@ steps:
           json.dump(result, f, indent=2)
       EOF
 
-source: githubnext/agentics/workflows/lean-squad.md@7c7feb61a52b662eb2089aa2945588b7a200d404
+source: githubnext/agentics/workflows/lean-squad.md@97143ac59cb3a13ef2a77581f929f06719c7402a
 ---
 
 # Lean Squad
@@ -819,7 +819,7 @@ jobs:
 
       - name: Upload build log on failure
         if: failure()
-        uses: actions/upload-artifact@v7.0.0
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: lake-build-log
           path: /tmp/lake_build.log
