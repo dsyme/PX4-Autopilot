@@ -161,7 +161,7 @@ theorem expo_linear (v : Rat) : expoRat v 0 = constrainRat v (-1) 1 := by
 theorem expo_cubic (v : Rat) :
     expoRat v 1 = constrainRat v (-1) 1 * constrainRat v (-1) 1 * constrainRat v (-1) 1 := by
   have he : constrainRat 1 0 1 = 1 := by native_decide
-  simp only [expoRat, he, Rat.sub_self, Rat.zero_mul, Rat.zero_add, Rat.mul_one, Rat.one_mul]
+  simp only [expoRat, he, Rat.sub_self, Rat.zero_mul, Rat.zero_add, Rat.one_mul]
 
 /-- `expo` is an odd function: `expo(-v, e) = -expo(v, e)`.
     This preserves the sign of the stick input. -/
@@ -220,7 +220,7 @@ theorem expo_in_range (v e : Rat) : -1 ≤ expoRat v e ∧ expoRat v e ≤ 1 := 
 
 /-- The slope of expo at `v = 0` is `(1 - e)`.
     This confirms that `e` directly controls the centre sensitivity. -/
-theorem expo_eq_linear_at_zero (e : Rat) (h : 0 < e) (he : e ≤ 1) :
+theorem expo_eq_linear_at_zero (e : Rat) (_h : 0 < e) (_he : e ≤ 1) :
     ∀ δ : Rat, expoRat δ e - expoRat 0 e = (1 - constrainRat e 0 1) * constrainRat δ (-1) 1 +
               constrainRat e 0 1 * constrainRat δ (-1) 1 * constrainRat δ (-1) 1 * constrainRat δ (-1) 1 := by
   intro δ

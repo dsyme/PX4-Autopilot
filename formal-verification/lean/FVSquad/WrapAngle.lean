@@ -89,7 +89,7 @@ theorem wrapInt_lt_high (x low high : Int) (h : low < high) :
   omega
 
 /-- If `x` is already in `[low, high)`, `wrapInt` returns `x` unchanged. -/
-theorem wrapInt_in_range (x low high : Int) (h : low < high)
+theorem wrapInt_in_range (x low high : Int) (_h : low < high)
     (hlo : low ≤ x) (hhi : x < high) : wrapInt x low high = x := by
   unfold wrapInt
   rw [Int.emod_eq_of_lt (by omega) (by omega)]
@@ -101,21 +101,21 @@ theorem wrapInt_idempotent (x low high : Int) (h : low < high) :
   wrapInt_in_range _ _ _ h (wrapInt_ge_low x low high h) (wrapInt_lt_high x low high h)
 
 /-- Shifting `x` by one full period `(high - low)` is transparent to `wrapInt`. -/
-theorem wrapInt_periodic (x low high : Int) (h : low < high) :
+theorem wrapInt_periodic (x low high : Int) (_h : low < high) :
     wrapInt (x + (high - low)) low high = wrapInt x low high := by
   unfold wrapInt
   have heq : x + (high - low) - low = (x - low) + 1 * (high - low) := by omega
   rw [heq, Int.add_mul_emod_self_right]
 
 /-- Shifting `x` by any integer multiple `k` of the period is transparent. -/
-theorem wrapInt_periodic_k (x low high k : Int) (h : low < high) :
+theorem wrapInt_periodic_k (x low high k : Int) (_h : low < high) :
     wrapInt (x + k * (high - low)) low high = wrapInt x low high := by
   unfold wrapInt
   have heq : x + k * (high - low) - low = (x - low) + k * (high - low) := by omega
   rw [heq, Int.add_mul_emod_self_right]
 
 /-- `wrapInt` result is congruent to `x` modulo the period `(high - low)`. -/
-theorem wrapInt_congruent (x low high : Int) (h : low < high) :
+theorem wrapInt_congruent (x low high : Int) (_h : low < high) :
     ∃ k : Int, wrapInt x low high = x + k * (high - low) := by
   unfold wrapInt
   refine ⟨-((x - low) / (high - low)), ?_⟩

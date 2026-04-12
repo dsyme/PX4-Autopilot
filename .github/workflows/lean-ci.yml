@@ -45,6 +45,9 @@ jobs:
           key: lean-lake-${{ steps.cache-key.outputs.manifest_hash }}
           restore-keys: lean-lake-
 
+      - name: Resolve Lean dependencies (lake update)
+        run: lake update
+
       - name: Build and verify all proofs
         run: |
           echo "=== lake build starting ==="

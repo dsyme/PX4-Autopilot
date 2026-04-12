@@ -80,7 +80,7 @@ theorem alphaUpdate_alpha_one (state sample : Rat) :
 
 /-- Upper no-overshoot: when `state ≤ sample`, the new state does not exceed `sample`. -/
 theorem alphaUpdate_le_sample (state alpha sample : Rat)
-    (h_le : state ≤ sample) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    (h_le : state ≤ sample) (_ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
     alphaUpdate state alpha sample ≤ sample := by
   simp only [alphaUpdate]
   -- key: alpha*(sample - state) ≤ 1*(sample - state) = sample - state
@@ -142,7 +142,7 @@ theorem alphaUpdate_le_state (state alpha sample : Rat)
 
     TODO: complete this proof. -/
 theorem alphaUpdate_ge_sample (state alpha sample : Rat)
-    (h_le : sample ≤ state) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    (h_le : sample ≤ state) (_ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
     sample ≤ alphaUpdate state alpha sample := by
   simp only [alphaUpdate]
   -- Need: sample ≤ state + alpha*(sample - state)
@@ -190,7 +190,7 @@ theorem alphaUpdate_mono_sample (state alpha : Rat)
 
 /-- Update is nondecreasing in initial state: larger `state` → larger output (alpha ≤ 1). -/
 theorem alphaUpdate_mono_state (alpha sample : Rat)
-    (ha1 : alpha ≤ 1) (ha0 : 0 ≤ alpha) (s1 s2 : Rat) (hs : s1 ≤ s2) :
+    (ha1 : alpha ≤ 1) (_ha0 : 0 ≤ alpha) (s1 s2 : Rat) (hs : s1 ≤ s2) :
     alphaUpdate s1 alpha sample ≤ alphaUpdate s2 alpha sample := by
   simp only [alphaUpdate]
   -- s1 + alpha*(sample - s1) ≤ s2 + alpha*(sample - s2)

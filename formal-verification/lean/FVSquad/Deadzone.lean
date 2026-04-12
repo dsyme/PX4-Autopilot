@@ -145,7 +145,7 @@ theorem deadzone_neg (x dz : Rat) (hxdz : x < -dz) (hdz0 : 0 ≤ dz) (hdz1 : dz 
 
     The positive case is fully proved.
     The negative case uses `sorry` (needs Rat arithmetic; provable with Mathlib's `linarith`). -/
-theorem deadzone_le_one (x dz : Rat) (hx1 : x ≤ 1) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+theorem deadzone_le_one (x dz : Rat) (hx1 : x ≤ 1) (_hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
     deadzone x dz ≤ 1 := by
   simp only [deadzone]
   split
@@ -193,7 +193,7 @@ theorem deadzone_le_one (x dz : Rat) (hx1 : x ≤ 1) (hdz0 : 0 ≤ dz) (hdz1 : d
     - Negative branch (x < −dz ≤ 0): output = (x+dz)/(1−dz).
       Since x ≥ −1, we have x+dz ≥ −1+dz = −(1−dz),
       so output ≥ −(1−dz)/(1−dz) = −1. -/
-theorem deadzone_ge_neg_one (x dz : Rat) (hxm1 : -1 ≤ x) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+theorem deadzone_ge_neg_one (x dz : Rat) (hxm1 : -1 ≤ x) (_hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
     -1 ≤ deadzone x dz := by
   simp only [deadzone]
   split
