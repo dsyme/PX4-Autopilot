@@ -1,39 +1,128 @@
 {
-  "last_run": "run28",
-  "run_id": "24287104372",
+  "last_run": "run29",
+  "run_id": "24297969910",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
   "ci_has_lake_update": true,
   "mathlib_available": false,
   "fv_targets": [
-    {"id": "constrain", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "signNoZero", "phase": 5, "status": "6 proved, 0 sorry. BUG: NaN returns 0 (violates ne_zero) - GitHub issue #12 filed", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "countSetBits", "phase": 5, "status": "8 proved (6 in MathFunctions + 2 lemmas)", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "SlewRate", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/SlewRate.lean"},
-    {"id": "deadzone", "phase": 5, "status": "12 proved, 0 sorry (2 sorry mentions in comments only)", "lean_file": "lean/FVSquad/Deadzone.lean"},
-    {"id": "interpolate", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Interpolate.lean"},
-    {"id": "AlphaFilter", "phase": 5, "status": "12 proved, 0 sorry", "lean_file": "lean/FVSquad/AlphaFilter.lean", "informal_spec": "specs/alphafilter_informal.md"},
-    {"id": "wrap_pi", "phase": 5, "status": "wrapInt: 8+7=15 total theorems. 9 fully proved, 6 sorry (Mathlib floor needed).", "lean_file": "lean/FVSquad/WrapAngle.lean"},
-    {"id": "WelfordMean", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/WelfordMean.lean", "informal_spec": "specs/welfordmean_informal.md"},
-    {"id": "lerp", "phase": 5, "status": "10 proved, 0 sorry.", "lean_file": "lean/FVSquad/Lerp.lean", "informal_spec": "specs/lerp_informal.md"},
-    {"id": "expo", "phase": 5, "status": "12 proved, 0 sorry. Linter warnings fixed (run28).", "lean_file": "lean/FVSquad/Expo.lean", "informal_spec": "specs/expo_informal.md"},
-    {"id": "negate", "phase": 5, "status": "13 proved, 0 sorry. BUG: INT16_MAX special case incorrect - issue #21 filed.", "lean_file": "lean/FVSquad/Negate.lean", "informal_spec": "specs/negate_informal.md"},
-    {"id": "RingBuffer", "phase": 5, "status": "16 named theorems, 0 sorry. FIFO invariants, fill/overflow, getNewest. run26. Merged into run28 PR.", "informal_spec": "specs/ringbuffer_informal.md", "lean_file": "lean/FVSquad/RingBuffer.lean"}
+    {
+      "id": "constrain",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "signNoZero",
+      "phase": 5,
+      "status": "6 proved, 0 sorry. BUG: NaN returns 0 (violates ne_zero) - GitHub issue #12 filed",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "countSetBits",
+      "phase": 5,
+      "status": "8 proved (6 in MathFunctions + 2 lemmas)",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "SlewRate",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/SlewRate.lean"
+    },
+    {
+      "id": "deadzone",
+      "phase": 5,
+      "status": "12 proved, 0 sorry (linter warnings fixed run29)",
+      "lean_file": "lean/FVSquad/Deadzone.lean"
+    },
+    {
+      "id": "interpolate",
+      "phase": 5,
+      "status": "10 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/Interpolate.lean"
+    },
+    {
+      "id": "AlphaFilter",
+      "phase": 5,
+      "status": "12 proved, 0 sorry (linter warnings fixed run29)",
+      "lean_file": "lean/FVSquad/AlphaFilter.lean",
+      "informal_spec": "specs/alphafilter_informal.md"
+    },
+    {
+      "id": "wrap_pi",
+      "phase": 5,
+      "status": "wrapInt: 8+7=15 total theorems. 9 fully proved, 6 sorry (Mathlib floor needed). Linter warnings fixed run29.",
+      "lean_file": "lean/FVSquad/WrapAngle.lean"
+    },
+    {
+      "id": "WelfordMean",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/WelfordMean.lean",
+      "informal_spec": "specs/welfordmean_informal.md"
+    },
+    {
+      "id": "lerp",
+      "phase": 5,
+      "status": "10 proved, 0 sorry.",
+      "lean_file": "lean/FVSquad/Lerp.lean",
+      "informal_spec": "specs/lerp_informal.md"
+    },
+    {
+      "id": "expo",
+      "phase": 5,
+      "status": "12 proved, 0 sorry. Linter warnings fixed (run29).",
+      "lean_file": "lean/FVSquad/Expo.lean",
+      "informal_spec": "specs/expo_informal.md"
+    },
+    {
+      "id": "negate",
+      "phase": 5,
+      "status": "13 proved, 0 sorry. BUG: INT16_MAX special case incorrect - issue #21 filed.",
+      "lean_file": "lean/FVSquad/Negate.lean",
+      "informal_spec": "specs/negate_informal.md"
+    },
+    {
+      "id": "RingBuffer",
+      "phase": 5,
+      "status": "18 named theorems (index arithmetic, FIFO, fill/overflow, getNewest), 0 sorry. run26.",
+      "informal_spec": "specs/ringbuffer_informal.md",
+      "lean_file": "lean/FVSquad/RingBuffer.lean"
+    },
+    {
+      "id": "MedianFilter",
+      "phase": 5,
+      "status": "6 theorems + 6 native_decide examples, 0 sorry. run29. spike rejection, range containment, head invariant.",
+      "lean_file": "lean/FVSquad/MedianFilter.lean",
+      "informal_spec": "specs/medianfilter_informal.md"
+    }
   ],
   "open_prs": [
-    {"branch": "lean-squad/ci-correspondence-run28-a80290504b", "description": "CI: add lake update step. Fix linter warnings (11 removed). CORRESPONDENCE.md updated with Build Health section. Includes RingBuffer PR content from run26. run28."}
+    {
+      "branch": "lean-squad/medianfilter-ci-run29-0bce11deee",
+      "description": "MedianFilter Lean spec (6 theorems + 6 examples); CI lake update; fix 8 linter warnings. run29."
+    }
   ],
   "bugs_found": [
-    {"id": "signNoZero_nan", "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.", "status": "GitHub issue #12 filed"},
-    {"id": "negate_int16_not_involution", "description": "negate<int16_t> is not a global involution. negate(negate(-32767))=-32768. INT16_MAX special case wrong.", "status": "GitHub issue #21 filed"}
+    {
+      "id": "signNoZero_nan",
+      "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.",
+      "status": "GitHub issue #12 filed"
+    },
+    {
+      "id": "negate_int16_not_involution",
+      "description": "negate<int16_t> is not a global involution. negate(negate(-32767))=-32768. INT16_MAX special case wrong.",
+      "status": "GitHub issue #21 filed"
+    }
   ],
-  "total_theorems": 132,
-  "total_proved": 126,
+  "total_theorems": 144,
+  "total_proved": 138,
   "total_sorry": 6,
   "linter_warnings": 0,
-  "ci_status": "updated - lake update step added, sorry count reporting improved",
-  "run28_tasks": "Task 9 (CI: add lake update step, improve sorry reporting) + Task 6 (CORRESPONDENCE: Last Updated, Build Health section, fix 11 linter warnings in AlphaFilter/Deadzone/Expo/WrapAngle)",
+  "ci_status": "updated run29 - lake update step added",
+  "run29_tasks": "Task 3 (MedianFilter: 6 theorems + 6 examples, phase 2->5) + Task 9 (CI: add lake update step) + 8 linter warnings fixed",
   "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer",
   "next_targets": "pop_first_older_than model for RingBuffer (Task 3/4 - complex loop with timestamp invariant). WrapAngle Mathlib sorrys (Task 5 blocker, 6 sorry - needs Mathlib).",
   "notes": [
@@ -41,12 +130,21 @@
     "norm_num tactic NOT available in Lean 4 stdlib",
     "linarith NOT available, ring NOT available",
     "split_ifs NOT available in Lean 4 stdlib - use by_cases",
-    "le_rfl NOT available - use Nat.le_refl _",
-    "variable {w hw} at module level conflicts with explicit (w : Nat) (hw : 0 < w) in function signatures - always use explicit {w : Nat} {hw : 0 < w} in function headers instead",
+    "le_rfl NOT available - use Int.le_refl _ or Nat.le_refl _",
+    "variable {w hw} at module level conflicts with explicit (w : Nat) (hw : 0 < w) in function signatures",
     "List.get_mem has signature: get l i in l (not get_mem l i _)",
-    "List.mem_replicate: l.mem_replicate returns n≠0 ∧ a = x; extract with .2",
-    "omega works for Nat.mod_lt and modular arithmetic in head/tail proofs",
+    "List.mem_replicate: a in replicate n x iff n != 0 and a = x; extract with .2",
+    "omega works for Nat.mod_lt and modular arithmetic",
     "Unused theorem parameters: prefix with _ (e.g. _h, _ha0) to suppress linter warning",
-    "Unused simp args: remove from simp only [...] list to avoid linter warnings"
+    "Unused simp args: remove from simp only [...] list to avoid linter warnings",
+    "List.mergeSort uses Bool comparator: def intLE (a b : Int) : Bool := if a <= b then true else false",
+    "intLE_iff: intLE a b = true <-> a <= b (needed for pairwise -> Prop conversion)",
+    "sorted_getElem_le: uses pairwise_mergeSort + pairwise_iff_getElem for i <= j ordering",
+    "List.pairwise_mergeSort: takes (trans) (total) (l) - returns Pairwise on mergeSort result",
+    "List.getElem_replicate: (replicate n a)[i] = a for i < n",
+    "For constant list median proof: use List.mem_mergeSort + List.mem_replicate + .2",
+    "mfInsert_head_wraps: omega cannot prove (window-1+1) % window = 0; use Nat.sub_add_cancel + rw [Nat.mod_self]",
+    "native_decide works for List.mergeSort with Int and concrete lists (window=3 or window=5)",
+    "decide does NOT reduce length of mergeSort result - use native_decide for index bounds in examples"
   ]
 }
