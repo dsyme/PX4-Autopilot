@@ -47,6 +47,14 @@ typed data model.
 | `rbPush_full_stays_full` | Full buffer stays full after one more push | Proved |
 | `rbPushN_full_stays_full` | Full buffer stays full after any pushes | Proved |
 | `rbDataGetNewest_after_push` | After push x: getNewest = x | Proved |
+| `rbPop_count_lt` | Pop reduces count by at least 1 | Proved |
+| `rbPop_count_le_size` | Pop preserves capacity invariant | Proved |
+| `rbPop_empty_when_newest` | Pop at i=0 empties the buffer | Proved |
+| `rbPop_head_unchanged` | Head is unchanged after any pop | Proved |
+| `rbPop_tail_eq_head_when_newest` | Tail = head after pop at i=0 (empty sentinel) | Proved |
+| `rbPop_tail_when_older` | Tail advances past found index after pop at i>0 | Proved |
+| `rbPop_tail_lt_size_when_older` | Tail is a valid index after pop at i>0 | Proved |
+| `rbPop_then_push_count` | Pop at step i then push: count = i + 1 | Proved |
 -/
 
 namespace PX4.RingBuffer
@@ -272,5 +280,132 @@ example : (rbPushN ex3 4).tail  = 1 := by native_decide  -- oldest evicted
 example : (rbPushN ex3 5).head  = 1 := by native_decide
 example : (rbPushN ex3 5).tail  = 2 := by native_decide
 example : (rbPushN ex3 5).count = 3 := by native_decide
+
+/-! ## Part 4: `pop_first_older_than` index model
+
+The C++ `pop_first_older_than` scans from head (newest) backwards, finds the first
+entry whose timestamp falls within a 100 ms window, then:
+- returns that entry to the caller (output sample)
+- discards it **and all entries older than it** by advancing the tail
+
+**Model abstraction**: timestamps and the 100 ms window are abstracted away.
+We parametrise over the *scan step* `i`: the entry found is `i` steps back from
+the head (i = 0 = newest/head, i = count-1 = oldest/tail).
+
+**Key invariant**: after a pop at step `i`, the remaining count equals `i` —
+exactly the `i` newer entries that were not discarded.
+
+**Abstracted away**:
+- Timestamp data and the 100 ms matching window
+- The `_buffer[index].time_us = 0` zeroing (data side-effect)
+- The `_first_write` C++ flag (eliminated by our `count`-based model)
+-/
+
+/-- Pop the entry found at scan step `i` from the head.
+    `i = 0`: the newest entry matched; the buffer becomes empty.
+    `0 < i < s.count`: `i` newer entries remain after the pop.
+
+    C++ correspondence:
+    - `index = (_head - i + _size) % _size` (i steps back from head)
+    - `if (index == _head) { _tail = _head; _first_write = true; }`
+    - `else { _tail = (index + 1) % _size; }` -/
+def rbPop (s : RBState) (i : Nat) (_hi : i < s.count) : RBState where
+  size  := s.size
+  hsize := s.hsize
+  head  := s.head
+  -- When i = 0 (newest matched): tail = head (buffer empty, consistent with _first_write).
+  -- When i > 0: tail advances to one past the found index = (head - i + 1) % size.
+  tail  := if i = 0 then s.head else (s.size + s.head - i + 1) % s.size
+  count := i
+  hhead := s.hhead
+  htail := by
+    by_cases h0 : i = 0
+    · simp [h0]; exact s.hhead
+    · simp [h0]; exact Nat.mod_lt _ s.hsize
+  hcnt  := by
+    have h1 := s.hcnt
+    have h2 := _hi
+    omega
+
+/-! ### Field access lemmas -/
+
+@[simp] theorem rbPop_size  (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).size = s.size := rfl
+
+@[simp] theorem rbPop_head  (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).head = s.head := rfl
+
+@[simp] theorem rbPop_count (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).count = i := rfl
+
+@[simp] theorem rbPop_tail_eq (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).tail =
+      if i = 0 then s.head else (s.size + s.head - i + 1) % s.size := rfl
+
+/-! ### Structural / safety theorems -/
+
+/-- Pop always reduces the entry count by at least 1. -/
+theorem rbPop_count_lt (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).count < s.count := by
+  simp only [rbPop_count]; exact hi
+
+/-- Pop preserves the capacity invariant. -/
+theorem rbPop_count_le_size (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).count ≤ s.size := by
+  simp only [rbPop_count]
+  have := s.hcnt; omega
+
+/-- Popping the newest entry (i = 0) empties the buffer. -/
+theorem rbPop_empty_when_newest (s : RBState) (hi : 0 < s.count) :
+    (rbPop s 0 hi).count = 0 := by
+  simp only [rbPop_count]
+
+/-- After a pop, head is unchanged (we never modify head during a pop). -/
+theorem rbPop_head_unchanged (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPop s i hi).head = s.head := rfl
+
+/-- After a pop of the newest entry, tail equals head (empty-buffer sentinel). -/
+theorem rbPop_tail_eq_head_when_newest (s : RBState) (hi : 0 < s.count) :
+    (rbPop s 0 hi).tail = s.head := by
+  simp [rbPop_tail_eq]
+
+/-- After a pop of a non-newest entry, tail advances past the found index. -/
+theorem rbPop_tail_when_older (s : RBState) (i : Nat) (hi : i < s.count) (hpos : 0 < i) :
+    (rbPop s i hi).tail = (s.size + s.head - i + 1) % s.size := by
+  simp only [rbPop_tail_eq]
+  have : ¬ i = 0 := by omega
+  simp [this]
+
+/-- The tail after a non-newest pop is a valid index. -/
+theorem rbPop_tail_lt_size_when_older (s : RBState) (i : Nat) (hi : i < s.count) (hpos : 0 < i) :
+    (rbPop s i hi).tail < s.size := by
+  rw [rbPop_tail_when_older s i hi hpos]
+  exact Nat.mod_lt _ s.hsize
+
+/-- Popping then pushing increments the count by 1. -/
+theorem rbPop_then_push_count (s : RBState) (i : Nat) (hi : i < s.count) :
+    (rbPush (rbPop s i hi)).count = i + 1 := by
+  have hlt : (rbPop s i hi).count < (rbPop s i hi).size := by
+    simp only [rbPop_count, rbPop_size]
+    have := s.hcnt; omega
+  rw [rbPush_count_nonfull _ hlt]
+  simp only [rbPop_count]
+
+/-! ### Concrete `native_decide` examples for size-3 buffer -/
+
+-- Pop the newest entry from a full size-3 buffer: buffer becomes empty.
+example : (rbPop (rbPushN ex3 3) 0 (by native_decide)).count = 0 := by native_decide
+-- Pop the 2nd-newest from a full buffer: 1 entry (the newest) remains.
+example : (rbPop (rbPushN ex3 3) 1 (by native_decide)).count = 1 := by native_decide
+-- Pop the oldest from a full buffer: 2 entries (the two newer) remain.
+example : (rbPop (rbPushN ex3 3) 2 (by native_decide)).count = 2 := by native_decide
+-- Head is unchanged after any pop.
+example : (rbPop (rbPushN ex3 3) 1 (by native_decide)).head =
+          (rbPushN ex3 3).head := by native_decide
+-- Pop reduces count by at least 1.
+example : (rbPop (rbPushN ex3 3) 2 (by native_decide)).count <
+          (rbPushN ex3 3).count := by native_decide
+-- Popping then pushing yields count = (scan step) + 1.
+example : (rbPush (rbPop (rbPushN ex3 3) 1 (by native_decide))).count = 2 := by native_decide
 
 end PX4.RingBuffer
