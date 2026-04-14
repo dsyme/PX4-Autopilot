@@ -27,6 +27,9 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 5 | ✅ Proved | `lean/FVSquad/MedianFilter.lean` | 6 theorems + 6 concrete examples; spike rejection, range containment, head invariant |
 
 | 14 | `math::superexpo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SuperExpo.lean` | RC superrate curve; 8 theorems, 0 sorry (denom_pos, zero, ±1 fixed points, odd symmetry, range ⊆ [-1,1], g=0 reduces to expo) |
+| 15 | `expo+deadzone composition` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/ExpoDeadzone.lean` | RC two-stage pipeline: 9 theorems, 0 sorry (added `expodz_odd` odd-symmetry proof) |
+| 16 | `math::deadzone` (odd symmetry) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | Added `deadzone_odd`: `deadzone(-x, dz) = -deadzone(x, dz)` for dz ≥ 0 |
+| 17 | `math::interpolateNXY` (3-pt) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/InterpolateNXY.lean` | N-point piecewise-linear interpolation (3-pt model); 9 theorems: clamps, endpoints, breakpoint continuity, range containment, monotonicity |
 
 ## Non-Lean Targets (other tools recommended)
 
