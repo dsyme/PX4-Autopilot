@@ -1,6 +1,6 @@
 {
-  "last_run": "run36",
-  "run_id": "24379657450",
+  "last_run": "run37",
+  "run_id": "24413076645",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -36,6 +36,12 @@
       "phase": 5,
       "status": "12 proved, 0 sorry",
       "lean_file": "lean/FVSquad/Deadzone.lean"
+    },
+    {
+      "id": "MedianFilter",
+      "phase": 5,
+      "status": "6 proved, 0 sorry. Theorems: mem, const, ge_sorted_first, le_sorted_last, insert_lt, insert_head_wraps.",
+      "lean_file": "lean/FVSquad/MedianFilter.lean"
     },
     {
       "id": "interpolate",
@@ -74,6 +80,12 @@
       "lean_file": "lean/FVSquad/Expo.lean"
     },
     {
+      "id": "superexpo",
+      "phase": 5,
+      "status": "8 proved, 0 sorry. Theorems: denom_pos, zero, one, neg_one, odd, in_range, g_zero, endpoints_fixed.",
+      "lean_file": "lean/FVSquad/SuperExpo.lean"
+    },
+    {
       "id": "negate",
       "phase": 5,
       "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.",
@@ -82,37 +94,8 @@
     {
       "id": "RingBuffer",
       "phase": 5,
-      "status": "24 theorems + 17 examples, 0 sorry",
+      "status": "24 theorems + 19 examples, 0 sorry",
       "lean_file": "lean/FVSquad/RingBuffer.lean"
-    },
-    {
-      "id": "MedianFilter",
-      "phase": 5,
-      "status": "6 proved, 0 sorry. Theorems: range, head, spike rejection, commutativity.",
-      "lean_file": "lean/FVSquad/MedianFilter.lean"
-    },
-    {
-      "id": "superexpo",
-      "phase": 5,
-      "status": "8 proved, 0 sorry. Theorems: denom_pos, zero, one, neg_one, odd, in_range, g_zero, endpoints_fixed.",
-      "lean_file": "lean/FVSquad/SuperExpo.lean"
-    },
-    {
-      "id": "expo_deadzone",
-      "phase": 5,
-      "status": "Proved",
-      "lean_file": "lean/FVSquad/ExpoDeadzone.lean",
-      "notes": "8 theorems, 0 sorry (run35)"
-    },
-    {
-      "name": "interpolateNXY",
-      "file": "src/lib/mathlib/math/Functions.hpp",
-      "lean_file": "lean/FVSquad/InterpolateNXY.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorem_count": 9,
-      "sorry_count": 0,
-      "notes": "3-pt model; clamps, endpoints, continuity, range, monotonicity; all proved"
     }
   ],
   "open_prs": [],
@@ -128,13 +111,14 @@
       "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 183,
+  "total_theorems": 154,
   "total_sorry": 6,
-  "proved_theorems": 177,
+  "proved_theorems": 148,
   "sorry_count": 6,
-  "run34_tasks": "Task 3 (ExpoDeadzone: 8 theorems, 0 sorry) + Task 10 (REPORT.md: 144->162 theorems, 11->14 files)",
+  "total_examples": 47,
+  "run37_tasks": "Task 10 (REPORT.md: 144->154 theorems, 39->47 examples, 11->13 files) + Task 6 (CORRESPONDENCE.md: added MedianFilter + SuperExpo sections)",
   "report_exists": true,
-  "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer (push+pop)",
+  "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo",
   "notes": [
     "set tactic NOT available in Lean 4 stdlib",
     "norm_num tactic NOT available in Lean 4 stdlib",
@@ -146,6 +130,7 @@
     "Rat.le_of_lt works for le from lt",
     "neg/div: Rat.neg_div does not exist. Use Rat.div_def + Rat.neg_mul + simp [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]",
     "omega works for Nat.mod_lt and modular arithmetic",
-    "Unused theorem parameters: prefix with _ to suppress linter warning"
+    "Unused theorem parameters: prefix with _ to suppress linter warning",
+    "RingBuffer actual theorem count is 24 (not 28 as previously reported in REPORT.md)"
   ]
 }
