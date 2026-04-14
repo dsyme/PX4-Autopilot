@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-11 03:30 UTC
-- **Commit**: `9e23b0d970`
+- **Date**: 2026-04-14 17:24 UTC
+- **Commit**: `f383a8aa3d`
 
 This document describes how each Lean 4 definition in `formal-verification/lean/FVSquad/`
 corresponds to the original C++ source. It records the correspondence level, known
@@ -699,6 +699,89 @@ implementation.
 
 ---
 
+## `FVSquad/MedianFilter.lean`
+
+**C++ source**: `src/lib/mathlib/math/filter/MedianFilter.hpp`
+
+`MedianFilter<T, WINDOW>` is a sliding-window median filter. On each call to `insert()`, a
+new sample overwrites the oldest element in a circular buffer. `median()` sorts a copy of
+the buffer with `qsort` and returns `sorted[WINDOW / 2]`.
+
+### `PX4.MedianFilter.mfMedian`
+
+| Item | Lean | C++ | Level |
+|------|------|-----|-------|
+| `mfMedian` | `mfMedian (l : List Int) : Int` | `T median()` in `MedianFilter.hpp#L71` | **abstraction** |
+
+**Divergences**:
+- **Type**: Lean uses `List Int`; C++ uses a fixed-size `T[WINDOW]` array with template type `T`.
+- **Sort algorithm**: Lean uses `List.mergeSort intLE` (verified by stdlib lemmas); C++ uses `qsort`
+  with a custom comparator. Both are correct sorts of a total integer order — functionally equivalent.
+- **NaN/non-finite**: C++ `cmp` sorts NaN to the top (implementation-defined IEEE 754 behaviour).
+  This is not modelled — the Lean model assumes a total integer order.
+- **Zero-initialisation**: C++ zero-initialises the buffer; early calls before `WINDOW` inserts
+  return a mix of zeros and real data. The Lean model treats any list as a complete window, 
+  abstracting away the initialisation phase.
+
+**Impact on proofs**: `mfMedian_mem`, `mfMedian_const`, `mfMedian_ge_sorted_first`, and
+`mfMedian_le_sorted_last` are valid for any non-empty integer window list. The NaN omission
+means the C++ float behaviour for non-finite inputs is not covered.
+
+### `PX4.MedianFilter.mfInsert`
+
+| Item | Lean | C++ | Level |
+|------|------|-----|-------|
+| `mfInsert` | `mfInsert (head window : Nat) : Nat` | `_head = (_head + 1) % WINDOW` in `MedianFilter.hpp#L76` | **exact** |
+
+**Divergences**: None material. The C++ `_head` is `uint8_t` (max 255); Lean uses `Nat`.
+The `mfInsert_lt` theorem guarantees head stays in `[0, window)`, which covers all normal
+window sizes.
+
+**Impact on proofs**: `mfInsert_lt` and `mfInsert_head_wraps` are exact for any window size
+up to `uint8_t` maximum.
+
+---
+
+## `FVSquad/SuperExpo.lean`
+
+**C++ source**: `src/lib/mathlib/math/Functions.hpp#L103`
+
+`superexpo(value, e, g)` extends the `expo` RC stick curve with a "superrate" parameter `g`
+that boosts sensitivity near ±1. The C++ template computes:
+```cpp
+T x  = constrain(value, -1, 1);
+T gc = constrain(g, 0, 0.99);
+return expo(x, e) * (1 - gc) / (1 - fabsf(x) * gc);
+```
+
+### `PX4.SuperExpo.superexpoRat`
+
+| Item | Lean | C++ | Level |
+|------|------|-----|-------|
+| `superexpoRat` | `superexpoRat (v e g : Rat) : Rat` | `superexpo<T>(value, e, g)` in `Functions.hpp#L103` | **abstraction** |
+| `constrainRat` (reused) | imported from `FVSquad.Expo` | `constrain` in `Limits.hpp` | abstraction |
+| `expoRat` (reused) | imported from `FVSquad.Expo` | `expo` in `Functions.hpp` | abstraction |
+| `ratAbs` | `ratAbs (x : Rat) : Rat` | `fabsf(x)` | **exact** (for rationals) |
+
+**Divergences**:
+- **Type**: Lean uses `Rat` (exact); C++ uses `float` or `double`. IEEE 754 rounding is not
+  modelled.
+- **`gcMax`**: Lean uses `99/100`; C++ uses `0.99f` (a `float` approximation of 0.99). For
+  rational inputs this is exact. For `float` inputs, C++ may accept `gc` values slightly
+  outside `[0, 99/100]` due to rounding.
+- **`fabsf` vs `ratAbs`**: `fabsf` on `float` may differ from `|x|` on exact rationals by
+  float rounding; `ratAbs` is exact for `Rat`.
+- **Division**: Lean's `Rat` division is total and exact; C++ float division has rounding.
+  `superexpo_denom_pos` proves the denominator is always `> 0`, so division is safe.
+
+**Impact on proofs**: `superexpo_denom_pos`, `superexpo_odd`, `superexpo_in_range`,
+`superexpo_g_zero`, `superexpo_zero`, `superexpo_one`, `superexpo_neg_one`, and
+`superexpo_endpoints_fixed` all hold for the rational model. The float-rounding gap means
+the C++ result may differ from the rational result by an `ε` proportional to machine epsilon,
+but the range guarantee `[-1, 1]` and odd-symmetry are structurally exact.
+
+---
+
 ## Known Mismatches
 
 **`negate<int16_t>` involution failure** (severity: low–medium):
@@ -777,6 +860,8 @@ change the implementation to `return std::isfinite(val) ? ((T(0) <= val) ? 1 : -
 | `countSetBits` | `MathFunctions.lean` | `Functions.hpp` | exact (for Nat/uint) | Signed-type negative input not modelled |
 | `SlewRate::update` | `SlewRate.lean` | `SlewRate.hpp` | abstraction | Float, mutable state, `dt * rate` product |
 | `deadzone` | `Deadzone.lean` | `Functions.hpp` | abstraction | Float NaN/rounding; internal `constrain` calls not modelled |
+| `MedianFilter::median` | `MedianFilter.lean` | `MedianFilter.hpp` | abstraction | Float NaN; zero-init phase; `qsort` vs `mergeSort` |
+| `MedianFilter::insert` (head) | `MedianFilter.lean` | `MedianFilter.hpp` | exact | `uint8_t` cap vs `Nat` |
 | `interpolate` | `Interpolate.lean` | `Functions.hpp` | abstraction | Float NaN/rounding; precondition `x_low < x_high` explicit |
 | `AlphaFilter::updateCalculation` | `AlphaFilter.lean` | `AlphaFilter.hpp` | abstraction | Float NaN/rounding; quaternion specialisation not modelled |
 | `WelfordMean::update` | `WelfordMean.lean` | `WelfordMean.hpp` | abstraction | Kahan compensators, count overflow guard, non-finite inputs not modelled |
@@ -785,6 +870,7 @@ change the implementation to `return std::isfinite(val) ? ((T(0) <= val) ? 1 : -
 | `matrix::wrap<Integer>` | `WrapAngle.lean` | `helper_functions.hpp` | exact | Integer overflow (unbounded `Int` vs typed C++) |
 | `matrix::wrap_floating` / `wrap_pi` | `WrapAngle.lean` | `helper_functions.hpp` | approximation | 6 theorems `sorry`-guarded (need Mathlib floor); `e` not clamped in C++ |
 | `math::expo` | `Expo.lean` | `Functions.hpp` | abstraction | `e` not clamped in C++ but clamped in Lean model; float rounding not modelled |
+| `math::superexpo` | `SuperExpo.lean` | `Functions.hpp` | abstraction | Float rounding; `0.99f` vs `99/100` for `gcMax` |
 | `TimestampedRingBuffer` | `RingBuffer.lean` | `TimestampedRingBuffer.hpp` | abstraction | `pop_first_older_than` not modelled; `uint8_t` overflow not modelled; data array generic |
 
 > 🔬 Generated by Lean Squad automated formal verification.

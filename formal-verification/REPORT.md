@@ -2,24 +2,26 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 144 theorems · 39 verified examples · 6 `sorry` · Lean 4.29.0
+**Status**: 🔄 ACTIVE — 154 theorems · 47 verified examples · 6 `sorry` · Lean 4.29.0
 
 ## Last Updated
 
-- **Date**: 2026-04-12 09:06 UTC
-- **Commit**: `4f2b31985d`
+- **Date**: 2026-04-14 17:24 UTC
+- **Commit**: `f383a8aa3d`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **144 named theorems and 39 concrete examples** across
-**11 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`) and
+The Lean Squad has formally verified **154 named theorems and 47 concrete examples** across
+**13 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`) and
 the EKF2 ring-buffer (`src/lib/ringbuffer/`). Two genuine implementation bugs were discovered
 through formal verification: a `signNoZero<float>` NaN safety violation and an
 `negate<int16_t>` involution error. Six `sorry`-guarded theorems remain in `WrapAngle.lean`
-pending Mathlib support for floor arithmetic. All other 11 targets are sorry-free, verified
-by `lake build` with Lean 4.29.0.
+pending Mathlib support for floor arithmetic. All other 12 targets are sorry-free, verified
+by `lake build` with Lean 4.29.0. Recent additions include `SuperExpo.lean` (8 theorems,
+super-exponential RC curve shaping) and `MedianFilter.lean` (6 theorems + 6 examples,
+spike-rejection filter).
 
 ---
 
@@ -31,10 +33,10 @@ The proof files are organised into five thematic layers, mirroring the structure
 ```mermaid
 graph TD
     L1["Layer 1: Core Math<br/>MathFunctions.lean<br/>16 theorems · 17 examples"]
-    L2a["Layer 2: Signal Filters<br/>AlphaFilter.lean · SlewRate.lean · Deadzone.lean<br/>32 theorems · 5 examples"]
-    L2b["Layer 3: Interpolation & Curves<br/>Interpolate.lean · Lerp.lean · Expo.lean<br/>32 theorems"]
+    L2a["Layer 2: Signal Filters<br/>AlphaFilter.lean · SlewRate.lean · Deadzone.lean · MedianFilter.lean<br/>38 theorems · 11 examples"]
+    L2b["Layer 3: Interpolation & Curves<br/>Interpolate.lean · Lerp.lean · Expo.lean · SuperExpo.lean<br/>40 theorems"]
     L4["Layer 4: Integer Utilities<br/>Negate.lean · WrapAngle.lean<br/>28 theorems (6 sorry in WrapAngle)"]
-    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>36 theorems · 17 examples"]
+    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>32 theorems · 19 examples"]
     L1 --> L2a
     L1 --> L2b
     L1 --> L4
@@ -71,13 +73,14 @@ graph LR
 - `signNoZero_ne_zero`: result is always ±1 (integer model; NaN not modelled — see Findings)
 - `countSetBits_pow2`: bit-count of `2^n` is always 1
 
-### Layer 2 — Signal Filters (3 files, 32 theorems, 5 examples)
+### Layer 2 — Signal Filters (4 files, 38 theorems, 11 examples)
 
 ```mermaid
 graph LR
     AF["AlphaFilter.lean<br/>12 theorems<br/>IIR filter math"]
     SR["SlewRate.lean<br/>8 theorems · 5 examples<br/>Rate-limited output"]
     DZ["Deadzone.lean<br/>12 theorems<br/>Deadband suppression"]
+    MF["MedianFilter.lean<br/>6 theorems · 6 examples<br/>Spike-rejection filter"]
 ```
 
 **Key results**:
@@ -88,14 +91,20 @@ graph LR
 - `slewUpdate_steady_state`: when already at target, output is unchanged.
 - `deadzone_out_of_zone`: zero output for input in `[-dz, dz]`.
 - `deadzone_in_range`: output is always within `[-1, 1]` (no amplification of input).
+- `mfMedian_mem`: the median of any window is one of the window's elements (no hallucinated values).
+- `mfMedian_const`: a constant window returns that constant value.
+- `mfMedian_ge_sorted_first` / `_le_sorted_last`: median lies within the sorted range
+  (spike rejection property — outliers are suppressed, not amplified).
 
-### Layer 3 — Interpolation & Curves (3 files, 32 theorems)
+### Layer 3 — Interpolation & Curves (4 files, 40 theorems)
 
 ```mermaid
 graph LR
     IN["Interpolate.lean<br/>10 theorems<br/>Linear map + clamping"]
     LR["Lerp.lean<br/>10 theorems<br/>Convex combination"]
     EX["Expo.lean<br/>12 theorems<br/>RC stick curve (cubic)"]
+    SE["SuperExpo.lean<br/>8 theorems<br/>Superrate curve (quota boost)"]
+    EX --> SE
 ```
 
 **Key results**:
@@ -105,6 +114,11 @@ graph LR
 - `expo_odd`: RC stick expo function is odd — `expo(-e, x) = -expo(e, x)`.
 - `expo_fixed_zero`: `expo(e, 0) = 0` (zero input → zero output).
 - `expo_at_one`: `expo(e, 1) = 1` (full deflection maps to full output).
+- `superexpo_denom_pos`: the denominator `1 - |x|·gc` is always strictly positive — division
+  by zero cannot occur.
+- `superexpo_odd`: `superexpo(-v, e, g) = -superexpo(v, e, g)` — preserves stick sign symmetry.
+- `superexpo_in_range`: output always in `[-1, 1]` for any rational inputs.
+- `superexpo_g_zero`: when `g = 0` the function collapses exactly to `expo(v, e)`.
 
 ### Layer 4 — Integer Utilities (2 files, 28 theorems)
 
@@ -124,12 +138,12 @@ graph LR
 **Note**: `WrapAngle.lean` Part 2 (`wrapRat`) has 6 sorry-guarded theorems requiring
 `Int.floor` from Mathlib. The integer model (Part 1) is fully proved.
 
-### Layer 5 — Statistics & Buffers (2 files, 36 theorems, 17 examples)
+### Layer 5 — Statistics & Buffers (2 files, 32 theorems, 19 examples)
 
 ```mermaid
 graph LR
     WM["WelfordMean.lean<br/>8 theorems<br/>Online mean/variance"]
-    RB["RingBuffer.lean<br/>28 theorems · 17 examples<br/>FIFO index invariants + pop model"]
+    RB["RingBuffer.lean<br/>24 theorems · 19 examples<br/>FIFO index invariants + pop model"]
 ```
 
 **Key results**:
@@ -154,15 +168,17 @@ graph LR
 | `AlphaFilter.lean` | 12 | 0 | 0 | ✅ Phase 5 | IIR closed-form convergence |
 | `SlewRate.lean` | 8 | 5 | 0 | ✅ Phase 5 | No-overshoot actuator safety |
 | `Deadzone.lean` | 12 | 0 | 0 | ✅ Phase 5 | Deadband range containment |
+| `MedianFilter.lean` | 6 | 6 | 0 | ✅ Phase 5 | Spike-rejection: median membership + range |
 | `Interpolate.lean` | 10 | 0 | 0 | ✅ Phase 5 | Linear map range containment |
 | `Lerp.lean` | 10 | 0 | 0 | ✅ Phase 5 | Convex interpolation |
 | `Expo.lean` | 12 | 0 | 0 | ✅ Phase 5 | RC stick curve odd symmetry |
+| `SuperExpo.lean` | 8 | 0 | 0 | ✅ Phase 5 | Superrate curve: denom_pos, odd, range |
 | `Negate.lean` | 13 | 0 | 0 | ✅ Phase 5 | Overflow-safe negation — 🐛 bug found |
 | `WrapAngle.lean` | 15 | 0 | 6 | 🔄 Phase 4 | wrapInt: 8 proved; wrapRat: 6 sorry (Mathlib) |
 | `WelfordMean.lean` | 8 | 0 | 0 | ✅ Phase 5 | Online mean correctness |
-| `RingBuffer.lean` | 28 | 17 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
+| `RingBuffer.lean` | 24 | 19 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **144** | **39** | **6** | — | **2 bugs found** |
+| **Total** | **154** | **47** | **6** | — | **2 bugs found** |
 
 ---
 
@@ -305,9 +321,11 @@ timeline
         Advanced math  : WelfordMean, WrapAngle (integer model)
         Negate bug     : negate<int16_t> involution (issue 21)
     section Recent Runs
-        RingBuffer : 18 theorems, 0 sorry
+        RingBuffer : 24 theorems, 0 sorry
         Expo fix   : fresh-build simp proofs stabilised
         CI setup   : lean-ci.yml with lake update step
+        MedianFilter : spike-rejection filter, 6 theorems + 6 examples
+        SuperExpo  : RC superrate curve, 8 theorems, denom_pos + odd symmetry
 ```
 
 ---
@@ -336,4 +354,4 @@ timeline
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
 > *`lake build` verified with Lean 4.29.0. 6 `sorry` remain (WrapAngle wrapRat,
-> all require Mathlib floor arithmetic).*
+> all require Mathlib floor arithmetic). 154 theorems across 13 files.*
