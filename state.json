@@ -1,37 +1,126 @@
 {
-  "last_run": "run34",
-  "run_id": "24356794019",
+  "last_run": "2026-04-14T03:39Z",
+  "run_id": "24379657450",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
   "ci_has_lake_update": true,
   "mathlib_available": false,
   "fv_targets": [
-    {"id": "constrain", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "signNoZero", "phase": 5, "status": "6 proved, 0 sorry. BUG: NaN returns 0 - issue #12", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "countSetBits", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "SlewRate", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/SlewRate.lean"},
-    {"id": "deadzone", "phase": 5, "status": "12 proved, 0 sorry", "lean_file": "lean/FVSquad/Deadzone.lean"},
-    {"id": "interpolate", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Interpolate.lean"},
-    {"id": "AlphaFilter", "phase": 5, "status": "12 proved, 0 sorry", "lean_file": "lean/FVSquad/AlphaFilter.lean"},
-    {"id": "wrap_pi", "phase": 5, "status": "wrapInt: 8 proved 0 sorry. wrapRat: 7 theorems 6 sorry (Mathlib floor needed).", "lean_file": "lean/FVSquad/WrapAngle.lean"},
-    {"id": "WelfordMean", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/WelfordMean.lean"},
-    {"id": "lerp", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Lerp.lean"},
-    {"id": "expo", "phase": 5, "status": "12 proved, 0 sorry", "lean_file": "lean/FVSquad/Expo.lean"},
-    {"id": "negate", "phase": 5, "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.", "lean_file": "lean/FVSquad/Negate.lean"},
-    {"id": "RingBuffer", "phase": 5, "status": "24 theorems + 17 examples, 0 sorry", "lean_file": "lean/FVSquad/RingBuffer.lean"},
-    {"id": "MedianFilter", "phase": 5, "status": "6 proved, 0 sorry. Theorems: range, head, spike rejection, commutativity.", "lean_file": "lean/FVSquad/MedianFilter.lean"},
-    {"id": "superexpo", "phase": 5, "status": "8 proved, 0 sorry. Theorems: denom_pos, zero, one, neg_one, odd, in_range, g_zero, endpoints_fixed.", "lean_file": "lean/FVSquad/SuperExpo.lean"},
-    {"id": "expo_deadzone", "phase": 5, "status": "8 proved, 0 sorry. Theorems: in_range, zero, e0, e0_eq_deadzone, at_one, at_neg_one, odd, cubic.", "lean_file": "lean/FVSquad/ExpoDeadzone.lean", "notes": "Added run34. Composition of expo(deadzone(v,dz),e). Uses Expo.lean root namespace + PX4.Deadzone."}
+    {
+      "id": "constrain",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "signNoZero",
+      "phase": 5,
+      "status": "6 proved, 0 sorry. BUG: NaN returns 0 - issue #12",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "countSetBits",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/MathFunctions.lean"
+    },
+    {
+      "id": "SlewRate",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/SlewRate.lean"
+    },
+    {
+      "id": "deadzone",
+      "phase": 5,
+      "status": "12 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/Deadzone.lean"
+    },
+    {
+      "id": "interpolate",
+      "phase": 5,
+      "status": "10 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/Interpolate.lean"
+    },
+    {
+      "id": "AlphaFilter",
+      "phase": 5,
+      "status": "12 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/AlphaFilter.lean"
+    },
+    {
+      "id": "wrap_pi",
+      "phase": 5,
+      "status": "wrapInt: 8 proved 0 sorry. wrapRat: 7 theorems 6 sorry (Mathlib floor needed).",
+      "lean_file": "lean/FVSquad/WrapAngle.lean"
+    },
+    {
+      "id": "WelfordMean",
+      "phase": 5,
+      "status": "8 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/WelfordMean.lean"
+    },
+    {
+      "id": "lerp",
+      "phase": 5,
+      "status": "10 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/Lerp.lean"
+    },
+    {
+      "id": "expo",
+      "phase": 5,
+      "status": "12 proved, 0 sorry",
+      "lean_file": "lean/FVSquad/Expo.lean"
+    },
+    {
+      "id": "negate",
+      "phase": 5,
+      "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.",
+      "lean_file": "lean/FVSquad/Negate.lean"
+    },
+    {
+      "id": "RingBuffer",
+      "phase": 5,
+      "status": "24 theorems + 17 examples, 0 sorry",
+      "lean_file": "lean/FVSquad/RingBuffer.lean"
+    },
+    {
+      "id": "MedianFilter",
+      "phase": 5,
+      "status": "6 proved, 0 sorry. Theorems: range, head, spike rejection, commutativity.",
+      "lean_file": "lean/FVSquad/MedianFilter.lean"
+    },
+    {
+      "id": "superexpo",
+      "phase": 5,
+      "status": "8 proved, 0 sorry. Theorems: denom_pos, zero, one, neg_one, odd, in_range, g_zero, endpoints_fixed.",
+      "lean_file": "lean/FVSquad/SuperExpo.lean"
+    },
+    {
+      "id": "expo_deadzone",
+      "phase": 5,
+      "status": "Proved",
+      "lean_file": "lean/FVSquad/ExpoDeadzone.lean",
+      "notes": "8 theorems, 0 sorry (run35)"
+    }
   ],
   "open_prs": [],
   "bugs_found": [
-    {"id": "signNoZero_nan", "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.", "status": "GitHub issue #12 filed"},
-    {"id": "negate_int16_not_involution", "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.", "status": "GitHub issue #21 filed"}
+    {
+      "id": "signNoZero_nan",
+      "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.",
+      "status": "GitHub issue #12 filed"
+    },
+    {
+      "id": "negate_int16_not_involution",
+      "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.",
+      "status": "GitHub issue #21 filed"
+    }
   ],
-  "total_theorems": 162,
+  "total_theorems": 172,
   "total_sorry": 6,
-  "proved_theorems": 156,
+  "proved_theorems": 166,
   "sorry_count": 6,
   "run34_tasks": "Task 3 (ExpoDeadzone: 8 theorems, 0 sorry) + Task 10 (REPORT.md: 144->162 theorems, 11->14 files)",
   "report_exists": true,
