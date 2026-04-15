@@ -11,22 +11,21 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 |---|------|------|-------|--------|-----------|-------|
 | 1 | `math::constrain<Int>` | `src/lib/mathlib/math/Limits.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 8 theorems, 0 sorry |
 | 2 | `math::signNoZero<Int>` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 6 theorems, 0 sorry |
-| 3 | `math::countSetBits` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 9 concrete + pow2 induction |
-| 4 | `SlewRate::update` | `src/lib/slew_rate/SlewRate.hpp` | 5 | ✅ Proved | `lean/FVSquad/SlewRate.lean` | 5 theorems, 0 sorry |
+| 3 | `math::countSetBits` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/MathFunctions.lean` | 2 theorems + 9 concrete examples |
+| 4 | `SlewRate::update` | `src/lib/slew_rate/SlewRate.hpp` | 5 | ✅ Proved | `lean/FVSquad/SlewRate.lean` | 8 theorems, 0 sorry |
 | 5 | `math::interpolate` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Interpolate.lean` | 10 theorems, 0 sorry |
-| 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 12 proved, **0 sorry** |
-| 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 1 | ⬜ Research | — | Needs Mathlib Real/fract |
-| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 5 | ✅ Proved | `lean/FVSquad/WelfordMean.lean` | 7 proved, 1 sorry (M2 non-neg needs Mathlib) |
+| 6 | `math::deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | 13 theorems, 0 sorry (incl. `deadzone_odd` anti-symmetry) |
 | 7 | `matrix::wrap_pi` | `src/lib/matrix/matrix/` | 3 | 🔄 Lean Spec | `lean/FVSquad/WrapAngle.lean` | 8 proved (wrapInt), 6 sorry (wrapRat needs Mathlib floor); informal spec written |
-| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written; Lean stubs next |
-| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 proved, 0 sorry |
-| 10 | `RingBuffer` circular buffer | `src/lib/ringbuffer/TimestampedRingBuffer.hpp` | 2 | ✅ Proofs | `lean/FVSquad/RingBuffer.lean` | 18 theorems, 0 sorry. Index invariants, FIFO correctness, fill/overflow semantics proved. `pop_first_older_than` deferred. |
-| 11 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Lerp.lean` | 9 proved, 1 sorry (lerp_half needs Rat inv arithmetic); informal spec written |
-| 12 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Expo.lean` | RC stick curve; 12 theorems, 0 sorry (odd symmetry, range containment, fixed points) |
+| 8 | `WelfordMean` online mean/variance | `src/lib/mathlib/math/WelfordMean.hpp` | 5 | ✅ Proved | `lean/FVSquad/WelfordMean.lean` | 8 theorems, 0 sorry |
+| 9 | `AlphaFilter::update` | `src/lib/mathlib/math/filter/AlphaFilter.hpp` | 5 | ✅ Done | `lean/FVSquad/AlphaFilter.lean` | 12 theorems, 0 sorry |
+| 10 | `RingBuffer` circular buffer | `src/lib/ringbuffer/TimestampedRingBuffer.hpp` | 5 | ✅ Proved | `lean/FVSquad/RingBuffer.lean` | 24 theorems, 0 sorry. Index invariants, FIFO correctness, fill/overflow semantics. |
+| 11 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Lerp.lean` | 10 theorems, 0 sorry |
+| 12 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Expo.lean` | RC stick curve; 12 theorems, 0 sorry |
 | 13 | `math::negate<int16_t>` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proofs — 🐛 Bug found | `lean/FVSquad/Negate.lean` | Overflow-safe negation; 13 theorems proved; non-involution bug found |
-| 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 5 | ✅ Proved | `lean/FVSquad/MedianFilter.lean` | 6 theorems + 6 concrete examples; spike rejection, range containment, head invariant |
-
-| 14 | `math::superexpo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SuperExpo.lean` | RC superrate curve; 8 theorems, 0 sorry (denom_pos, zero, ±1 fixed points, odd symmetry, range ⊆ [-1,1], g=0 reduces to expo) |
+| 14 | `MedianFilter` | `src/lib/mathlib/math/filter/MedianFilter.hpp` | 5 | ✅ Proved | `lean/FVSquad/MedianFilter.lean` | 6 theorems + 6 concrete examples |
+| 15 | `math::superexpo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SuperExpo.lean` | RC superrate curve; 8 theorems, 0 sorry |
+| 16 | `math::expo_deadzone` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/ExpoDeadzone.lean` | Composed expo+deadzone pipeline; 8 theorems, 0 sorry |
+| 17 | `math::interpolateNXY` (3-pt) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/InterpolateNXY.lean` | Piecewise-linear 3-point table interpolation; 11 theorems, 0 sorry |
 
 ## Non-Lean Targets (other tools recommended)
 
