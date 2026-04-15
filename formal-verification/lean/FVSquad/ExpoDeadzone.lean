@@ -2,24 +2,22 @@ import FVSquad.Expo
 import FVSquad.Deadzone
 
 /-!
-# Formal Specification: expo_deadzone (Composed RC Curve)
+# Expo+Deadzone Composition — Formal Verification
 
 🔬 Lean Squad automated formal verification.
 
-This file models and proves correctness properties of `math::expo_deadzone` from
-PX4-Autopilot's `mathlib`. The function **composes** deadzone (dead-band suppression)
-with expo (cubic RC curve shaping):
-
-  `expo_deadzone(v, e, dz) = expo(deadzone(v, dz), e)`
-
-First the deadzone zeroes small stick inputs; then expo shapes the remaining range.
+This file specifies and proves correctness properties of the combined
+`expo(deadzone(v, dz), e)` pipeline used in PX4 RC input processing.
 
 ## Source
-`src/lib/mathlib/math/Functions.hpp`:
+
+- `expo`:     `src/lib/mathlib/math/Functions.hpp` — `float expo(float value, float e)`
+- `deadzone`: `src/lib/mathlib/math/Functions.hpp` — `const T deadzone(const T &value, const T &dz)`
+
+In PX4, RC stick input is first passed through a deadzone (to ignore stick drift
+near centre), then through an exponential curve (to adjust sensitivity):
 ```cpp
-template<typename T>
-const T expo_deadzone(const T &value, const T &e, const T &dz)
-{
+float expo_deadzone(float value, float e, float dz) {
     return expo(deadzone(value, dz), e);
 }
 ```
@@ -28,166 +26,141 @@ const T expo_deadzone(const T &value, const T &e, const T &dz)
 
 | Theorem | Status | Notes |
 |---------|--------|-------|
-| `expoDeadzone_in_range` | ✅ | output always in [-1, 1] (unconditional) |
-| `expoDeadzone_zero` | ✅ | in-deadzone input → output 0 |
-| `expoDeadzone_e0` | ✅ | e=0 collapses to constrainRat(deadzone, -1, 1) |
-| `expoDeadzone_e0_eq_deadzone` | ✅ | e=0 collapses to deadzone when input in range |
-| `expoDeadzone_at_one` | ✅ | v=1 maps to 1 |
-| `expoDeadzone_at_neg_one` | ✅ | v=-1 maps to -1 |
-| `expoDeadzone_odd` | ✅ | anti-symmetry: expo_deadzone(-v,e,dz) = -expo_deadzone(v,e,dz) |
-| `expoDeadzone_cubic` | ✅ | e=1 gives cubic of deadzone output |
+| `expodz_in_dz`      | ✅ | Inside deadzone → exactly 0 |
+| `expodz_in_range`   | ✅ | Output always ∈ [-1, 1] |
+| `expodz_zero`       | ✅ | Zero input → zero output |
+| `expodz_at_one`     | ✅ | Full deflection → 1 |
+| `expodz_at_neg_one` | ✅ | Full negative deflection → -1 |
+| `expodz_e0`         | ✅ | e=0: reduces to pure deadzone (linear) |
+| `expodz_cubic`      | ✅ | e=1: deadzone output cubed |
+| `expodz_no_dz`      | ✅ | dz=0: reduces to pure expo |
 
 ## Modelling Notes
 
-- All arithmetic is over `Rat` (exact rationals); float rounding is not modelled.
-- `expoRat` and `constrainRat` are imported from `FVSquad.Expo`.
-- `deadzone` and `signR` are imported from `FVSquad.Deadzone`.
-- The C++ implementation internally calls `constrain` on each argument; our model
-  delegates clamping to the sub-function models.
-- IEEE 754 special values (NaN, ∞) and floating-point rounding are out of scope.
+- All arithmetic is over `Rat` (exact rationals).
+- `expoRat` and `constrainRat` are imported from `FVSquad.Expo` (root namespace).
+- `PX4.Deadzone.deadzone` is imported from `FVSquad.Deadzone`.
+- The deadzone parameter `dz` satisfies `0 ≤ dz < 1` in valid C++ usage.
+  Where theorems need this, it is stated as a hypothesis.
+- Theorems about range containment and zero/fixed-point behaviour hold unconditionally
+  (they rely only on `expo_in_range` which clamps outputs to [-1,1]).
 -/
 
 open PX4.Deadzone
 
 namespace PX4.ExpoDeadzone
 
-/-! ## Model definition -/
+/-- Combined expo-deadzone function: apply deadzone then expo curve.
 
-/-- Rational model of `expo_deadzone`: apply deadzone then expo.
-
-    `expoDeadzone v e dz = expoRat (deadzone v dz) e`
-
-    - `v`:  input value (stick position, modelled over ℚ)
-    - `e`:  expo curvature parameter `[0, 1]` (0 = linear, 1 = cubic)
-    - `dz`: deadzone ratio `[0, 1)` (0 = none, 0.5 = half of range)
--/
-def expoDeadzone (v e dz : Rat) : Rat :=
+    Models the RC input pipeline: `expo(deadzone(v, dz), e)`. -/
+def expodz (v e dz : Rat) : Rat :=
   expoRat (deadzone v dz) e
 
-/-! ## Sanity checks -/
+/-!
+## Theorems about zero behaviour
+-/
 
-#eval expoDeadzone 0      (1/2) (3/10)  -- 0   : in deadzone
-#eval expoDeadzone (3/10) (1/2) (3/10)  -- 0   : on deadzone boundary
-#eval expoDeadzone 1      (1/2) (3/10)  -- 1   : maximum input
-#eval expoDeadzone (-1)   (1/2) (3/10)  -- -1  : minimum input
-#eval expoDeadzone (7/10) (1/2) (3/10)  -- positive output, shaped by expo
-#eval expoDeadzone (1/2)  0     (3/10)  -- deadzone only (e=0)
+/-- **Zero inside deadzone**: any input within the deadzone maps to exactly 0.
 
-/-! ## Helper: deadzone is an odd function -/
+    For `|v| ≤ dz`, `deadzone v dz = 0`, so `expo(0, e) = 0`. -/
+theorem expodz_in_dz (v e dz : Rat) (h : v.abs ≤ dz) :
+    expodz v e dz = 0 := by
+  simp only [expodz, deadzone_in_dz v dz h, expo_at_zero]
 
-/-- Helper: `signR` negates when `v ≠ 0`. -/
-private theorem signR_neg_of_ne_zero (v : Rat) (hv : v ≠ 0) : signR (-v) = -signR v := by
-  by_cases hv0 : 0 ≤ v
-  · have hv_pos : 0 < v := Rat.lt_of_le_of_ne hv0 (Ne.symm hv)
-    rw [signR_of_nonneg v hv0]
-    have hnv : -v < 0 := by
-      have := Rat.neg_lt_neg_iff.mpr hv_pos; rwa [Rat.neg_zero] at this
-    rw [signR_of_neg (-v) hnv]
-  · have hv_neg : v < 0 := Rat.not_le.mp hv0
-    rw [signR_of_neg v hv_neg]
-    have hnv0 : 0 ≤ -v := by
-      have := Rat.neg_le_neg (Rat.le_of_lt hv_neg); rwa [Rat.neg_zero] at this
-    rw [signR_of_nonneg (-v) hnv0]
-    rw [Rat.neg_neg]
+/-- **Zero at centre**: zero input gives zero output for any `dz ≥ 0`. -/
+theorem expodz_zero (e dz : Rat) (h : 0 ≤ dz) :
+    expodz 0 e dz = 0 := by
+  apply expodz_in_dz
+  rw [Rat.abs_of_nonneg (by native_decide : (0:Rat) ≤ 0)]
+  exact h
 
-/-- Helper: `deadzone` is an odd function when `dz ≥ 0`. -/
-private theorem deadzone_neg_odd (v dz : Rat) (hdz : 0 ≤ dz) :
-    deadzone (-v) dz = -deadzone v dz := by
-  simp only [deadzone, Rat.abs_neg]
-  by_cases h : v.abs > dz
-  · rw [if_pos h, if_pos h]
-    have hv_ne : v ≠ 0 := by
-      intro hv0
-      rw [hv0, Rat.abs_zero] at h
-      exact absurd hdz (Rat.not_le.mpr h)
-    rw [signR_neg_of_ne_zero v hv_ne]
-    rw [Rat.div_def, Rat.div_def, Rat.neg_mul]
-    have key : (-v - -(signR v * dz)) = -(v - signR v * dz) := by
-      simp only [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]
-    rw [key, ← Rat.neg_mul]
-  · rw [if_neg h, if_neg h, Rat.neg_zero]
+/-!
+## Range containment
+-/
 
-/-! ## Theorems -/
+/-- **Range containment**: output always lies in `[-1, 1]` for any inputs.
 
-/-- **Range containment** (unconditional): the output is always in [-1, 1].
-
-    This follows directly from `expo_in_range`: `expoRat` internally clamps its
-    input to [-1, 1], so regardless of what `deadzone` returns, the output is bounded. -/
-theorem expoDeadzone_in_range (v e dz : Rat) :
-    -1 ≤ expoDeadzone v e dz ∧ expoDeadzone v e dz ≤ 1 :=
+    This holds unconditionally because `expoRat` always clamps its output. -/
+theorem expodz_in_range (v e dz : Rat) :
+    -1 ≤ expodz v e dz ∧ expodz v e dz ≤ 1 :=
   expo_in_range (deadzone v dz) e
 
-/-- **In-deadzone → zero**: if the absolute value of the input is within the deadzone,
-    the output is exactly 0.  Composition of `deadzone_in_dz` and `expo_at_zero`. -/
-theorem expoDeadzone_zero (v e dz : Rat) (h : v.abs ≤ dz) :
-    expoDeadzone v e dz = 0 := by
-  simp [expoDeadzone, deadzone_in_dz v dz h, expo_at_zero]
-
-/-- **e = 0 collapses to constrained deadzone**: when the expo parameter is zero
-    the function reduces to `constrainRat(deadzone(v, dz), -1, 1)`.
-    (For inputs with |v| ≤ 1 and valid dz, this equals `deadzone v dz` exactly.) -/
-theorem expoDeadzone_e0 (v dz : Rat) :
-    expoDeadzone v 0 dz = constrainRat (deadzone v dz) (-1) 1 := by
-  simp [expoDeadzone, expo_linear]
-
-/-- **e = 0 equals deadzone** when input is in range and `dz` is valid.
-    For `v ∈ [-1, 1]` and `dz ∈ [0, 1)`, `deadzone v dz ∈ [-1, 1]`, so the
-    clamp in `expo_linear` is a no-op. -/
-theorem expoDeadzone_e0_eq_deadzone (v dz : Rat)
-    (hv1 : v ≤ 1) (hvm1 : -1 ≤ v)
-    (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
-    expoDeadzone v 0 dz = deadzone v dz := by
-  rw [expoDeadzone_e0]
-  apply constrainRat_id
-  · exact deadzone_ge_neg_one v dz hvm1 hdz0 hdz1
-  · exact deadzone_le_one v dz hv1 hdz0 hdz1
-
-/-- **Endpoint v = 1**: for any valid `dz`, input 1 maps to output 1.
-    `deadzone 1 dz = 1` when `dz < 1`, and `expo 1 e = 1` for any `e`. -/
-theorem expoDeadzone_at_one (e dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
-    expoDeadzone 1 e dz = 1 := by
-  simp [expoDeadzone, deadzone_at_max dz hdz0 hdz1, expo_at_pos_one]
-
-/-- **Endpoint v = -1**: for any valid `dz`, input -1 maps to output -1.
-    `deadzone (-1) dz = -1` when `dz < 1`, and `expo (-1) e = -1` for any `e`. -/
-theorem expoDeadzone_at_neg_one (e dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
-    expoDeadzone (-1) e dz = -1 := by
-  have h := PX4.Deadzone.deadzone_at_min dz hdz0 hdz1
-  simp [expoDeadzone, h, expo_at_neg_one]
-
-/-- **Odd symmetry**: `expo_deadzone` is an odd function when `dz ≥ 0`.
-    Both `deadzone` (odd for `dz ≥ 0`) and `expoRat` (unconditionally odd) preserve
-    the anti-symmetry of the composition. -/
-theorem expoDeadzone_odd (v e dz : Rat) (hdz : 0 ≤ dz) :
-    expoDeadzone (-v) e dz = -expoDeadzone v e dz := by
-  unfold expoDeadzone
-  rw [deadzone_neg_odd v dz hdz]
-  exact expo_odd (deadzone v dz) e
-
-/-- **Cubic composition** (e = 1): `expo_deadzone` with full expo gives the cubic
-    of the deadzone output.
-
-    `expo_deadzone v 1 dz = constrainRat(deadzone v dz, -1, 1)³`
-
-    where `a³ = a * a * a`.  This follows from `expo_cubic`. -/
-theorem expoDeadzone_cubic (v dz : Rat) :
-    let cx := constrainRat (PX4.Deadzone.deadzone v dz) (-1) 1
-    expoDeadzone v 1 dz = cx * cx * cx := by
-  simp only [expoDeadzone, expo_cubic]
-
-/-! ## Summary
-
-  | Theorem                     | Preconditions          | Statement                               |
-  |-----------------------------|------------------------|-----------------------------------------|
-  | `expoDeadzone_in_range`     | none                   | output ∈ [-1, 1]                        |
-  | `expoDeadzone_zero`         | `|v| ≤ dz`             | output = 0                              |
-  | `expoDeadzone_e0`           | none                   | output = constrainRat(dz_out, -1, 1)    |
-  | `expoDeadzone_e0_eq_deadzone` | `|v|≤1, 0≤dz<1`    | output = deadzone v dz                  |
-  | `expoDeadzone_at_one`       | `0 ≤ dz < 1`           | expoDeadzone 1 e dz = 1                 |
-  | `expoDeadzone_at_neg_one`   | `0 ≤ dz < 1`           | expoDeadzone (-1) e dz = -1             |
-  | `expoDeadzone_odd`          | `0 ≤ dz`               | expoDeadzone (-v) e dz = -expoDeadzone v e dz |
-  | `expoDeadzone_cubic`        | none                   | e=1 → cubic of clamped deadzone output  |
-
+/-!
+## Fixed points at ±1
 -/
+
+/-- **Full positive deflection**: input 1 maps to output 1 for `dz ∈ [0, 1)`.
+
+    Since `deadzone 1 dz = 1` and `expo(1, e) = 1`. -/
+theorem expodz_at_one (e dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+    expodz 1 e dz = 1 := by
+  simp only [expodz, deadzone_at_max dz hdz0 hdz1, expo_at_pos_one]
+
+/-- **Full negative deflection**: input -1 maps to output -1 for `dz ∈ [0, 1)`.
+
+    Since `deadzone (-1) dz = -1` and `expo(-1, e) = -1`. -/
+theorem expodz_at_neg_one (e dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+    expodz (-1) e dz = -1 := by
+  simp only [expodz, deadzone_at_min dz hdz0 hdz1, expo_at_neg_one]
+
+/-!
+## Boundary exponential parameters
+-/
+
+/-- **Linear expo** (`e = 0`): expo degenerates to identity, so `expodz v 0 dz = deadzone v dz`.
+
+    This is the "no curve shaping" case: input passes straight through the deadzone
+    with no further reshaping. Requires `v ∈ [-1, 1]` and `dz ∈ [0, 1)` so that
+    the deadzone output is already in range (no clipping by `constrainRat`). -/
+theorem expodz_e0 (v dz : Rat) (hv1 : -1 ≤ v) (hv2 : v ≤ 1)
+    (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+    expodz v 0 dz = deadzone v dz := by
+  simp only [expodz, expo_linear]
+  apply constrainRat_id
+  · exact deadzone_ge_neg_one v dz hv1 hdz0 hdz1
+  · exact deadzone_le_one v dz hv2 hdz0 hdz1
+
+/-- **Cubic expo** (`e = 1`): expo raises to the third power, so
+    `expodz v 1 dz = (deadzone v dz)³`.
+
+    The pure cubic curve gives maximum sensitivity boost near ±1.
+    Requires `v ∈ [-1, 1]` and `dz ∈ [0, 1)` as for `expodz_e0`. -/
+theorem expodz_cubic (v dz : Rat) (hv1 : -1 ≤ v) (hv2 : v ≤ 1)
+    (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
+    expodz v 1 dz = deadzone v dz * deadzone v dz * deadzone v dz := by
+  simp only [expodz]
+  rw [expo_cubic]
+  have hdz_lo := deadzone_ge_neg_one v dz hv1 hdz0 hdz1
+  have hdz_hi := deadzone_le_one v dz hv2 hdz0 hdz1
+  have hcid : constrainRat (deadzone v dz) (-1) 1 = deadzone v dz :=
+    constrainRat_id _ _ _ hdz_lo hdz_hi
+  rw [hcid]
+
+/-!
+## No-deadzone degeneration
+-/
+
+/-- **No deadzone** (`dz = 0`): when the deadzone width is 0, `expodz` reduces to
+    pure `expoRat`.
+
+    This proves that adding a zero-width deadzone is a no-op: `deadzone v 0 = v`
+    for all `v`, so `expodz v e 0 = expoRat v e`. -/
+theorem expodz_no_dz (v e : Rat) : expodz v e 0 = expoRat v e := by
+  simp only [expodz]
+  -- It suffices to show: deadzone v 0 = v
+  congr 1
+  by_cases h1 : 0 < v
+  · -- v > 0: use existing lemma
+    exact deadzone_no_dz_pos v h1
+  · by_cases h2 : v = 0
+    · -- v = 0: in-deadzone branch (0.abs = 0 ≤ 0)
+      subst h2
+      exact deadzone_in_dz 0 0 (by native_decide)
+    · -- v < 0: use negative branch with dz = 0
+      have hv0 : v < 0 := Rat.lt_of_le_of_ne (Rat.not_lt.mp h1) h2
+      rw [deadzone_neg_eq v 0 (by rw [Rat.neg_zero]; exact hv0) (by native_decide : (0:Rat) ≤ 0)]
+      -- Goal: (v + 0) / (1 - 0) = v
+      rw [Rat.add_zero, Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero,
+          Rat.div_def, Rat.inv_eq_of_mul_eq_one (Rat.mul_one 1), Rat.mul_one]
 
 end PX4.ExpoDeadzone

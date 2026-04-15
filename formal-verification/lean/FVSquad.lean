@@ -12,3 +12,6 @@ import FVSquad.Lerp
 import FVSquad.Negate
 import FVSquad.Expo
 import FVSquad.RingBuffer
+import FVSquad.MedianFilter
+import FVSquad.SuperExpo
+import FVSquad.ExpoDeadzone

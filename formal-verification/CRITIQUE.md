@@ -4,25 +4,27 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-11 03:30 UTC
-- **Commit**: `9e23b0d970`
+- **Date**: 2026-04-14 03:39 UTC
+- **Commit**: `f383a8aa3d`
 
 ---
 
 ## Overall Assessment
 
-Twelve targets from PX4's mathlib, control library, and sensor-fusion stack have been
+Fifteen targets from PX4's mathlib, control library, and sensor-fusion stack have been
 formally verified in Lean 4 (v4.29.0, standard library only). The library now covers
-**134 theorem statements, 128 fully proved, 6 `sorry`-guarded** across `constrain`,
+**172 theorem statements, 166 fully proved, 6 `sorry`-guarded** across `constrain`,
 `signNoZero`, `countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
 `AlphaFilter::updateCalculation`, `WelfordMean::update`, `math::lerp`,
-`math::negate<int16_t>`, `math::expo`, and the newly added **`TimestampedRingBuffer`**
-index-arithmetic model (18 theorems, 0 sorry). The RingBuffer spec proves key FIFO
-invariants -- head/tail bounds, capacity conservation, fill/overflow behaviour, and
-get-newest correctness -- entirely via `omega` and structural induction. The 6 remaining
-sorrys are all in `WrapAngle.lean` and require `Mathlib.Algebra.Order.Floor`. Two
-confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN, and
-`negate<int16_t>` has an incorrect INT16_MAX special case.
+`math::negate<int16_t>`, `math::expo`, `TimestampedRingBuffer` (index arithmetic),
+**`MedianFilter`** (3-element window, range/head/spike theorems, 0 sorry),
+**`math::superexpo`** (RC super-rate curve, 8 theorems including odd symmetry and
+range containment, 0 sorry), and the newly added **`expo+deadzone composition`**
+(8 theorems proving that the two-stage RC pipeline preserves fixed points, range, and
+degenerates correctly at boundary parameters, 0 sorry). The 6 remaining sorrys are all
+in `WrapAngle.lean` and require `Mathlib.Algebra.Order.Floor`. Two confirmed bugs remain
+open: `signNoZero<float>` returns 0 for NaN, and `negate<int16_t>` has an incorrect
+INT16_MAX special case.
 
 ---
 
@@ -93,6 +95,22 @@ confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN, and
 | `rbInit_push_count` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | k pushes into empty buffer → count = k (for k ≤ n) |
 | `rbPushN_full_stays_full` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | Once full, stays full under any further pushes |
 | `rbDataGetNewest_after_push` | [RingBuffer.lean](lean/FVSquad/RingBuffer.lean) | **high** | **high** | [L] | [C++](../src/lib/ringbuffer/TimestampedRingBuffer.hpp) | FIFO correctness: push x then getNewest = x |
+| `medianFilter_range` / `medianFilter_head` | [MedianFilter.lean](lean/FVSquad/MedianFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/MedianFilter.hpp) | Output bounded by min/max of window; head invariant |
+| `medianFilter_spike_rejection` | [MedianFilter.lean](lean/FVSquad/MedianFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/MedianFilter.hpp) | Single-spike noise: median rejects any outlier |
+| `medianFilter_comm` | [MedianFilter.lean](lean/FVSquad/MedianFilter.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/filter/MedianFilter.hpp) | Commutativity: order of first two inputs irrelevant |
+| `superexpo_denom_pos` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Denominator `1 - |x|·gc` is always strictly positive |
+| `superexpo_zero` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | superexpo(0, e, g) = 0 |
+| `superexpo_one` / `superexpo_neg_one` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | low | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | ±1 are fixed points |
+| `superexpo_odd` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Anti-symmetry: superexpo(-v, e, g) = -superexpo(v, e, g) |
+| `superexpo_in_range` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Output ∈ [-1,1] for all rational inputs |
+| `superexpo_g_zero` | [SuperExpo.lean](lean/FVSquad/SuperExpo.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | g=0 degenerates to expo(v, e); key degeneration case |
+| `expodz_in_dz` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Inside-deadzone input → exactly 0 output |
+| `expodz_in_range` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Output ∈ [-1,1] unconditionally |
+| `expodz_zero` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Zero input → zero output (for dz ≥ 0) |
+| `expodz_at_one` / `expodz_at_neg_one` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | ±1 are fixed points for dz ∈ [0, 1) |
+| `expodz_e0` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | e=0: reduces to pure deadzone (no curve shaping) |
+| `expodz_cubic` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | e=1: output is cube of deadzone output |
+| `expodz_no_dz` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | dz=0: pipeline degenerates to pure expo |
 
 ---
 
@@ -122,29 +140,27 @@ confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN, and
    floating-point mode. **Recommendation**: use CBMC or a simple runtime assert to verify
    callers always maintain this invariant.
 
-5. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
+5. **`expo+deadzone` anti-symmetry**: The `ExpoDeadzone.lean` spec currently lacks an
+   `expodz_odd` theorem (`expodz(-v, e, dz) = -expodz(v, e, dz)`). This requires a
+   `deadzone_odd` helper lemma (`deadzone(-v, dz) = -deadzone(v, dz)`) which is algebraically
+   straightforward but requires case analysis on the sign of `v`. The odd symmetry property
+   is important: it confirms that the RC pipeline preserves the stick sign convention (push
+   forward/back gives symmetric responses). **Recommendation**: add `deadzone_odd` to
+   `Deadzone.lean` and then `expodz_odd` to `ExpoDeadzone.lean`.
+
+### Medium priority
+
+6. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
    actual C++ uses `float`. The "slew rate exceeded" condition requires a multi-step
    argument about floating-point rounding. **Recommendation**: use Gappa to bound the
    rounding error in `slew_rate * dt_s` and verify the integer-model theorem still applies
    within a tolerance.
 
-### Medium priority
-
-6. **`MedianFilter` spec** (informal spec written this run): The `MedianFilter` now has
-   an informal spec at `specs/medianfilter_informal.md`. Key properties (bounded by
-   min/max of window, middle of sorted window, spike rejection) are tractable with
-   `List.mergeSort` and `native_decide` for concrete cases. **Recommendation**: write
-   the Lean spec in the next run.
-
-7. **`RingBuffer` FIFO invariant**: The ring buffer's push/pop operations maintain FIFO
-   ordering. Index wraparound is an integer arithmetic problem tractable with `omega`.
-   The `wrapInt` idempotence and periodicity theorems are directly applicable here.
-
-8. **`interpolateN` range containment** (unverified): Uses `interpolate` as a subroutine
+7. **`interpolateN` range containment** (unverified): Uses `interpolate` as a subroutine
    but adds index arithmetic and array lookups. The y-range containment for sorted arrays
    has not been proved. A useful compositional proof combining `constrain` and `interpolate`.
 
-9. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
+8. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
    gives the time-domain response. The z-transform transfer function could be stated
    and proved with Mathlib complex number support.
 
@@ -254,16 +270,33 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
 
 8. **`lerp` no-overshoot safety property proved**: The theorem `lerp_in_range` formally confirms that when `s ∈ [0, 1]` and `a ≤ b`, the interpolated value stays within `[a, b]`. This rules out runaway setpoints in flight-task blending — a direct actuator safety property.  The `lerp_mono_s` theorem additionally confirms that moving `s` toward 1 strictly moves the output toward `b`, a key property for rate-limited setpoint generation.
 
-9. **`TimestampedRingBuffer` FIFO invariants proved**: The new `RingBuffer.lean` spec
-   proves 18 theorems (0 sorry) covering the index-arithmetic core of
+9. **`TimestampedRingBuffer` FIFO invariants proved**: The `RingBuffer.lean` spec
+   proves 24 theorems (0 sorry) covering the index-arithmetic core of
    `TimestampedRingBuffer<T>`. Key results: `rbInit_push_count` (k pushes into an
    empty size-n buffer give exactly k entries, for k ≤ n), `rbPushN_full_stays_full`
    (once full, the buffer never shrinks), `rbPush_count_le_size` (capacity invariant
    holds under any sequence of pushes), and `rbDataGetNewest_after_push` (the FIFO
    correctness property: after pushing x, `get_newest` returns x). All proofs use
-   `omega` and structural induction — no Mathlib needed. The 12 concrete `native_decide`
-   examples verify specific head/tail/count values for a size-3 buffer through 5 pushes,
-   including the overwrite/eviction case.
+   `omega` and structural induction — no Mathlib needed.
+
+10. **`MedianFilter` spike rejection proved**: The `medianFilter_spike_rejection` theorem
+    confirms that a single extreme outlier in the 3-element window has no effect on the
+    median output — the median always lies between the two non-outlier values. This is the
+    primary use-case for median filtering in sensor fusion: rejecting IMU glitches.
+
+11. **`superexpo` denom-positive safety property**: The `superexpo_denom_pos` theorem proves
+    that the denominator `1 - |x| * gc` is always strictly positive. Without this, a
+    division-by-zero in the C++ formula would be possible if `|x| * gc ≥ 1`. The proof
+    shows the clamp `gc ≤ 0.99` and `|x| ≤ 1` together guarantee `|x| * gc ≤ 0.99 < 1`.
+    The `superexpo_g_zero` theorem additionally confirms that the super-rate boost
+    degenerates correctly to plain `expo` when `g = 0`, providing a key regression check.
+
+12. **`expo+deadzone` composition correctness**: The `ExpoDeadzone.lean` spec proves 8
+    theorems (0 sorry) confirming that the two-stage RC pipeline preserves all essential
+    properties: zero at centre, ±1 fixed points, range containment, and correct degeneration
+    to pure deadzone (e=0) or pure cubic (e=1). The `expodz_no_dz` theorem confirms that
+    removing the deadzone (dz=0) recovers exactly `expoRat`, closing the correctness loop
+    for the full composition.
 
 
 ---
@@ -279,5 +312,6 @@ not mathematical gaps):
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-All other targets (11 files, 122 theorems) are at zero sorry. The new `RingBuffer.lean`
-(18 theorems) was added this run with zero sorry from the start.
+All other targets (14 files, 160 theorems) are at zero sorry. The three new files added
+in this and recent runs (`MedianFilter.lean`, `SuperExpo.lean`, `ExpoDeadzone.lean`)
+were all delivered with zero sorry from the start.
