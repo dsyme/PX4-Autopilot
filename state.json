@@ -1,6 +1,6 @@
 {
-  "last_run": "run37",
-  "run_id": "24413076645",
+  "last_run": "run38",
+  "run_id": "24435072219",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -131,6 +131,8 @@
     "neg/div: Rat.neg_div does not exist. Use Rat.div_def + Rat.neg_mul + simp [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]",
     "omega works for Nat.mod_lt and modular arithmetic",
     "Unused theorem parameters: prefix with _ to suppress linter warning",
-    "RingBuffer actual theorem count is 24 (not 28 as previously reported in REPORT.md)"
-  ]
+    "RingBuffer actual theorem count is 24 (not 28 as previously reported in REPORT.md)",
+    "CI lean-ci.yml is healthy: lake update + caching + failure artifacts. Added GITHUB_STEP_SUMMARY in run38."
+  ],
+  "run38_tasks": "Task 7 (CRITIQUE.md: 12->14 targets, 134->154 theorems, added MedianFilter+SuperExpo rows) + Task 9 (CI audit: healthy, added GITHUB_STEP_SUMMARY output)"
 }
