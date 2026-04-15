@@ -260,6 +260,38 @@ theorem deadzone_at_min (dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
     rw [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]]
   rw [Rat.div_def, Rat.neg_mul, Rat.mul_inv_cancel _ h1ne]
 
+/-- **Odd symmetry**: `deadzone` is an odd function for `dz ≥ 0`.
+
+    `deadzone (-x) dz = -(deadzone x dz)` — negating the input negates the output.
+    This is a key structural property of the RC stick deadzone, confirming it preserves
+    sign symmetry (no DC bias introduced). -/
+theorem deadzone_odd (x dz : Rat) (hdz : 0 ≤ dz) :
+    deadzone (-x) dz = -(deadzone x dz) := by
+  by_cases h1 : dz < x
+  · have hneg : -x < -dz := Rat.neg_lt_neg h1
+    rw [deadzone_pos_eq x dz h1 hdz, deadzone_neg_eq (-x) dz hneg hdz, Rat.div_def, Rat.div_def]
+    have hfact : -((x - dz) * (1 - dz)⁻¹) = (-(x - dz)) * (1 - dz)⁻¹ := by
+      rw [← Rat.neg_mul]
+    rw [hfact]; congr 1
+    rw [Rat.neg_sub x dz, Rat.sub_eq_add_neg]
+    exact (Rat.add_comm dz (-x)).symm
+  · by_cases h2 : x < -dz
+    · have hpos : dz < -x := by have := Rat.neg_lt_neg h2; rwa [Rat.neg_neg] at this
+      rw [deadzone_neg_eq x dz h2 hdz, deadzone_pos_eq (-x) dz hpos hdz, Rat.div_def, Rat.div_def]
+      have hfact : -((x + dz) * (1 - dz)⁻¹) = (-(x + dz)) * (1 - dz)⁻¹ := by
+        rw [← Rat.neg_mul]
+      rw [hfact]; congr 1
+      rw [Rat.neg_add, Rat.sub_eq_add_neg]
+    · have hin : x.abs ≤ dz := by
+        have hhi := Rat.not_lt.mp h1
+        have hlo := Rat.not_lt.mp h2
+        by_cases hx0 : 0 ≤ x
+        · rw [Rat.abs_of_nonneg hx0]; exact hhi
+        · rw [Rat.abs_of_nonpos (Rat.le_of_lt (Rat.not_le.mp hx0))]
+          exact Rat.neg_le_iff.mpr hlo
+      rw [deadzone_in_dz x dz hin, deadzone_in_dz (-x) dz (by rwa [Rat.abs_neg]),
+          Rat.neg_zero]
+
 /-! ## Summary of proved properties
 
   | Theorem                 | Statement                                             | Status  |
@@ -276,6 +308,7 @@ theorem deadzone_at_min (dz : Rat) (hdz0 : 0 ≤ dz) (hdz1 : dz < 1) :
   | `deadzone_at_min`       | `deadzone (-1) dz = -1` (for `dz < 1`)               | ✅ Proved |
   | `deadzone_le_one`       | `x ≤ 1, 0 ≤ dz < 1 → deadzone x dz ≤ 1`             | ✅ Proved |
   | `deadzone_ge_neg_one`   | `-1 ≤ x, 0 ≤ dz < 1 → -1 ≤ deadzone x dz`           | ✅ Proved |
+  | `deadzone_odd`          | `dz ≥ 0 → deadzone (-x) dz = -(deadzone x dz)`       | ✅ Proved |
 -/
 
 end PX4.Deadzone
