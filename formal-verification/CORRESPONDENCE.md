@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-14 17:24 UTC
-- **Commit**: `f383a8aa3d`
+- **Date**: 2026-04-16 09:47 UTC
+- **Commit**: `803557bb1a`
 
 This document describes how each Lean 4 definition in `formal-verification/lean/FVSquad/`
 corresponds to the original C++ source. It records the correspondence level, known
@@ -782,6 +782,162 @@ but the range guarantee `[-1, 1]` and odd-symmetry are structurally exact.
 
 ---
 
+## `FVSquad/ExpoDeadzone.lean`
+
+Source file: `formal-verification/lean/FVSquad/ExpoDeadzone.lean`
+
+### `PX4.ExpoDeadzone.expodz`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.ExpoDeadzone.expodz` | `expo_deadzone` (inline composition) | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) | **abstraction** | Composition model; float NaN/rounding not modelled |
+
+**C++ pattern** (inline in PX4 RC input stack):
+```cpp
+float expo_deadzone(float value, float e, float dz) {
+    return expo(deadzone(value, dz), e);
+}
+```
+
+**Lean definition**:
+```lean
+def expodz (v e dz : Rat) : Rat :=
+  expoRat (deadzone v dz) e
+```
+
+**Divergences**:
+1. **Composition only**: The C++ `expo_deadzone` is an inline composition pattern rather
+   than a named library function. The Lean model faithfully captures the intended
+   two-stage pipeline: deadzone is applied first, then expo.
+2. **Type**: C++ uses `float`; Lean uses `Rat`. IEEE 754 NaN, infinity, and rounding are
+   not modelled.
+3. **Component correspondence**: `expoRat` corresponds to `math::expo` (see `Expo.lean`
+   section) and `PX4.Deadzone.deadzone` corresponds to `math::deadzone` (see `Deadzone.lean`
+   section). Both component divergences apply here transitively.
+4. **`dz` range**: The C++ imposes `0 ≤ dz < 1` by convention; the Lean model accepts
+   arbitrary `dz` but several theorems require `0 ≤ dz` or `dz < 1` as hypotheses.
+
+**Impact on proofs**: All 9 theorems hold for the rational model. They characterise the
+combined pipeline: deadzone zeroing, range containment, fixed points at ±1, reduction to
+pure expo when `dz=0`, reduction to deadzone when `e=0`, and odd symmetry. The component
+divergences (float rounding, NaN) apply identically to the individual `expo` and
+`deadzone` models and are documented in their respective sections.
+
+---
+
+## `FVSquad/InterpolateNXY.lean`
+
+Source file: `formal-verification/lean/FVSquad/InterpolateNXY.lean`
+
+### `PX4.InterpolateNXY.interp3`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.InterpolateNXY.interp3` | `math::interpolateNXY<T, 3>` | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) | **abstraction** | N=3 only; rational arithmetic; NaN/overflow not modelled |
+
+**C++ source** (N=3 instantiation):
+```cpp
+template<typename T, size_t N>
+const T interpolateNXY(const T &value, const T(&x)[N], const T(&y)[N]) {
+    size_t index = 0;
+    while ((value > x[index + 1]) && (index < (N - 2))) { index++; }
+    return interpolate(value, x[index], x[index + 1], y[index], y[index + 1]);
+}
+```
+
+**Lean definition**:
+```lean
+def interp3 (v x0 x1 x2 y0 y1 y2 : Rat) : Rat :=
+  if v > x1 then interpolate v x1 x2 y1 y2
+  else interpolate v x0 x1 y0 y1
+```
+
+**Divergences**:
+1. **N=3 only**: The C++ template is generic in `N`. The Lean model covers exactly the
+   N=3 case. For larger N, the structural symmetry of the proofs (low clamp, endpoint
+   exactness, segment continuity, range containment, segment monotonicity) would carry
+   over to each segment pair by induction.
+2. **Index computation**: The C++ walks an index from 0 to N−2 using a while loop.
+   For N=3 with rational arithmetic, `index = 1` iff `value > x[1]`, which is exactly
+   captured by the `if v > x1` branch.
+3. **Sorted precondition**: The C++ does not enforce sorted breakpoints; it silently
+   produces incorrect results if `x` is not sorted. All Lean theorems that rely on
+   inter-segment behaviour require `x0 < x1 < x2` or `x0 ≤ x1 ≤ x2` as hypotheses.
+4. **Type and NaN**: C++ is templated (`float`, `double`, etc.); Lean uses `Rat`. IEEE
+   754 NaN and infinity are not modelled.
+
+**Impact on proofs**: The 9 theorems (`interp3_low_clamp`, `interp3_high_clamp`,
+`interp3_at_x0`, `interp3_at_x1_lo`, `interp3_at_x1_hi`, `interp3_at_x2`,
+`interp3_continuity`, `interp3_in_range`, `interp3_mono_seg0`, `interp3_mono_seg1`)
+validly characterise the N=3 piecewise-linear lookup. The breakpoint continuity theorem
+(`interp3_continuity`: both segments agree at `x1`) is particularly valuable as it rules
+out a class of boundary-condition bugs. The sorted-breakpoint precondition is explicit and
+mirrors the real C++ usage requirement.
+
+---
+
+## `FVSquad/InterpolateN.lean`
+
+Source file: `formal-verification/lean/FVSquad/InterpolateN.lean`
+
+### `PX4.InterpolateN.interpN2` / `PX4.InterpolateN.interpN3`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.InterpolateN.interpN2` | `math::interpolateN<T, 2>` | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) | **exact** | Rational model; N=2 trivially one segment |
+| `PX4.InterpolateN.interpN3` | `math::interpolateN<T, 3>` | [`src/lib/mathlib/math/Functions.hpp`](../src/lib/mathlib/math/Functions.hpp) | **abstraction** | Rational model; index-truncation logic faithfully captured |
+
+**C++ source** (approx. line 180):
+```cpp
+template<typename T, size_t N>
+const T interpolateN(const T &value, const T(&y)[N]) {
+    size_t index = constrain((int)(value * (N - 1)), 0, (int)(N - 2));
+    return interpolate(value,
+                       (T)index / (T)(N - 1),
+                       (T)(index + 1) / (T)(N - 1),
+                       y[index], y[index + 1]);
+}
+```
+
+**Lean definitions**:
+```lean
+-- N=2: trivially wraps interpolate over [0, 1]
+def interpN2 (value y0 y1 : Rat) : Rat := interpolate value 0 1 y0 y1
+
+-- N=3: explicit if/else for the two segments, breakpoint at 1/2
+def interpN3 (value y0 y1 y2 : Rat) : Rat :=
+  if value < half then interpolate value 0 half y0 y1
+  else interpolate value half 1 y1 y2
+```
+
+**Divergences**:
+1. **Index computation fidelity**: The C++ truncates `value * (N-1)` to an integer via
+   `(int)(...)`. For N=3 and rational `value`:
+   - `value < 1/2` → `(int)(value * 2) = 0` → segment 0.
+   - `value ≥ 1/2` → `(int)(value * 2) ≥ 1` → segment 1.
+   The `if value < half` branch in `interpN3` captures this exactly for rationals.
+   For floats, values very close to `1/2` could behave differently due to IEEE 754
+   rounding of `value * 2` — this is the primary divergence for float instantiations.
+2. **N=2 and N=3 only**: The C++ template is generic. The Lean model verifies only the
+   N=2 and N=3 cases. For N > 3, the uniform-grid breakpoint structure (`k/(N-1)`) would
+   require a more general inductive model.
+3. **`constrain` in index computation**: The C++ calls `constrain((int)(value * (N-1)),
+   0, N-2)` to clamp the index. For `value ∈ [0, 1]` with N=2, the index is always 0
+   (no clamping needed). For N=3, the index is 0 or 1. The Lean `if value < half` branch
+   subsumes the `constrain` clamp: values outside `[0, 1]` produce extrapolation from
+   the appropriate end segment, matching C++ clamping behaviour.
+4. **Type and NaN**: C++ is templated; Lean uses `Rat`. IEEE 754 NaN, infinity, and
+   overflow are not modelled.
+
+**Impact on proofs**: The 18 theorems cover both N=2 (5 theorems: endpoints, bounds,
+range) and N=3 (13 theorems: node exactness, breakpoint continuity, range containment,
+segment-wise monotonicity, constancy). The **breakpoint continuity** theorem
+(`interpN3_continuity`) confirms no jump at `value = 1/2`. The **monotonicity** theorems
+(`interpN3_mono_seg0`, `interpN3_mono_seg1`) confirm that the piecewise-linear function
+preserves input order within each segment. All 18 theorems are sorry-free.
+
+---
+
 ## Known Mismatches
 
 **`negate<int16_t>` involution failure** (severity: low–medium):
@@ -871,6 +1027,10 @@ change the implementation to `return std::isfinite(val) ? ((T(0) <= val) ? 1 : -
 | `matrix::wrap_floating` / `wrap_pi` | `WrapAngle.lean` | `helper_functions.hpp` | approximation | 6 theorems `sorry`-guarded (need Mathlib floor); `e` not clamped in C++ |
 | `math::expo` | `Expo.lean` | `Functions.hpp` | abstraction | `e` not clamped in C++ but clamped in Lean model; float rounding not modelled |
 | `math::superexpo` | `SuperExpo.lean` | `Functions.hpp` | abstraction | Float rounding; `0.99f` vs `99/100` for `gcMax` |
+| `expo_deadzone` (inline) | `ExpoDeadzone.lean` | `Functions.hpp` | abstraction | Composition model; float NaN/rounding not modelled; `dz` range by hypothesis |
+| `math::interpolateNXY` (N=3) | `InterpolateNXY.lean` | `Functions.hpp` | abstraction | N=3 only; sorted breakpoints required; float NaN/overflow not modelled |
+| `math::interpolateN` (N=2) | `InterpolateN.lean` | `Functions.hpp` | **exact** | Rational model; trivially one segment |
+| `math::interpolateN` (N=3) | `InterpolateN.lean` | `Functions.hpp` | abstraction | Index-truncation `if < 1/2` faithfully models C++ cast; float close-to-1/2 gap |
 | `TimestampedRingBuffer` | `RingBuffer.lean` | `TimestampedRingBuffer.hpp` | abstraction | `pop_first_older_than` not modelled; `uint8_t` overflow not modelled; data array generic |
 
 > 🔬 Generated by Lean Squad automated formal verification.
