@@ -2,26 +2,27 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 154 theorems · 47 verified examples · 6 `sorry` · Lean 4.29.0
+**Status**: 🔄 ACTIVE — 214 theorems · 106 verified examples · 6 `sorry` · Lean 4.29.0
 
 ## Last Updated
 
-- **Date**: 2026-04-14 17:24 UTC
-- **Commit**: `f383a8aa3d`
+- **Date**: 2026-04-16 03:45 UTC
+- **Commit**: `ea96182bfe`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **154 named theorems and 47 concrete examples** across
-**13 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`) and
+The Lean Squad has formally verified **214 named theorems and 106 concrete examples** across
+**17 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`) and
 the EKF2 ring-buffer (`src/lib/ringbuffer/`). Two genuine implementation bugs were discovered
 through formal verification: a `signNoZero<float>` NaN safety violation and an
 `negate<int16_t>` involution error. Six `sorry`-guarded theorems remain in `WrapAngle.lean`
-pending Mathlib support for floor arithmetic. All other 12 targets are sorry-free, verified
-by `lake build` with Lean 4.29.0. Recent additions include `SuperExpo.lean` (8 theorems,
-super-exponential RC curve shaping) and `MedianFilter.lean` (6 theorems + 6 examples,
-spike-rejection filter).
+pending Mathlib support for floor arithmetic. All other 16 targets are sorry-free, verified
+by `lake build` with Lean 4.29.0. Recent additions include `ExpoDeadzone.lean` (9 theorems,
+two-stage RC pipeline: expo ∘ deadzone), `InterpolateNXY.lean` (9 theorems, N-point
+piecewise-linear with explicit breakpoints), and `InterpolateN.lean` (18 theorems, uniform-grid
+piecewise-linear with continuity, monotonicity, and range containment for N=2 and N=3).
 
 ---
 
@@ -33,12 +34,14 @@ The proof files are organised into five thematic layers, mirroring the structure
 ```mermaid
 graph TD
     L1["Layer 1: Core Math<br/>MathFunctions.lean<br/>16 theorems · 17 examples"]
-    L2a["Layer 2: Signal Filters<br/>AlphaFilter.lean · SlewRate.lean · Deadzone.lean · MedianFilter.lean<br/>38 theorems · 11 examples"]
-    L2b["Layer 3: Interpolation & Curves<br/>Interpolate.lean · Lerp.lean · Expo.lean · SuperExpo.lean<br/>40 theorems"]
+    L2a["Layer 2: Signal Filters<br/>AlphaFilter · SlewRate · Deadzone · MedianFilter<br/>45 theorems · 20 examples"]
+    L2b["Layer 3: Basic Curves<br/>Interpolate · Lerp · Expo · SuperExpo<br/>54 theorems · 14 examples"]
+    L2c["Layer 3b: Compound Curves<br/>ExpoDeadzone · InterpolateNXY · InterpolateN<br/>36 theorems · 22 examples"]
     L4["Layer 4: Integer Utilities<br/>Negate.lean · WrapAngle.lean<br/>28 theorems (6 sorry in WrapAngle)"]
-    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>32 theorems · 19 examples"]
+    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>35 theorems · 22 examples"]
     L1 --> L2a
     L1 --> L2b
+    L2b --> L2c
     L1 --> L4
     L2a --> L5
 ```
@@ -73,14 +76,14 @@ graph LR
 - `signNoZero_ne_zero`: result is always ±1 (integer model; NaN not modelled — see Findings)
 - `countSetBits_pow2`: bit-count of `2^n` is always 1
 
-### Layer 2 — Signal Filters (4 files, 38 theorems, 11 examples)
+### Layer 2 — Signal Filters (4 files, 45 theorems, 20 examples)
 
 ```mermaid
 graph LR
-    AF["AlphaFilter.lean<br/>12 theorems<br/>IIR filter math"]
-    SR["SlewRate.lean<br/>8 theorems · 5 examples<br/>Rate-limited output"]
-    DZ["Deadzone.lean<br/>12 theorems<br/>Deadband suppression"]
-    MF["MedianFilter.lean<br/>6 theorems · 6 examples<br/>Spike-rejection filter"]
+    AF["AlphaFilter.lean<br/>13 theorems · 8 examples<br/>IIR filter math"]
+    SR["SlewRate.lean<br/>9 theorems · 5 examples<br/>Rate-limited output"]
+    DZ["Deadzone.lean<br/>13 theorems · 7 examples<br/>Deadband suppression"]
+    MF["MedianFilter.lean<br/>10 theorems · 6 examples<br/>Spike-rejection filter"]
 ```
 
 **Key results**:
@@ -96,14 +99,14 @@ graph LR
 - `mfMedian_ge_sorted_first` / `_le_sorted_last`: median lies within the sorted range
   (spike rejection property — outliers are suppressed, not amplified).
 
-### Layer 3 — Interpolation & Curves (4 files, 40 theorems)
+### Layer 3 — Basic Curves (4 files, 54 theorems, 14 examples)
 
 ```mermaid
 graph LR
-    IN["Interpolate.lean<br/>10 theorems<br/>Linear map + clamping"]
-    LR["Lerp.lean<br/>10 theorems<br/>Convex combination"]
-    EX["Expo.lean<br/>12 theorems<br/>RC stick curve (cubic)"]
-    SE["SuperExpo.lean<br/>8 theorems<br/>Superrate curve (quota boost)"]
+    IN["Interpolate.lean<br/>10 theorems · 8 examples<br/>Linear map + clamping"]
+    LR["Lerp.lean<br/>10 theorems · 6 examples<br/>Convex combination"]
+    EX["Expo.lean<br/>17 theorems<br/>RC stick curve (cubic)"]
+    SE["SuperExpo.lean<br/>17 theorems<br/>Superrate curve (quota boost)"]
     EX --> SE
 ```
 
@@ -119,6 +122,34 @@ graph LR
 - `superexpo_odd`: `superexpo(-v, e, g) = -superexpo(v, e, g)` — preserves stick sign symmetry.
 - `superexpo_in_range`: output always in `[-1, 1]` for any rational inputs.
 - `superexpo_g_zero`: when `g = 0` the function collapses exactly to `expo(v, e)`.
+
+### Layer 3b — Compound Curves (3 files, 36 theorems, 22 examples)
+
+These files compose or generalise the basic curves above.
+
+```mermaid
+graph LR
+    EZD["ExpoDeadzone.lean<br/>9 theorems<br/>expo ∘ deadzone pipeline"]
+    NXY["InterpolateNXY.lean<br/>9 theorems · 7 examples<br/>N-pt piecewise-linear (explicit breakpoints)"]
+    NUN["InterpolateN.lean<br/>18 theorems · 15 examples<br/>N-pt piecewise-linear (uniform grid)"]
+    IN["Interpolate.lean"] --> EZD
+    IN --> NXY
+    IN --> NUN
+```
+
+**Key results**:
+- `expoDeadzone_zero`: `expo_deadzone(0, e, dz) = 0`.
+- `expoDeadzone_in_range`: pipeline output is always in `[-1, 1]`.
+- `expoDeadzone_odd`: `expo_deadzone(-v, e, dz) = -expo_deadzone(v, e, dz)` — odd symmetry
+  preserved through the two-stage RC curve pipeline.
+- `interp3_in_range`: 3-point NXY output always within `[min(y), max(y)]`.
+- `interp3_mono_seg0` / `_seg1`: output is monotone within each piecewise-linear segment.
+- `interp3_endpoint_lo` / `_hi`: clamping behaviour at both ends confirmed.
+- `interpN2_at_nodes`: N=2 uniform interpolation is exact at both endpoints.
+- `interpN3_continuity`: N=3 interpolation is continuous at the interior breakpoint
+  (`value = 0.5` gives the same result from both segments).
+- `interpN3_in_range`: N=3 output always within `[min(y₀,y₁,y₂), max(y₀,y₁,y₂)]`.
+- `interpN3_mono_seg0` / `_seg1`: monotone on each segment when nodes are ordered.
 
 ### Layer 4 — Integer Utilities (2 files, 28 theorems)
 
@@ -138,17 +169,18 @@ graph LR
 **Note**: `WrapAngle.lean` Part 2 (`wrapRat`) has 6 sorry-guarded theorems requiring
 `Int.floor` from Mathlib. The integer model (Part 1) is fully proved.
 
-### Layer 5 — Statistics & Buffers (2 files, 32 theorems, 19 examples)
+### Layer 5 — Statistics & Buffers (2 files, 35 theorems, 22 examples)
 
 ```mermaid
 graph LR
-    WM["WelfordMean.lean<br/>8 theorems<br/>Online mean/variance"]
+    WM["WelfordMean.lean<br/>11 theorems · 3 examples<br/>Online mean/variance"]
     RB["RingBuffer.lean<br/>24 theorems · 19 examples<br/>FIFO index invariants + pop model"]
 ```
 
 **Key results**:
 - `welfordFold_mean`: Welford online algorithm computes exactly `sum(xs)/length(xs)`.
-- `M2_nonneg`: variance accumulator `M2` is always non-negative.
+- `welfordUpdate_M2_nonneg`: variance accumulator `M2` is always non-negative.
+- `M2_nonneg`: fold-level M2 non-negativity (safety for variance extraction).
 - `rbPush_count_le_size`: element count never exceeds buffer capacity (safety invariant).
 - `rbPushN_full_stays_full`: once full, a buffer stays full under any sequence of pushes.
 - `rbDataGetNewest_after_push`: after pushing `x`, `getNewest` returns `x` (FIFO correctness).
@@ -165,20 +197,23 @@ graph LR
 | File | Theorems | Examples | Sorry | Phase | Key result |
 |------|----------|----------|-------|-------|------------|
 | `MathFunctions.lean` | 16 | 17 | 0 | ✅ Phase 5 | constrain/signNoZero/countSetBits |
-| `AlphaFilter.lean` | 12 | 0 | 0 | ✅ Phase 5 | IIR closed-form convergence |
-| `SlewRate.lean` | 8 | 5 | 0 | ✅ Phase 5 | No-overshoot actuator safety |
-| `Deadzone.lean` | 12 | 0 | 0 | ✅ Phase 5 | Deadband range containment |
-| `MedianFilter.lean` | 6 | 6 | 0 | ✅ Phase 5 | Spike-rejection: median membership + range |
-| `Interpolate.lean` | 10 | 0 | 0 | ✅ Phase 5 | Linear map range containment |
-| `Lerp.lean` | 10 | 0 | 0 | ✅ Phase 5 | Convex interpolation |
-| `Expo.lean` | 12 | 0 | 0 | ✅ Phase 5 | RC stick curve odd symmetry |
-| `SuperExpo.lean` | 8 | 0 | 0 | ✅ Phase 5 | Superrate curve: denom_pos, odd, range |
+| `AlphaFilter.lean` | 13 | 8 | 0 | ✅ Phase 5 | IIR closed-form convergence |
+| `SlewRate.lean` | 9 | 5 | 0 | ✅ Phase 5 | No-overshoot actuator safety |
+| `Deadzone.lean` | 13 | 7 | 0 | ✅ Phase 5 | Deadband range containment + odd symmetry |
+| `MedianFilter.lean` | 10 | 6 | 0 | ✅ Phase 5 | Spike-rejection: median membership + range |
+| `Interpolate.lean` | 10 | 8 | 0 | ✅ Phase 5 | Linear map range containment |
+| `Lerp.lean` | 10 | 6 | 0 | ✅ Phase 5 | Convex interpolation |
+| `Expo.lean` | 17 | 0 | 0 | ✅ Phase 5 | RC stick curve odd symmetry + fixed points |
+| `SuperExpo.lean` | 17 | 0 | 0 | ✅ Phase 5 | Superrate curve: denom_pos, odd, range |
+| `ExpoDeadzone.lean` | 9 | 0 | 0 | ✅ Phase 5 | expo∘deadzone pipeline: range + odd symmetry |
+| `InterpolateNXY.lean` | 9 | 7 | 0 | ✅ Phase 5 | 3-pt piecewise-linear: endpoints, continuity, range |
+| `InterpolateN.lean` | 18 | 15 | 0 | ✅ Phase 5 | Uniform-grid N=2/N=3: continuity, mono, range |
 | `Negate.lean` | 13 | 0 | 0 | ✅ Phase 5 | Overflow-safe negation — 🐛 bug found |
-| `WrapAngle.lean` | 15 | 0 | 6 | 🔄 Phase 4 | wrapInt: 8 proved; wrapRat: 6 sorry (Mathlib) |
-| `WelfordMean.lean` | 8 | 0 | 0 | ✅ Phase 5 | Online mean correctness |
+| `WrapAngle.lean` | 15 | 5 | 6 | 🔄 Phase 4 | wrapInt: 9 proved; wrapRat: 6 sorry (Mathlib) |
+| `WelfordMean.lean` | 11 | 3 | 0 | ✅ Phase 5 | Online mean correctness |
 | `RingBuffer.lean` | 24 | 19 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **154** | **47** | **6** | — | **2 bugs found** |
+| **Total** | **214** | **106** | **6** | — | **2 bugs found** |
 
 ---
 
@@ -324,8 +359,13 @@ timeline
         RingBuffer : 24 theorems, 0 sorry
         Expo fix   : fresh-build simp proofs stabilised
         CI setup   : lean-ci.yml with lake update step
-        MedianFilter : spike-rejection filter, 6 theorems + 6 examples
-        SuperExpo  : RC superrate curve, 8 theorems, denom_pos + odd symmetry
+        MedianFilter : spike-rejection filter, 10 theorems + 6 examples
+        SuperExpo  : RC superrate curve, 17 theorems, denom_pos + odd symmetry
+        ExpoDeadzone : expo∘deadzone pipeline, 9 theorems, odd symmetry proved
+        InterpolateNXY : 3-pt piecewise-linear with explicit breakpoints, 9 theorems
+        InterpolateN : uniform-grid N=2/N=3, 18 theorems, continuity + mono
+    section Next
+        Hysteresis : time-delayed boolean state machine (informal spec written)
 ```
 
 ---
@@ -354,4 +394,4 @@ timeline
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
 > *`lake build` verified with Lean 4.29.0. 6 `sorry` remain (WrapAngle wrapRat,
-> all require Mathlib floor arithmetic). 154 theorems across 13 files.*
+> all require Mathlib floor arithmetic). 214 theorems across 17 files.*
