@@ -1,6 +1,6 @@
 {
-  "last_run": "run40",
-  "run_id": "24468137822",
+  "last_run": "run41",
+  "run_id": "24490871249",
   "lean_version": "4.29.0",
   "lean_available": true,
   "ci_created": true,
@@ -29,7 +29,7 @@
     {
       "id": "SlewRate",
       "phase": 5,
-      "status": "8 proved, 0 sorry",
+      "status": "9 proved, 0 sorry",
       "lean_file": "lean/FVSquad/SlewRate.lean"
     },
     {
@@ -41,7 +41,7 @@
     {
       "id": "MedianFilter",
       "phase": 5,
-      "status": "6 proved, 0 sorry + 6 examples",
+      "status": "10 proved, 0 sorry + 6 examples",
       "lean_file": "lean/FVSquad/MedianFilter.lean"
     },
     {
@@ -53,19 +53,19 @@
     {
       "id": "AlphaFilter",
       "phase": 5,
-      "status": "12 proved, 0 sorry",
+      "status": "13 proved, 0 sorry",
       "lean_file": "lean/FVSquad/AlphaFilter.lean"
     },
     {
       "id": "wrap_pi",
       "phase": 3,
-      "status": "wrapInt: 8 proved 0 sorry. wrapRat: 7 theorems 6 sorry (Mathlib floor needed).",
+      "status": "wrapInt: 9 proved 0 sorry. wrapRat: 6 theorems, 6 sorry (Mathlib floor needed).",
       "lean_file": "lean/FVSquad/WrapAngle.lean"
     },
     {
       "id": "WelfordMean",
       "phase": 5,
-      "status": "8 proved, 0 sorry",
+      "status": "11 proved, 0 sorry",
       "lean_file": "lean/FVSquad/WelfordMean.lean"
     },
     {
@@ -77,13 +77,13 @@
     {
       "id": "expo",
       "phase": 5,
-      "status": "12 proved, 0 sorry",
+      "status": "17 proved, 0 sorry",
       "lean_file": "lean/FVSquad/Expo.lean"
     },
     {
       "id": "superexpo",
       "phase": 5,
-      "status": "8 proved, 0 sorry",
+      "status": "17 proved, 0 sorry",
       "lean_file": "lean/FVSquad/SuperExpo.lean"
     },
     {
@@ -107,17 +107,24 @@
     {
       "id": "InterpolateNXY",
       "phase": 5,
-      "status": "11 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry",
+      "status": "9 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry",
       "lean_file": "lean/FVSquad/InterpolateNXY.lean"
     },
     {
       "id": "InterpolateN",
       "phase": 5,
-      "status": "14 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry",
+      "status": "18 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry",
       "lean_file": "lean/FVSquad/InterpolateN.lean"
+    },
+    {
+      "id": "Hysteresis",
+      "phase": 2,
+      "status": "Informal spec written. Lean spec next.",
+      "lean_file": null,
+      "spec_file": "specs/hysteresis_informal.md"
     }
   ],
-  "open_prs": ["PR for InterpolateN (run40, not yet merged)"],
+  "open_prs": [],
   "bugs_found": [
     {
       "id": "signNoZero_nan",
@@ -130,12 +137,12 @@
       "status": "GitHub issue #21 filed"
     }
   ],
-  "total_theorems": 188,
+  "total_theorems": 214,
   "total_sorry": 6,
-  "proved_theorems": 182,
+  "proved_theorems": 208,
   "sorry_count": 6,
-  "total_examples": 112,
-  "run40_tasks": "Task 5 (InterpolateN: N=2 + N=3 uniform-grid interpolation, 14 theorems, 0 sorry; informal spec written)",
+  "total_examples": 106,
+  "run41_tasks": "Task 10 (REPORT.md updated to 214 theorems, 17 files, 3 new compound curve files); Task 2 (Hysteresis informal spec: time-delayed boolean FSM, 6 invariants, 4 concrete examples)",
   "report_exists": true,
   "correspondence_coverage": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY",
   "lean_files": 17,
@@ -161,6 +168,7 @@
     "Rat.lt_of_le_of_lt does NOT exist - use Std.lt_of_le_of_lt",
     "InterpolateN.lean uses namespace PX4.InterpolateN, imports FVSquad.Interpolate, opens PX4.Interpolate",
     "half: Rat = (1:Rat)/(2:Rat) as a private def - use native_decide to prove facts about it",
-    "Mathlib cache proxy blocks with 403; lake update works but lake build from source would take hours"
+    "Mathlib cache proxy blocks with 403; lake update works but lake build from source would take hours",
+    "Hysteresis informal spec complete (run41): time-delayed boolean FSM, 6 invariants, Lean model approach documented"
   ]
 }
