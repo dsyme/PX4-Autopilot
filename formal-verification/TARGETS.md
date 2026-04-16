@@ -31,6 +31,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 16 | `math::deadzone` (odd symmetry) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Deadzone.lean` | Added `deadzone_odd`: `deadzone(-x, dz) = -deadzone(x, dz)` for dz ≥ 0 |
 | 17 | `math::interpolateNXY` (3-pt) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/InterpolateNXY.lean` | N-point piecewise-linear interpolation (3-pt model); 9 theorems: clamps, endpoints, breakpoint continuity, range containment, monotonicity |
 | 18 | `math::interpolateN` (N=3 uniform) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/InterpolateN.lean` | Uniform-grid piecewise-linear (N=2 and N=3); 14 theorems, 0 sorry; node exactness, continuity, range containment, segment monotonicity |
+| 19 | `systemlib::Hysteresis` | `src/lib/hysteresis/hysteresis.h` | 5 | ✅ Proved | `lean/FVSquad/Hysteresis.lean` | Time-delayed boolean FSM; 20 theorems + 6 examples, 0 sorry; dwell lb, commit, stay, cancel, zero-delay, constructor |
 
 ## Non-Lean Targets (other tools recommended)
 

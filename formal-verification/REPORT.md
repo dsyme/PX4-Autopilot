@@ -2,27 +2,28 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 214 theorems · 106 verified examples · 6 `sorry` · Lean 4.29.0
+**Status**: 🔄 ACTIVE — 234 theorems · 112 verified examples · 6 `sorry` · Lean 4.29.0
 
 ## Last Updated
 
-- **Date**: 2026-04-16 09:47 UTC
-- **Commit**: `803557bb1a`
+- **Date**: 2026-04-16 17:42 UTC
+- **Commit**: `1e81bbc59e`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **214 named theorems and 106 concrete examples** across
-**17 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`) and
-the EKF2 ring-buffer (`src/lib/ringbuffer/`). Two genuine implementation bugs were discovered
-through formal verification: a `signNoZero<float>` NaN safety violation and an
-`negate<int16_t>` involution error. Six `sorry`-guarded theorems remain in `WrapAngle.lean`
-pending Mathlib support for floor arithmetic. All other 16 targets are sorry-free, verified
-by `lake build` with Lean 4.29.0. Recent additions include `ExpoDeadzone.lean` (9 theorems,
-two-stage RC pipeline: expo ∘ deadzone), `InterpolateNXY.lean` (9 theorems, N-point
-piecewise-linear with explicit breakpoints), and `InterpolateN.lean` (18 theorems, uniform-grid
-piecewise-linear with continuity, monotonicity, and range containment for N=2 and N=3).
+The Lean Squad has formally verified **234 named theorems and 112 concrete examples** across
+**18 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+the EKF2 ring-buffer (`src/lib/ringbuffer/`), and the `systemlib::Hysteresis` state machine
+(`src/lib/hysteresis/`). Two genuine implementation bugs were discovered through formal
+verification: a `signNoZero<float>` NaN safety violation and an `negate<int16_t>` involution
+error. Six `sorry`-guarded theorems remain in `WrapAngle.lean` pending Mathlib support for
+floor arithmetic. All other 17 targets are sorry-free, verified by `lake build` with Lean
+4.29.0. The newest addition is `Hysteresis.lean` (20 theorems + 6 examples, 0 sorry),
+formalising the time-delayed boolean state machine used for arming/disarming and flight-mode
+transitions — including delay lower-bound, immediate-commit (zero-delay), request-cancellation,
+and settlement invariants.
 
 ---
 
@@ -39,11 +40,13 @@ graph TD
     L2c["Layer 3b: Compound Curves<br/>ExpoDeadzone · InterpolateNXY · InterpolateN<br/>36 theorems · 22 examples"]
     L4["Layer 4: Integer Utilities<br/>Negate.lean · WrapAngle.lean<br/>28 theorems (6 sorry in WrapAngle)"]
     L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>35 theorems · 22 examples"]
+    L6["Layer 6: State Machines<br/>Hysteresis.lean<br/>20 theorems · 6 examples"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
     L1 --> L4
     L2a --> L5
+    L2a --> L6
 ```
 
 All proof files import only **Lean 4 stdlib** — no Mathlib is required (except for the
@@ -192,7 +195,34 @@ graph LR
 
 ---
 
-## File Inventory
+### Layer 6 — State Machines (1 file, 20 theorems, 6 examples)
+
+`Hysteresis.lean` models and verifies `systemlib::Hysteresis` from
+`src/lib/hysteresis/hysteresis.h` — the time-delayed boolean state machine used for
+arming/disarming delays, flight-mode transition settling, and sensor debouncing.
+
+```mermaid
+graph LR
+    HY["Hysteresis.lean<br/>20 theorems · 6 examples<br/>Time-delayed boolean FSM"]
+    C["State: HS record<br/>(state, requested, lastChange, delays)"]
+    U["hysteresisUpdate<br/>Commits when dwell elapsed"]
+    S["setStateAndUpdate<br/>Request + immediate eval"]
+    T["setHysteresisTimeFrom<br/>Configure dwell times"]
+    HY --- C
+    HY --- U
+    HY --- S
+    HY --- T
+```
+
+**Key results**:
+- `update_settled_noop`: if no pending change, `update` is the identity.
+- `update_tf_delay_lb` / `update_ft_delay_lb`: if a transition committed, the dwell was met.
+- `update_tf_commits` / `update_ft_commits`: dwell elapsed ⇒ transition commits.
+- `update_tf_stays` / `update_ft_stays`: dwell not elapsed ⇒ state unchanged.
+- `setStateAndUpdate_zero_delay_fresh`: zero-delay fresh request commits immediately.
+- `setStateAndUpdate_cancel`: calling with `newState = state` cancels pending request.
+- `mkHysteresis_settled`: freshly constructed object has no pending change.
+- 6× concrete `native_decide` examples: zero-delay, delayed, cancellation, timer restart.
 
 | File | Theorems | Examples | Sorry | Phase | Key result |
 |------|----------|----------|-------|-------|------------|
@@ -212,8 +242,9 @@ graph LR
 | `WrapAngle.lean` | 15 | 5 | 6 | 🔄 Phase 4 | wrapInt: 9 proved; wrapRat: 6 sorry (Mathlib) |
 | `WelfordMean.lean` | 11 | 3 | 0 | ✅ Phase 5 | Online mean correctness |
 | `RingBuffer.lean` | 24 | 19 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
+| `Hysteresis.lean` | 20 | 6 | 0 | ✅ Phase 5 | Time-delayed boolean FSM: dwell lb, commit, cancel |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **214** | **106** | **6** | — | **2 bugs found** |
+| **Total** | **234** | **112** | **6** | — | **2 bugs found** |
 
 ---
 
@@ -364,9 +395,9 @@ timeline
         ExpoDeadzone : expo∘deadzone pipeline, 9 theorems, odd symmetry proved
         InterpolateNXY : 3-pt piecewise-linear with explicit breakpoints, 9 theorems
         InterpolateN : uniform-grid N=2/N=3, 18 theorems, continuity + mono
-        Hysteresis : time-delayed boolean state machine (informal spec written)
+        Hysteresis : time-delayed boolean FSM fully verified (20 theorems, 6 examples, 0 sorry)
     section Current
-        Correspondence : CORRESPONDENCE.md now covers all 17 Lean files (20 targets)
+        Correspondence : CORRESPONDENCE.md now covers all 18 Lean files
 ```
 
 ---
@@ -395,5 +426,5 @@ timeline
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
 > *`lake build` verified with Lean 4.29.0. 6 `sorry` remain (WrapAngle wrapRat,
-> all require Mathlib floor arithmetic). 214 theorems across 17 files.*
-> *CORRESPONDENCE.md now covers all 17 Lean files (20 C++ targets).*
+> all require Mathlib floor arithmetic). 234 theorems across 18 files.*
+> *CORRESPONDENCE.md now covers all 17 Lean files (20 C++ targets); Hysteresis coverage to be added.*
