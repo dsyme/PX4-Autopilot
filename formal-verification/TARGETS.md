@@ -33,6 +33,16 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 18 | `math::interpolateN` (N=3 uniform) | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/InterpolateN.lean` | Uniform-grid piecewise-linear (N=2 and N=3); 14 theorems, 0 sorry; node exactness, continuity, range containment, segment monotonicity |
 | 19 | `systemlib::Hysteresis` | `src/lib/hysteresis/hysteresis.h` | 5 | ✅ Proved | `lean/FVSquad/Hysteresis.lean` | Time-delayed boolean FSM; 20 theorems + 6 examples, 0 sorry; dwell lb, commit, stay, cancel, zero-delay, constructor |
 
+## New Research Targets (Phase 1 — identified in run 44)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 20 | `math::signFromBool` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Bool-to-±1 conversion; ~5 theorems; `decide`-able |
+| 21 | `math::sq` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Square function; ~5 theorems; even, non-neg, mono |
+| 22 | `crc16_signature` fold property | `src/lib/crc/crc.h` | 1 | ⬜ Research | — | `fold_split`: `sig(init, a++b) = sig(sig(init,a), b)`; relies on `List.foldl_append` |
+| 23 | `atmosphere::getDensityFromPressureAndTemp` | `src/lib/atmosphere/atmosphere.h` | 1 | ⬜ Research | — | ISA model; sign + monotonicity in pressure/temperature; ideal gas law |
+| 24 | Commander arming FSM | `src/modules/commander/Commander.hpp` | 1 | ⬜ Research | — | Safety-critical arming FSM; temporal properties using `Hysteresis.lean` as sub-component |
+
 ## Non-Lean Targets (other tools recommended)
 
 | # | Name | Tool | Status | Notes |
@@ -52,11 +62,12 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 ## Mathlib Dependency Notes
 
-All currently proved targets (1–6, 9) use only Lean 4 stdlib — no Mathlib required.
+All currently proved targets (1–19 except `wrap_pi`) use only Lean 4 stdlib — no Mathlib required.
 The `lakefile.toml` references Mathlib for future use; once network access to
 `reservoir.lean-lang.org` is available, run `lake update` to enable it.
 
 Target 7 (`wrap_pi`) strongly benefits from Mathlib's `Int.fract` or real-number
-modular arithmetic. Target 8 (`WelfordMean`) may use `Mathlib.Algebra.BigOperators`
-for the sum-of-squares invariant, but core recurrence proofs are stdlib-only.
+modular arithmetic. Target 20 (`atmosphere`) may use `Mathlib.Analysis.SpecialFunctions.Pow`
+for the barometric altitude formula (exponential), but core density/monotonicity proofs
+are stdlib-only using `Rat` arithmetic.
 See `RESEARCH.md §Tool Choice` for details.

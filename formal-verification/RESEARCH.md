@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-05 17:00 UTC
-- **Commit**: see git HEAD
+- **Date**: 2026-04-17 03:42 UTC
+- **Commit**: `6fe68daa71`
 
 ## Overview
 
@@ -494,3 +494,215 @@ M2 non-negativity — documented tooling limitation).
   align well with formal specifications.
 - The `formal-verification/lean/` directory already contains Lean 4 proofs for targets
   1–4 above, all passing `lake build` with 0 `sorry` as of 2026-04-04.
+
+---
+
+## Critique-Driven Adjustments (run 44)
+
+The latest `CRITIQUE.md` (2026-04-14) reviewed 172 theorems across 15 targets and
+recommended the following adjustments, incorporated here:
+
+1. **WrapAngle wrapRat sorrys** — the 6 remaining `sorry`s in `WrapAngle.lean` require
+   `Mathlib.Algebra.Order.Floor`. These are explicitly blocked on Mathlib availability;
+   no alternative stdlib-only approach is available. Tracked as a known gap.
+
+2. **expo+deadzone odd symmetry** — `expodz_odd` was identified as missing; **completed
+   in run 36** via `ExpoDeadzone.lean`.
+
+3. **New gap: Functions.hpp survey incomplete** — `signFromBool` and `sq` remain un-verified
+   despite being in the same file as other proved targets. Adding as Phase 1 targets.
+
+4. **New gap: CRC compositional property** — `crc16_add` fold property is high-value for
+   communications safety and completely tractable in Lean 4 stdlib.
+
+5. **New target: atmosphere ISA monotonicity** — `getDensityFromPressureAndTemp` models
+   a simple algebraic invariant (ideal gas law sign and monotonicity) suitable for
+   rational-arithmetic proofs.
+
+6. **Extensions of Hysteresis work** — now that `Hysteresis.lean` is complete (20 theorems,
+   0 sorry), a natural next step is verifying properties of the arming state machine that
+   *uses* hysteresis, treating `Hysteresis` as a proved building block.
+
+---
+
+### 17. `math::signFromBool` (Priority: HIGH — easy win)
+
+**File**: `src/lib/mathlib/math/Functions.hpp:63`
+
+```cpp
+inline int signFromBool(bool positive)
+{
+    return positive ? 1 : -1;
+}
+```
+
+**Benefit**: Used throughout PX4 to convert a boolean direction flag into a ±1 multiplier.
+Properties to verify:
+- `signFromBool(true) = 1`
+- `signFromBool(false) = -1`
+- Result is always ±1: `signFromBool(b) * signFromBool(b) = 1`
+- Round-trip with bool: `signFromBool(b) > 0 ↔ b = true`
+- Composition: `signFromBool(!b) = -signFromBool(b)`
+- Agreement with `signNoZero` on 0/1 integers: `signFromBool(b) ≠ 0`
+
+**Tractability**: VERY HIGH — all properties are directly `decide`-able or trivially
+proved by `rcases Bool.eq_false_or_eq_true`.
+
+**Spec size**: ~30 Lean lines (5–6 theorems).
+
+**Approximations**: None — the function is exact for boolean inputs.
+
+---
+
+### 18. `math::sq` (Priority: HIGH — easy win)
+
+**File**: `src/lib/mathlib/math/Functions.hpp:69`
+
+```cpp
+template<typename T>
+T sq(T val)
+{
+    return val * val;
+}
+```
+
+**Benefit**: Used throughout PX4 for squaring floats in quadratic braking formulae,
+ISA pressure/altitude, and filter math. Properties:
+- `sq(0) = 0`
+- `sq(-x) = sq(x)` (even function — sign-invariant)
+- `0 ≤ sq(x)` for any `x : Int` (non-negative output)
+- `sq(x) ≥ x²` (trivially — it *is* x²)
+- For `x ≥ 0`: `sq` is monotone — `x ≤ y → sq(x) ≤ sq(y)`
+
+**Tractability**: VERY HIGH — `omega` closes the integer case; `Rat.mul_self_nonneg` closes
+the rational case.
+
+**Spec size**: ~30 Lean lines (4–5 theorems).
+
+**Approximations**: Integer model only (no float rounding, no overflow for large inputs).
+
+---
+
+### 19. `crc16_add` / `crc16_signature` fold property (Priority: HIGH)
+
+**File**: `src/lib/crc/crc.h`, implemented in `crc.c`
+
+```c
+uint16_t crc16_add(uint16_t crc, uint8_t value);
+uint16_t crc16_signature(uint16_t initial, size_t length, const uint8_t *bytes);
+```
+
+`crc16_signature` is defined as a left-fold of `crc16_add`:
+```c
+for (size_t i = 0; i < length; i++)
+    initial = crc16_add(initial, bytes[i]);
+return initial;
+```
+
+**Benefit**: The *fold / split* property is the key correctness invariant for incremental
+CRC computation:
+
+```
+crc16_signature(init, a ++ b) = crc16_signature(crc16_signature(init, a), b)
+```
+
+This is a non-trivial theorem: it does not follow from the CRC polynomial alone; it
+follows from the left-fold structure. If this property holds, any caller can compute CRC
+over data received in multiple chunks without accumulating errors.
+
+Used in PX4 for MAVLink packet framing, bootloader image verification, and UAVCAN CRC.
+
+**Tractability**: MEDIUM-HIGH — the key insight is that `crc16_signature` is defined as
+`List.foldl crc16_add init bytes`, and the fold/split property is `List.foldl_append`:
+```lean
+List.foldl f init (as ++ bs) = List.foldl f (List.foldl f init as) bs
+```
+which is in Lean 4 stdlib. The proof reduces to a single `simp [List.foldl_append]`.
+The harder part is modelling `crc16_add` faithfully (bit manipulation: XOR, shifts).
+We can model `crc16_add` abstractly as *some* function and prove the fold property
+holds purely structurally — without fully expanding the polynomial. The fold property
+holds for **any** `crc16_add`, since it is purely a property of `List.foldl`.
+
+**Spec size**: ~50 Lean lines (4–6 theorems: fold/split, empty-list identity, single-byte
+          case, and optionally a concrete test vector).
+
+**Approximations**: Abstract model of `crc16_add` as an opaque `UInt8 → UInt16 → UInt16`
+function; bit-level polynomial is not modelled (would require Mathlib BitVec reasoning).
+
+---
+
+### 20. `atmosphere::getDensityFromPressureAndTemp` (Priority: MEDIUM)
+
+**File**: `src/lib/atmosphere/atmosphere.h`, implemented in `atmosphere.cpp`
+
+```cpp
+float getDensityFromPressureAndTemp(const float pressure_pa, const float temperature_celsius)
+{
+    return pressure_pa / (kAirGasConstant * (temperature_celsius - kAbsoluteNullCelsius));
+}
+```
+
+This is the ideal gas law: `ρ = P / (R · T_K)` where `T_K = T_°C + 273.15`.
+
+**Benefit**: Used in airspeed estimation, barometric altitude, and EAS/IAS conversion.
+Properties:
+- **Sign**: `density > 0` iff `pressure > 0` and `temperature_celsius > -273.15`
+  (temperature above absolute zero)
+- **Monotone in pressure**: for fixed temperature, `pressure₁ < pressure₂ → dens₁ < dens₂`
+- **Anti-monotone in temperature**: for fixed pressure, `temp₁ < temp₂ → dens(temp₁) > dens(temp₂)`
+- **Scaling**: `getDensityFromPressureAndTemp(k*P, T) = k * getDensityFromPressureAndTemp(P, T)`
+
+**Tractability**: MEDIUM — rational model: `densityRat p t = p / (R * (t - absZero))`.
+Proving sign and monotonicity requires `Rat.div_pos` and `Rat.div_lt_div_left`. The
+gas constant `R = 287.1` and absolute zero `-273.15` can be represented as `Rat` literals.
+
+**Spec size**: ~60 Lean lines (4–6 theorems).
+
+**Approximations**: `float` → `Rat`; omit NaN/±∞; precondition `temperature_celsius > -273.15`
+made explicit (undefined in C++ when temperature = absolute zero).
+
+---
+
+### 21. Commander arming FSM — Lean 4 temporal properties (Priority: HIGH — builds on Hysteresis)
+
+**Files**: `src/modules/commander/Commander.hpp`, `src/lib/hysteresis/hysteresis.h`
+
+Now that `Hysteresis.lean` is fully proved, a natural next step is using it as a building
+block to verify higher-level safety properties of the arming state machine.
+
+**Benefit**: The arming FSM is safety-critical: an aircraft that can arm when it should not,
+or that gets stuck in a transition, is dangerous. Temporal properties to verify:
+- **No phantom arming**: a fresh vehicle state cannot be ARMED without explicit
+  request satisfying all pre-arming checks
+- **Monotone on request**: arming request + dwell elapsed → always transitions to ARMED
+- **Hysteresis is necessary**: the dwell period ensures brief glitches don't cause arming
+- **Safety interlock**: arming cannot proceed if a blocking check (battery, GPS, etc.)
+  is asserted
+
+**Tractability**: MEDIUM — we model the FSM abstractly as a step function over
+`{DISARMED, ARMING, ARMED, DISARMING}` states, using `Hysteresis` as a sub-component.
+The key Lean 4 type would be a `structure ArmFSM` with embedded `HS` (Hysteresis state)
+plus `checks_pass : Bool`. Temporal properties over step sequences use `List.foldl` or
+`List.scanl`.
+
+**Spec size**: ~120 Lean lines.
+
+**Approximations**: Abstract arming checks (real C++ checks depend on sensor health,
+RC input, operator override — modelled as a single boolean predicate). Does not model
+concurrent pilot + GCS input.
+
+---
+
+## Updated Priority Order (run 44 research)
+
+Based on tractability and bug-catching potential:
+
+| Priority | Target | Phase | Rationale |
+|----------|--------|-------|-----------|
+| 1 | `signFromBool` (target 17) | ⬜ Research | Trivial; completes Functions.hpp survey |
+| 2 | `sq` (target 18) | ⬜ Research | Trivial; needed for quadratic braking proofs |
+| 3 | `crc16_signature` fold (target 19) | ⬜ Research | High-value structural property; stdlib-only proof |
+| 4 | Commander arming FSM (target 21) | ⬜ Research | Safety-critical; uses proven Hysteresis.lean |
+| 5 | `atmosphere` ISA (target 20) | ⬜ Research | Medium effort; confirms sensor pipeline safety |
+| 6 | `wrapRat` theorems (target 7) | 🔄 Phase 3 | Requires Mathlib floor — deferred |
+
