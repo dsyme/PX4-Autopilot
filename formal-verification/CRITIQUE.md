@@ -4,27 +4,32 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-14 03:39 UTC
-- **Commit**: `f383a8aa3d`
+- **Date**: 2026-04-17 11:01 UTC
+- **Commit**: `3bb7aab285`
 
 ---
 
 ## Overall Assessment
 
-Fifteen targets from PX4's mathlib, control library, and sensor-fusion stack have been
-formally verified in Lean 4 (v4.29.0, standard library only). The library now covers
-**172 theorem statements, 166 fully proved, 6 `sorry`-guarded** across `constrain`,
-`signNoZero`, `countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
-`AlphaFilter::updateCalculation`, `WelfordMean::update`, `math::lerp`,
-`math::negate<int16_t>`, `math::expo`, `TimestampedRingBuffer` (index arithmetic),
-**`MedianFilter`** (3-element window, range/head/spike theorems, 0 sorry),
-**`math::superexpo`** (RC super-rate curve, 8 theorems including odd symmetry and
-range containment, 0 sorry), and the newly added **`expo+deadzone composition`**
-(8 theorems proving that the two-stage RC pipeline preserves fixed points, range, and
-degenerates correctly at boundary parameters, 0 sorry). The 6 remaining sorrys are all
-in `WrapAngle.lean` and require `Mathlib.Algebra.Order.Floor`. Two confirmed bugs remain
-open: `signNoZero<float>` returns 0 for NaN, and `negate<int16_t>` has an incorrect
-INT16_MAX special case.
+Twenty-one targets from PX4's mathlib, control library, and sensor-fusion stack have
+been identified; 18 have Lean files with verified theorems. The library now covers
+**234 theorem statements, 228 fully proved, 6 `sorry`-guarded** (Lean 4 v4.29.1,
+standard library only) across `constrain`, `signNoZero`, `countSetBits`,
+`SlewRate::update`, `deadzone`, `interpolate`, `AlphaFilter::updateCalculation`,
+`WelfordMean::update`, `math::lerp`, `math::negate<int16_t>`, `math::expo`,
+`TimestampedRingBuffer` (index arithmetic), **`MedianFilter`** (3-element window,
+range/head/spike theorems), **`math::superexpo`** (RC super-rate curve, odd symmetry,
+denom-positive), **`expo+deadzone composition`** (9 theorems including `expodz_odd`),
+**`interpolate` with explicit 3-point breakpoints** (`InterpolateNXY`, 9 theorems),
+**uniform-grid multi-point interpolation** (`InterpolateN`, 15 theorems, N=2 and N=3
+continuity+monotonicity), and **`Hysteresis`** (time-delayed boolean FSM, 20 theorems,
+dwell time lower bounds, commit/stay/cancel semantics, zero-delay, constructor, and
+`setHysteresisTimeFrom` — the most complex state machine verified to date, 0 sorry).
+The 6 remaining sorrys are all in `WrapAngle.lean` and require
+`Mathlib.Algebra.Order.Floor`. Two confirmed bugs remain open: `signNoZero<float>`
+returns 0 for NaN, and `negate<int16_t>` has an incorrect INT16_MAX special case.
+Five new research targets (run44) are at phase 1: `signFromBool`, `sq`, `crc16_fold`,
+`atmosphere_density`, and `commander_arming_fsm`.
 
 ---
 
@@ -111,6 +116,26 @@ INT16_MAX special case.
 | `expodz_e0` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | e=0: reduces to pure deadzone (no curve shaping) |
 | `expodz_cubic` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | e=1: output is cube of deadzone output |
 | `expodz_no_dz` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | dz=0: pipeline degenerates to pure expo |
+| `expodz_odd` | [ExpoDeadzone.lean](lean/FVSquad/ExpoDeadzone.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Anti-symmetry: expodz(−v,e,dz)=−expodz(v,e,dz); RC stick sign preserved |
+| `interp3_low_clamp` / `_high_clamp` | [InterpolateNXY.lean](lean/FVSquad/InterpolateNXY.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | Saturation at boundary breakpoints x0/x2 |
+| `interp3_at_x0` / `_at_x1` / `_at_x2` | [InterpolateNXY.lean](lean/FVSquad/InterpolateNXY.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | Exact values at all three breakpoints |
+| `interp3_le_y2` / `_ge_y0` | [InterpolateNXY.lean](lean/FVSquad/InterpolateNXY.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | Output range containment: result ∈ [y0, y2] |
+| `interp3_mono_seg0` / `_mono_seg1` | [InterpolateNXY.lean](lean/FVSquad/InterpolateNXY.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | Monotonicity within each piecewise segment |
+| `interpN2_at_zero` / `_at_one` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=2: boundary endpoint values exactly correct |
+| `interpN2_le_high` / `_ge_low` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=2: output range containment |
+| `interpN3_at_zero` / `_at_half` / `_at_one` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=3: exact values at breakpoints 0, 1/2, 1 |
+| `interpN3_continuity` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=3: continuity at interior breakpoint (segment join) |
+| `interpN3_le_high` / `_ge_low` / `_in_range` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=3: output range containment and combined bound |
+| `interpN3_mono_seg0` / `_mono_seg1` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | N=3: per-segment monotonicity |
+| `interpN3_const` | [InterpolateN.lean](lean/FVSquad/InterpolateN.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Interpolation.hpp) | Constant output for equal y values |
+| `update_settled_noop` / `_state` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Already settled: request = state → no change |
+| `update_tf_stays` / `_ft_stays` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | FSM invariant: changing state requires dwell time |
+| `update_tf_delay_lb` / `_ft_delay_lb` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Minimum dwell time: time_to_false/true ≥ delay |
+| `update_tf_commits` / `_ft_commits` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Commitment: after sufficient dwell, state follows request |
+| `setStateAndUpdate_zero_delay_fresh` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Zero delay: state changes immediately |
+| `setStateAndUpdate_cancel` / `_cancel_state` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Cancel: reverting request resets the dwell timer |
+| `mkHysteresis_state` / `_requested` / `_settled` / `_delays` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | mid | medium | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Constructor: initial state is settled with correct fields |
+| `setHysteresisTimeFrom_true` / `_false` / `_*_preserves_*` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | mid | medium | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Config: delay setters update only the relevant direction |
 
 ---
 
@@ -140,29 +165,60 @@ INT16_MAX special case.
    floating-point mode. **Recommendation**: use CBMC or a simple runtime assert to verify
    callers always maintain this invariant.
 
-5. **`expo+deadzone` anti-symmetry**: The `ExpoDeadzone.lean` spec currently lacks an
-   `expodz_odd` theorem (`expodz(-v, e, dz) = -expodz(v, e, dz)`). This requires a
-   `deadzone_odd` helper lemma (`deadzone(-v, dz) = -deadzone(v, dz)`) which is algebraically
-   straightforward but requires case analysis on the sign of `v`. The odd symmetry property
-   is important: it confirms that the RC pipeline preserves the stick sign convention (push
-   forward/back gives symmetric responses). **Recommendation**: add `deadzone_odd` to
-   `Deadzone.lean` and then `expodz_odd` to `ExpoDeadzone.lean`.
+5. ~~**`expo+deadzone` anti-symmetry**~~ ✅ **DONE** (run35): `deadzone_odd` proved in
+   `Deadzone.lean` and `expodz_odd` proved in `ExpoDeadzone.lean` (0 sorry). The odd
+   symmetry property formally confirms that the RC pipeline preserves the stick sign
+   convention.
+
+6. **`commander_arming_fsm` — safety-critical arming state machine** (phase 1 research):
+   The arming/disarming FSM in `src/modules/commander/` is the most safety-critical
+   state machine in PX4. Verifying properties such as "the vehicle can only arm if all
+   pre-arm checks pass" and "the vehicle cannot re-arm within N seconds of disarming" would
+   directly prevent class-of-failure bugs. The `Hysteresis.lean` proof (run43) provides
+   directly reusable sub-components. **Recommendation**: prioritise this as the next
+   phase-3/4/5 target; write informal spec first.
+
+7. **`signFromBool` — bool → ±1 conversion** (phase 1 research): Fully decidable (all
+   theorems can be closed by `decide`). Very tractable. Spec: `signFromBool(false) = -1`,
+   `signFromBool(true) = +1`, and optionally `signFromBool(b) * signFromBool(b) = 1`.
+   **Recommendation**: quick Task 3/4/5 run; serves as a confidence exercise.
+
+8. **`sq` — x² non-negativity and monotonicity** (phase 1 research): Simple algebraic
+   properties: `sq(x) ≥ 0`, `sq(-x) = sq(x)`, `sq(0) = 0`. For `Int`, these follow by
+   `omega`; for `Rat`, by `Rat.mul_self_nonneg`. **Recommendation**: straightforward
+   Task 3/4/5 run.
+
+9. **`crc16_fold` — CRC fold/split property** (phase 1 research): The key property is
+   `crc16(a ++ b) = crc16_append(crc16(a), b)` using `List.foldl_append`. This is a
+   textbook "fold composition" theorem and is accessible without float arithmetic.
+   **Recommendation**: Task 3/4/5 run; proves an important data-integrity invariant.
+
+10. **`atmosphere_density` — ISA ideal gas law** (phase 1 research): The function computes
+    air density from temperature and pressure. Key properties: sign (density > 0),
+    monotonicity in pressure, antitone in temperature. Requires rational arithmetic with
+    a precondition `temperature_celsius > -273.15`. **Recommendation**: Task 3/4/5 run;
+    verifies a physics model used in barometric altitude estimation.
 
 ### Medium priority
 
-6. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
-   actual C++ uses `float`. The "slew rate exceeded" condition requires a multi-step
-   argument about floating-point rounding. **Recommendation**: use Gappa to bound the
-   rounding error in `slew_rate * dt_s` and verify the integer-model theorem still applies
-   within a tolerance.
+11. **`SlewRate` float precision**: The proved theorems use an integer model (`Int`). The
+    actual C++ uses `float`. The "slew rate exceeded" condition requires a multi-step
+    argument about floating-point rounding. **Recommendation**: use Gappa to bound the
+    rounding error in `slew_rate * dt_s` and verify the integer-model theorem still applies
+    within a tolerance.
 
-7. **`interpolateN` range containment** (unverified): Uses `interpolate` as a subroutine
-   but adds index arithmetic and array lookups. The y-range containment for sorted arrays
-   has not been proved. A useful compositional proof combining `constrain` and `interpolate`.
+12. **`interpolateN` range containment** (unverified for N > 3): Uses `interpolate` as a
+    subroutine but adds index arithmetic and array lookups. The y-range containment for
+    sorted arrays has been proved for N=2 and N=3. Extending to arbitrary N requires a
+    proof by induction over N. **Recommendation**: generalise the N=3 proof to N-point.
 
-8. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
-   gives the time-domain response. The z-transform transfer function could be stated
-   and proved with Mathlib complex number support.
+13. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
+    gives the time-domain response. The z-transform transfer function could be stated
+    and proved with Mathlib complex number support.
+
+14. **Conference paper** (Task 11): With 234 theorems across 18 files and 2 confirmed bugs,
+    the project has sufficient results for a conference paper (IEEE FM, FMCAD, or CAV).
+    **Recommendation**: run Task 11 to draft `PAPER.md`.
 
 ---
 
@@ -291,12 +347,33 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
     The `superexpo_g_zero` theorem additionally confirms that the super-rate boost
     degenerates correctly to plain `expo` when `g = 0`, providing a key regression check.
 
-12. **`expo+deadzone` composition correctness**: The `ExpoDeadzone.lean` spec proves 8
-    theorems (0 sorry) confirming that the two-stage RC pipeline preserves all essential
-    properties: zero at centre, ±1 fixed points, range containment, and correct degeneration
-    to pure deadzone (e=0) or pure cubic (e=1). The `expodz_no_dz` theorem confirms that
-    removing the deadzone (dz=0) recovers exactly `expoRat`, closing the correctness loop
-    for the full composition.
+12. **`expo+deadzone` composition correctness**: The `ExpoDeadzone.lean` spec proves 9
+    theorems (0 sorry) including `expodz_odd` — the anti-symmetry property confirming that
+    the two-stage RC pipeline preserves the stick sign convention. The `expodz_no_dz`
+    theorem confirms that removing the deadzone (dz=0) recovers exactly `expoRat`, closing
+    the correctness loop for the full composition.
+
+13. **`InterpolateNXY` 3-point piecewise-linear proved (0 sorry)**: The 9 theorems in
+    `InterpolateNXY.lean` prove endpoint exactness at all three breakpoints, output range
+    containment `[y0, y2]`, and per-segment monotonicity. The `interp3_continuity` theorem
+    confirms the piecewise join is seamless at the middle breakpoint. This directly covers
+    the 3-point lookup tables used in PX4's motor/thrust mapping curves.
+
+14. **`InterpolateN` uniform-grid multi-point proved (0 sorry)**: The 15 theorems in
+    `InterpolateN.lean` cover both N=2 and N=3 cases, including the `interpN3_continuity`
+    theorem proving the join at `value = 0.5` is seamless and the combined
+    `interpN3_in_range` bounds theorem. These are directly compositional: they build on
+    `Interpolate.lean`'s lemmas, demonstrating reuse of previously proved building blocks.
+
+15. **`Hysteresis` time-delayed FSM fully verified (0 sorry)**: The 20 theorems in
+    `Hysteresis.lean` constitute the most complex state machine verified in this project.
+    Key results: `update_tf_delay_lb` and `update_ft_delay_lb` prove that the dwell time
+    is always at least the configured delay (safety: the state cannot change faster than
+    the configured debounce), `update_tf_commits` and `update_ft_commits` prove that after
+    sufficient dwell, the state always follows the request (liveness: it will eventually
+    change), and `setStateAndUpdate_cancel` proves that reversing the request resets the
+    timer (consistency: no spurious transitions). These properties directly cover the
+    `Hysteresis` component used in PX4's arming state machine.
 
 
 ---
@@ -312,6 +389,6 @@ not mathematical gaps):
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
 
-All other targets (14 files, 160 theorems) are at zero sorry. The three new files added
-in this and recent runs (`MedianFilter.lean`, `SuperExpo.lean`, `ExpoDeadzone.lean`)
-were all delivered with zero sorry from the start.
+All other targets (17 files, 228 theorems) are at zero sorry. All files added since
+run38 (`InterpolateNXY.lean`, `InterpolateN.lean`, `Hysteresis.lean`) were delivered
+with zero sorry. `ExpoDeadzone.lean` added `expodz_odd` with zero sorry.

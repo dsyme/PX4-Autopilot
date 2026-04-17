@@ -6,8 +6,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-17 03:42 UTC
-- **Commit**: `6fe68daa71`
+- **Date**: 2026-04-17 11:01 UTC
+- **Commit**: `3bb7aab285`
 
 ---
 
@@ -399,6 +399,9 @@ timeline
         Hysteresis : time-delayed boolean FSM fully verified (20 theorems, 6 examples, 0 sorry)
     section Current (run 44)
         Research   : 5 new targets identified (signFromBool, sq, crc16 fold, atmosphere ISA, arming FSM)
+    section Current (run 45)
+        Critique   : CRITIQUE.md updated (234 theorems, 21 targets, 18 Lean files, Hysteresis/InterpolateN/NXY rows added)
+        Report     : REPORT.md refreshed with run45 timestamp
     section Current
         Correspondence : CORRESPONDENCE.md now covers all 18 Lean files
 ```
@@ -431,4 +434,4 @@ timeline
 > *`lake build` verified with Lean 4.29.1. 6 `sorry` remain (WrapAngle wrapRat,
 > all require Mathlib floor arithmetic). 234 theorems across 18 files.*
 > *CORRESPONDENCE.md covers all 18 Lean files (21 C++ targets).*
-> *Run 44: 5 new research targets identified (signFromBool, sq, crc16 fold, atmosphere ISA, arming FSM).*
+> *Run 45: CRITIQUE.md updated (234 theorems, 18 files, Hysteresis/InterpolateN/NXY rows added; gaps refreshed).*
