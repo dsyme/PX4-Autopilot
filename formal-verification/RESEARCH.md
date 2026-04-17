@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-17 03:42 UTC
-- **Commit**: `6fe68daa71`
+- **Date**: 2026-04-17 16:31 UTC
+- **Commit**: `9c64c6d5f7`
 
 ## Overview
 
@@ -706,3 +706,15 @@ Based on tractability and bug-catching potential:
 | 5 | `atmosphere` ISA (target 20) | ⬜ Research | Medium effort; confirms sensor pipeline safety |
 | 6 | `wrapRat` theorems (target 7) | 🔄 Phase 3 | Requires Mathlib floor — deferred |
 
+
+---
+
+## Status Update (run 46)
+
+Informal specifications written for targets 17 (`signFromBool`) and 18 (`sq`) — both
+advanced to Phase 2. See `specs/sign_from_bool_informal.md` and `specs/sq_informal.md`.
+
+A conference paper (Task 11) has been written covering the full verification campaign:
+`formal-verification/paper/paper.tex`. The paper covers 234 theorems, 2 bugs found,
+and the stdlib-only Lean 4 methodology. See `formal-verification/CRITIQUE.md` for
+the full proof utility assessment that informed the paper's Discussion section.
