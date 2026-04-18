@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-18 00:57 UTC
-- **Commit**: `a6db17ea7f`
+- **Date**: 2026-04-18 08:26 UTC
+- **Commit**: `d47f5a1929`
 
 ---
 
@@ -403,76 +403,69 @@ with zero sorry. `ExpoDeadzone.lean` added `expodz_odd` with zero sorry.
 
 ## Paper Review
 
-The conference paper `formal-verification/paper/paper.tex` (ACM sigconf format, ~11 pages,
-run46) was reviewed as part of this run47 critique. The paper covers the campaign's
-methodology, results, bugs found, and lessons learned.
+The conference paper `formal-verification/paper/paper.tex` (ACM sigconf format, ~11 pages)
+was most recently revised in run47 and reviewed again in this run48 critique. The paper
+covers the campaign's methodology, results, bugs found, and lessons learned.
 
-### Accuracy
+### Status of run47 Recommendations
 
-The paper's claims are well-supported by the Lean artifacts:
+All four actionable recommendations from the run47 critique have been addressed:
 
-- The abstract and introduction state "228 proved theorems" and "6 sorry-guarded" — this
-  matches the current theorem count exactly.
-- Both bugs (signNoZero NaN and negate16 not-involution) are described with mechanically
-  verified counterexamples. The description of the `signNoZero` infinite-loop impact
-  (rtl_direct_mission_land.cpp line 73) is accurate.
-- The theorem inventory table (Table 1) is correct for all 18 files.
-- The tactic inventory and proof strategy section accurately describes the stdlib-only
-  constraint and the absence of `linarith`/`ring`.
+1. ✅ **Run URL updated** — the AI disclosure box was updated to run47 in the run47 PR
+   and is again updated to run48 (24600733577) in this run.
+2. ✅ **Target count corrected** — the introduction now reads "21 C++ targets with Lean
+   proofs (23 targets identified overall)", correctly distinguishing proved from identified.
+3. ✅ **signFromBool / sq progress** — Future Work now explicitly notes that both have
+   complete informal specifications and are the next pipeline targets.
+4. ✅ **CI mention added** — §5 (Discussion) now includes a paragraph describing the
+   `lean-ci.yml` GitHub Actions workflow that checks all proofs on every PR and push.
 
-**One minor inaccuracy to address**: The introduction mentions "21 C++ targets" but 23
-targets are now identified (signFromBool and sq now have informal specs at phase 2). The
-paper should say "21 C++ targets with Lean proofs" or update to note the pipeline extends
-to 23 identified targets. This is a minor update — both framings are accurate.
+### Accuracy (run48 assessment)
+
+The paper's claims remain well-supported:
+
+- Abstract and introduction: "228 proved theorems" and "6 sorry-guarded" still match the
+  theorem count exactly (no new Lean files since run47).
+- Both bugs (signNoZero NaN, negate16 involution) are described with mechanically-verified
+  counterexamples. The infinite-loop impact description (rtl_direct_mission_land.cpp L73) is accurate.
+- Table 1 (theorem inventory, 18 files) is correct for the current state.
+- The tactic inventory and stdlib-only constraint description are accurate.
+
+**No accuracy issues found in run48.**
 
 ### Completeness
 
-- The paper covers all 18 Lean files and both confirmed bugs.
-- The Future Work paragraph mentions signFromBool, sq, CRC16, atmosphere density, and
-  Commander arming FSM by name — accurate.
-- **Recommendation**: The paper could briefly mention that signFromBool and sq have
-  advanced to phase 2 (informal specs written) in the same run, strengthening the
-  evidence that the pipeline is actively progressing.
+- All 18 Lean files and both confirmed bugs are covered.
+- Future Work covers signFromBool, sq, CRC16, atmosphere density, and Commander arming FSM.
+- The CI workflow is now mentioned in the methodology/discussion section.
+- signFromBool and sq phase-2 status is noted in both the introduction and Future Work.
 
 ### Intellectual Honesty
 
-The paper is appropriately honest about its limitations:
+The paper maintains appropriate intellectual honesty:
 
 - The float-vs-rational abstraction gap is clearly described in §4.3.
-- The signNoZero bug discovery methodology (correspondence document → gap found → bug
-  filed) is well-explained.
+- The signNoZero bug discovery methodology (correspondence → gap → bug) is well-explained.
 - The 6 sorry-guarded theorems are disclosed in both abstract and results.
-- The stdlib-only constraint and its impact on proof effort are documented in §4.4.
+- The stdlib-only constraint and its impact on proof effort are documented.
 
-**No overclaims were found.** The paper does not state that the full C++ implementation
-is verified — it consistently frames the work as verifying abstract models.
+**No overclaims found.** The paper consistently frames the work as verifying abstract models.
 
 ### Clarity
 
 - Structure is clear: Background → Methodology → Results → Discussion → Conclusion.
-- The two code listings (Welford step and SlewRate theorem) are well-chosen examples.
-- The Hysteresis dwell theorem is highlighted as the most complex — appropriate given
-  it is the most safety-critical.
-- **Minor suggestion**: The paper could include a mermaid-style proof dependency diagram
-  in the supplementary materials (the REPORT.md already has this). A figure in the paper
-  itself would strengthen the Methodology section.
+- The two code listings (Welford step and SlewRate theorem) are well-chosen.
+- The Hysteresis dwell theorem is correctly highlighted as the most complex and safety-critical.
 
-### Missing Content
+### Remaining Open Suggestions for Future Runs
 
-1. **signFromBool and sq progress**: Two new phase-2 targets (informal specs written in
-   same run) are not mentioned in the results narrative, only in the Future Work paragraph.
-   This could be moved to a brief "in progress" mention in the results.
-2. **CI setup**: The paper does not mention the `lean-ci.yml` workflow that automatically
-   checks all proofs on every PR. This is a methodological strength worth noting.
-3. **Run history**: The paper was written in run46 but the disclosure box still shows the
-   run46 workflow URL. This should be updated to run47 (24593089826) in the next revision.
-
-### Actionable Recommendations
-
-1. Update the workflow run URL in the AI disclosure box to the current run.
-2. Change "21 C++ targets" to "21 C++ targets with mechanically-verified Lean proofs (23
-   targets identified)" in the introduction.
-3. Add one sentence to Future Work noting signFromBool and sq have informal specs and are
-   the next pipeline targets.
-4. Consider adding a CI mention in §4 (Methodology) or §5 (Discussion): "All proofs are
-   continuously checked by a GitHub Actions workflow (`lean-ci.yml`) on every PR."
+1. **PDF compilation**: LaTeX is not available in the CI environment; the paper is submitted
+   as `.tex` source only. If LaTeX becomes available, compiling and committing `paper.pdf`
+   would be valuable for accessibility.
+2. **Proof dependency figure**: The Methodology section would benefit from a figure showing
+   the proof architecture layers (already exists in REPORT.md as a mermaid diagram; could
+   be exported as a static image for the paper).
+3. **WrapAngle sorry resolution**: When Mathlib becomes available, resolving the 6
+   sorry-guarded theorems in `WrapAngle.lean` would allow the abstract to say "0 sorry".
+4. **signFromBool.lean and sq.lean**: Once these Phase 2 targets are promoted to Phase 5
+   (full proofs), update §3.1 (Results) and Table 1 to include them.
