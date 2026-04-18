@@ -51,7 +51,7 @@
 }
 
 \title{Formal Verification of a UAV Flight Controller's Core Libraries with Lean~4:\\
-       234 Theorems, Two Bugs, Zero Sorry in 18 Modules}
+       251 Theorems, Two Bugs, Zero Sorry in 19 Modules}
 
 \author{Lean Squad}
 \affiliation{
@@ -63,10 +63,10 @@
 \begin{abstract}
 We report a formal verification campaign applied to PX4-Autopilot, an open-source
 UAV flight controller written in C++. Using Lean~4 with its standard library only
-(no Mathlib), we verified 228 theorems across 18 Lean modules covering 21~C++
+(no Mathlib), we verified 245 theorems across 19 Lean modules covering 23~C++
 targets including signal-processing filters, rate-limiting, piecewise-linear
-interpolation, online statistics, ring buffers, and a time-delayed boolean
-state machine. All proofs were mechanically checked by \texttt{lake build}. The
+interpolation, online statistics, ring buffers, a time-delayed boolean
+state machine, and fundamental arithmetic utilities. All proofs were mechanically checked by \texttt{lake build}. The
 project discovered two genuine implementation bugs through failed proof attempts:
 (1)~\texttt{signNoZero<float>} silently returns~0 for NaN inputs, violating a
 non-zero safety contract, and (2)~\texttt{negate<int16\_t>} is not a global
@@ -133,13 +133,13 @@ language with a growing library ecosystem~\cite{mathlib}.
 
 Our contributions are:
 \begin{itemize}
-  \item A formal verification campaign covering \textbf{21~C++ targets with Lean proofs}
-        in 18~Lean modules (23~targets identified overall), yielding \textbf{228~proved
-        theorems} plus 112~concrete examples.
+  \item A formal verification campaign covering \textbf{23~C++ targets with Lean proofs}
+        in 19~Lean modules (24~targets identified overall), yielding \textbf{245~proved
+        theorems} plus 117~concrete examples.
   \item Discovery of \textbf{two genuine implementation bugs} through proof failure,
         with counterexamples mechanically verified by Lean.
   \item A \textbf{correspondence discipline} documenting modelling approximations and
-        their impact on proof validity for all 18 Lean files.
+        their impact on proof validity for all 19 Lean files.
   \item Practical experience with Lean~4 proof automation on embedded C++ in a
         \emph{stdlib-only} setting (no Mathlib, no network access to the package cache).
 \end{itemize}
@@ -214,8 +214,9 @@ spans six categories: (i)~mathematical utilities (\texttt{constrain}, \texttt{si
 (\texttt{TimestampedRingBuffer}); (v)~multi-component pipelines
 (\texttt{ExpoDeadzone}, \texttt{InterpolateNXY}, \texttt{InterpolateN},
 \texttt{wrap\_pi}); and (vi)~a state machine (\texttt{Hysteresis}).
-Of these, 21~targets have Lean proofs (18~modules); \texttt{signFromBool} and
-\texttt{sq} have informal specifications written and are ready for Lean formalisation.
+All 23~targets now have Lean proofs (19~modules). One additional target
+(\texttt{septentrio::buffer\_crc16} fold property) has an informal specification written
+and is ready for Lean formalisation.
 
 \subsection{Two-Phase Specification}
 
@@ -297,15 +298,15 @@ We applied proof tactics in order of increasing effort:
 
 \subsection{Proof Inventory}
 
-Table~\ref{tab:theorems} summarises the 18~Lean files (21~C++ targets). In total,
-\textbf{234~theorem statements} were made, of which \textbf{228~are fully proved}
+Table~\ref{tab:theorems} summarises the 19~Lean files (23~C++ targets). In total,
+\textbf{251~theorem statements} were made, of which \textbf{245~are fully proved}
 and \textbf{6~remain \texttt{sorry}-guarded} (all in \texttt{WrapAngle.lean},
-requiring Mathlib's \texttt{Int.fract}). Additionally, \textbf{112~concrete
+requiring Mathlib's \texttt{Int.fract}). Additionally, \textbf{117~concrete
 \texttt{example}/\texttt{\#eval} checks} serve as property-based regression tests.
 
 \begin{table}[t]
 \centering
-\caption{Lean 4 verification summary by file (18 files, 21 C++ targets).
+\caption{Lean 4 verification summary by file (19 files, 23 C++ targets).
          ✅~=~all proved; 🔄~=~partial (\texttt{sorry} remain).}
 \label{tab:theorems}
 \small
@@ -330,8 +331,9 @@ Lean file & C++ target & Thms & Sorry & Key properties \\
 \texttt{InterpolateNXY}& \texttt{interpolateNXY} (3-pt)     &  9 & 0 & Clamp, continuity, mono ✅ \\
 \texttt{InterpolateN}  & \texttt{interpolateN} (N=2,3)      & 18 & 0 & Node exact, range, mono ✅ \\
 \texttt{Hysteresis}    & \texttt{Hysteresis}                & 20 & 0 & Dwell, commit, cancel ✅ \\
+\texttt{SignFromBoolSq}& \texttt{signFromBool}, \texttt{sq} & 17 & 0 & Range $\{-1,1\}$, non-neg, even ✅ \\
 \hline
-\textbf{Total}         &                                    & \textbf{234} & \textbf{6} & \\
+\textbf{Total}         &                                    & \textbf{251} & \textbf{6} & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -502,7 +504,7 @@ The most effective tactics were: \texttt{omega} (integer arithmetic, loop invari
 (Rat comparisons, \texttt{Fin n} concrete checks), \texttt{by\_cases} (branching
 over guards), and \texttt{induction} with explicit loop invariants.
 
-Across 18~files, roughly 50\% of theorems were proved by \texttt{decide} or
+Across 19~files, roughly 50\% of theorems were proved by \texttt{decide} or
 \texttt{native\_decide}; 30\% by \texttt{simp}/\texttt{omega}; and 20\%
 required multi-step tactic proofs with auxiliary lemmas.
 
@@ -549,8 +551,8 @@ cannot silently break in a later run.
 \label{sec:conclusion}
 
 We have presented a formal verification campaign for PX4-Autopilot's core utility
-libraries using Lean~4. Across 18~Lean modules and 21~C++ targets, we proved
-228~theorems covering rate limiting, interpolation, filtering, statistics, data
+libraries using Lean~4. Across 19~Lean modules and 23~C++ targets, we proved
+245~theorems covering rate limiting, interpolation, filtering, statistics, data
 structures, and a time-delayed state machine. The campaign discovered two genuine
 implementation bugs, both verified by mechanically-checked counterexamples. The
 project demonstrates that interactive theorem proving can be usefully applied to
@@ -558,13 +560,12 @@ production embedded C++ at the library level, even under significant toolchain
 constraints.
 
 Future work includes: resolving the 6~remaining sorrys in \texttt{WrapAngle.lean}
-once Mathlib becomes available; advancing two phase-2 targets (\texttt{signFromBool}
-and \texttt{sq}, both with complete informal specifications) to full Lean proofs in
-the next run; and extending the pipeline to three phase-1 targets
-(\texttt{crc16\_fold} fold property, atmospheric density model,
-and Commander arming FSM); and exploring formal correspondence proofs from the Lean
-model to the C++ source using Aeneas~\cite{aeneas} extraction once the toolchain
-is available for C++.
+once Mathlib becomes available; formalising the \texttt{septentrio::buffer\_crc16}
+fold property (informal spec complete), whose key theorem follows trivially from
+\texttt{List.foldl\_append}; and extending the pipeline to phase-1 targets
+(atmospheric density model, Commander arming FSM); and exploring formal correspondence
+proofs from the Lean model to the C++ source using Aeneas~\cite{aeneas} extraction
+once the toolchain is available for C++.
 
 \begin{acks}
 This work was carried out by the \emph{Lean Squad} automated formal verification
