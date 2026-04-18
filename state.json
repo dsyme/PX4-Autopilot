@@ -1,6 +1,6 @@
 {
-  "last_run": "run46",
-  "run_id": "24575719908",
+  "last_run": "run47",
+  "run_id": "24593089826",
   "lean_version": "4.29.1",
   "lean_available": true,
   "ci_created": true,
@@ -8,175 +8,46 @@
   "mathlib_available": false,
   "mathlib_note": "Mathlib cache proxy blocks with 403 (CONNECT tunnel). lake update resolves manifest but lake build would need to compile from source (hours). Use stdlib-only proofs.",
   "paper_exists": true,
-  "paper_note": "paper.tex + paper.bib in formal-verification/paper/ (run46). PDF not compiled (no LaTeX/sudo in CI). ACM sigconf format, ~11 pages.",
+  "paper_note": "paper.tex + paper.bib in formal-verification/paper/ (run46). Updated run47: CI mention, target count fix, run URL. PDF not compiled (no LaTeX/sudo in CI). ACM sigconf format, ~11 pages.",
+  "critique_exists": true,
+  "critique_note": "CRITIQUE.md updated run47: Paper Review section added, signFromBool/sq phase 2, 23 targets identified.",
   "fv_targets": [
-    {
-      "id": "constrain",
-      "phase": 5,
-      "status": "8 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "signNoZero",
-      "phase": 5,
-      "status": "6 proved, 0 sorry. BUG: NaN returns 0 - issue #12",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "countSetBits",
-      "phase": 5,
-      "status": "2 theorems + 9 concrete examples",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "SlewRate",
-      "phase": 5,
-      "status": "9 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/SlewRate.lean"
-    },
-    {
-      "id": "deadzone",
-      "phase": 5,
-      "status": "13 proved (incl. deadzone_odd), 0 sorry",
-      "lean_file": "lean/FVSquad/Deadzone.lean"
-    },
-    {
-      "id": "MedianFilter",
-      "phase": 5,
-      "status": "10 proved, 0 sorry + 6 examples",
-      "lean_file": "lean/FVSquad/MedianFilter.lean"
-    },
-    {
-      "id": "interpolate",
-      "phase": 5,
-      "status": "10 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/Interpolate.lean"
-    },
-    {
-      "id": "AlphaFilter",
-      "phase": 5,
-      "status": "13 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/AlphaFilter.lean"
-    },
-    {
-      "id": "wrap_pi",
-      "phase": 3,
-      "status": "wrapInt: 9 proved 0 sorry. wrapRat: 6 theorems, 6 sorry (Mathlib floor needed).",
-      "lean_file": "lean/FVSquad/WrapAngle.lean"
-    },
-    {
-      "id": "WelfordMean",
-      "phase": 5,
-      "status": "11 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/WelfordMean.lean"
-    },
-    {
-      "id": "lerp",
-      "phase": 5,
-      "status": "10 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/Lerp.lean"
-    },
-    {
-      "id": "expo",
-      "phase": 5,
-      "status": "17 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/Expo.lean"
-    },
-    {
-      "id": "superexpo",
-      "phase": 5,
-      "status": "17 proved, 0 sorry",
-      "lean_file": "lean/FVSquad/SuperExpo.lean"
-    },
-    {
-      "id": "negate",
-      "phase": 5,
-      "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.",
-      "lean_file": "lean/FVSquad/Negate.lean"
-    },
-    {
-      "id": "RingBuffer",
-      "phase": 5,
-      "status": "24 theorems + 19 examples, 0 sorry",
-      "lean_file": "lean/FVSquad/RingBuffer.lean"
-    },
-    {
-      "id": "ExpoDeadzone",
-      "phase": 5,
-      "status": "9 proved (incl. expoDeadzone_odd), 0 sorry",
-      "lean_file": "lean/FVSquad/ExpoDeadzone.lean"
-    },
-    {
-      "id": "InterpolateNXY",
-      "phase": 5,
-      "status": "9 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry",
-      "lean_file": "lean/FVSquad/InterpolateNXY.lean"
-    },
-    {
-      "id": "InterpolateN",
-      "phase": 5,
-      "status": "18 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry",
-      "lean_file": "lean/FVSquad/InterpolateN.lean"
-    },
-    {
-      "id": "Hysteresis",
-      "phase": 5,
-      "status": "20 proved (dwell_lb, commits, stays, zero_delay, cancel, constructor, setHysteresisTimeFrom) + 6 examples, 0 sorry",
-      "lean_file": "lean/FVSquad/Hysteresis.lean",
-      "spec_file": "specs/hysteresis_informal.md"
-    },
-    {
-      "id": "signFromBool",
-      "phase": 2,
-      "status": "Informal spec written (run46). ~5 decide theorems. bool->+-1 conversion.",
-      "lean_file": null,
-      "spec_file": "specs/sign_from_bool_informal.md"
-    },
-    {
-      "id": "sq",
-      "phase": 2,
-      "status": "Informal spec written (run46). ~7 theorems. non-neg, even, monotone.",
-      "lean_file": null,
-      "spec_file": "specs/sq_informal.md"
-    },
-    {
-      "id": "crc16_fold",
-      "phase": 1,
-      "status": "Research - new in run44. fold/split property via List.foldl_append.",
-      "lean_file": null
-    },
-    {
-      "id": "atmosphere_density",
-      "phase": 1,
-      "status": "Research - new in run44. ISA ideal gas law sign+monotonicity in Rat.",
-      "lean_file": null
-    },
-    {
-      "id": "commander_arming_fsm",
-      "phase": 1,
-      "status": "Research - new in run44. Safety-critical temporal props using Hysteresis.lean as sub-component.",
-      "lean_file": null
-    }
+    {"id": "constrain", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/MathFunctions.lean"},
+    {"id": "signNoZero", "phase": 5, "status": "6 proved, 0 sorry. BUG: NaN returns 0 - issue #12", "lean_file": "lean/FVSquad/MathFunctions.lean"},
+    {"id": "countSetBits", "phase": 5, "status": "2 theorems + 9 concrete examples", "lean_file": "lean/FVSquad/MathFunctions.lean"},
+    {"id": "SlewRate", "phase": 5, "status": "9 proved, 0 sorry", "lean_file": "lean/FVSquad/SlewRate.lean"},
+    {"id": "deadzone", "phase": 5, "status": "13 proved (incl. deadzone_odd), 0 sorry", "lean_file": "lean/FVSquad/Deadzone.lean"},
+    {"id": "MedianFilter", "phase": 5, "status": "10 proved, 0 sorry + 6 examples", "lean_file": "lean/FVSquad/MedianFilter.lean"},
+    {"id": "interpolate", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Interpolate.lean"},
+    {"id": "AlphaFilter", "phase": 5, "status": "13 proved, 0 sorry", "lean_file": "lean/FVSquad/AlphaFilter.lean"},
+    {"id": "wrap_pi", "phase": 3, "status": "wrapInt: 9 proved 0 sorry. wrapRat: 6 theorems, 6 sorry (Mathlib floor needed).", "lean_file": "lean/FVSquad/WrapAngle.lean"},
+    {"id": "WelfordMean", "phase": 5, "status": "11 proved, 0 sorry", "lean_file": "lean/FVSquad/WelfordMean.lean"},
+    {"id": "lerp", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Lerp.lean"},
+    {"id": "expo", "phase": 5, "status": "17 proved, 0 sorry", "lean_file": "lean/FVSquad/Expo.lean"},
+    {"id": "superexpo", "phase": 5, "status": "17 proved, 0 sorry", "lean_file": "lean/FVSquad/SuperExpo.lean"},
+    {"id": "negate", "phase": 5, "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.", "lean_file": "lean/FVSquad/Negate.lean"},
+    {"id": "RingBuffer", "phase": 5, "status": "24 theorems + 19 examples, 0 sorry", "lean_file": "lean/FVSquad/RingBuffer.lean"},
+    {"id": "ExpoDeadzone", "phase": 5, "status": "9 proved (incl. expoDeadzone_odd), 0 sorry", "lean_file": "lean/FVSquad/ExpoDeadzone.lean"},
+    {"id": "InterpolateNXY", "phase": 5, "status": "9 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry", "lean_file": "lean/FVSquad/InterpolateNXY.lean"},
+    {"id": "InterpolateN", "phase": 5, "status": "18 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry", "lean_file": "lean/FVSquad/InterpolateN.lean"},
+    {"id": "Hysteresis", "phase": 5, "status": "20 proved (dwell_lb, commits, stays, zero_delay, cancel, constructor, setHysteresisTimeFrom) + 6 examples, 0 sorry", "lean_file": "lean/FVSquad/Hysteresis.lean", "spec_file": "specs/hysteresis_informal.md"},
+    {"id": "signFromBool", "phase": 2, "status": "Informal spec written (run46). ~5 decide theorems. bool->+-1 conversion.", "lean_file": null, "spec_file": "specs/sign_from_bool_informal.md"},
+    {"id": "sq", "phase": 2, "status": "Informal spec written (run46). ~7 theorems. non-neg, even, monotone.", "lean_file": null, "spec_file": "specs/sq_informal.md"},
+    {"id": "crc16_fold", "phase": 1, "status": "Research - new in run44. fold/split property via List.foldl_append.", "lean_file": null},
+    {"id": "atmosphere_density", "phase": 1, "status": "Research - new in run44. ISA ideal gas law sign+monotonicity in Rat.", "lean_file": null},
+    {"id": "commander_arming_fsm", "phase": 1, "status": "Research - new in run44. Safety-critical temporal props using Hysteresis.lean as sub-component.", "lean_file": null}
   ],
   "open_prs": [],
   "bugs_found": [
-    {
-      "id": "signNoZero_nan",
-      "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.",
-      "status": "GitHub issue #12 filed"
-    },
-    {
-      "id": "negate_int16_not_involution",
-      "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.",
-      "status": "GitHub issue #21 filed"
-    }
+    {"id": "signNoZero_nan", "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.", "status": "GitHub issue #12 filed"},
+    {"id": "negate_int16_not_involution", "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.", "status": "GitHub issue #21 filed"}
   ],
   "total_theorems": 234,
   "total_sorry": 6,
   "proved_theorems": 228,
   "sorry_count": 6,
   "total_examples": 112,
-  "run46_tasks": "Task 11 (Conference Paper: paper.tex + paper.bib in formal-verification/paper/, ACM sigconf, ~11pp, no PDF - no LaTeX in CI); Task 1 (Research: signFromBool+sq informal specs, Phase 1->2)",
+  "run47_tasks": "Task 7 (Proof Utility Critique: CRITIQUE.md updated, Paper Review section added, signFromBool/sq phase 2, 23 targets); Task 11 (Conference Paper: paper.tex updated, CI mention added, target count fixed, run URL updated)",
   "report_exists": true,
   "correspondence_coverage": "ALL 18 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis (21 C++ targets total)",
   "lean_files": 18,
@@ -212,7 +83,7 @@
     "sq target: mul_self_nonneg for Rat non-negativity; omega for Int version",
     "crc16 fold: List.foldl_append is the key stdlib lemma; fold/split proof is trivial once model set up",
     "atmosphere density: Rat model; precondition temperature_celsius > -273.15; use Rat.div_pos",
-    "CRITIQUE.md fully current as of run45 (234 theorems, 21 targets, 18 Lean files)",
+    "CRITIQUE.md Paper Review section added in run47 - reviews paper.tex accuracy/completeness/honesty",
     "Next priorities: (1) signFromBool.lean Phase 3 (trivial decide proofs); (2) sq.lean Phase 3; (3) crc16 fold Phase 2 informal spec; (4) compile PDF when LaTeX available"
   ]
 }
