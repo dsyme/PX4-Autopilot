@@ -1,6 +1,6 @@
 {
-  "last_run": "run50",
-  "run_id": "24616806167",
+  "last_run": "run51",
+  "run_id": "24617776462",
   "lean_version": "4.29.1",
   "lean_available": true,
   "ci_created": true,
@@ -33,7 +33,7 @@
     {"id": "Hysteresis", "phase": 5, "status": "20 proved (dwell_lb, commits, stays, zero_delay, cancel, constructor, setHysteresisTimeFrom) + 6 examples, 0 sorry", "lean_file": "lean/FVSquad/Hysteresis.lean", "spec_file": "specs/hysteresis_informal.md"},
     {"id": "signFromBool", "phase": 5, "status": "7 proved, 0 sorry: ne_zero, natAbs, sq=1, not-negates, range={-1,1}. All by rcases Bool.eq_false_or_eq_true + decide.", "lean_file": "lean/FVSquad/SignFromBoolSq.lean", "spec_file": "specs/sign_from_bool_informal.md"},
     {"id": "sq", "phase": 5, "status": "10 proved, 0 sorry: sqRat(7) nonneg+even+eq_zero_iff+mul, sqInt(3) zero+nonneg+even. native_decide for Rat concrete, Int.neg_mul_neg for sqInt_even.", "lean_file": "lean/FVSquad/SignFromBoolSq.lean", "spec_file": "specs/sq_informal.md"},
-    {"id": "crc16_fold", "phase": 2, "status": "Informal spec written (run49). septentrio::buffer_crc16 fold/split via List.foldl_append. ~5 theorems. UInt8/UInt16 arithmetic exact correspondence.", "lean_file": null, "spec_file": "specs/crc16_fold_informal.md"},
+    {"id": "crc16_fold", "phase": 5, "status": "8 proved + 6 examples, 0 sorry. Key: crc16_append (fold/split). crc16Step exact UInt8/UInt16 model. native_decide validates CCITT 0x1EF0.", "lean_file": "lean/FVSquad/Crc16Fold.lean", "spec_file": "specs/crc16_fold_informal.md"},
     {"id": "atmosphere_density", "phase": 1, "status": "Research - new in run44. ISA ideal gas law sign+monotonicity in Rat.", "lean_file": null},
     {"id": "commander_arming_fsm", "phase": 1, "status": "Research - new in run44. Safety-critical temporal props using Hysteresis.lean as sub-component.", "lean_file": null}
   ],
@@ -42,15 +42,15 @@
     {"id": "signNoZero_nan", "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.", "status": "GitHub issue #12 filed"},
     {"id": "negate_int16_not_involution", "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.", "status": "GitHub issue #21 filed"}
   ],
-  "total_theorems": 251,
+  "total_theorems": 259,
   "total_sorry": 6,
-  "proved_theorems": 245,
+  "proved_theorems": 253,
   "sorry_count": 6,
-  "total_examples": 117,
-  "run50_tasks": "Task 6 (Correspondence Review: full audit, no C++ changes found, all 19 files verified); Task 10 (REPORT.md updated: run50 timeline entry + footer note)",
+  "total_examples": 123,
+  "run51_tasks": "Task 3/4/5 (Crc16Fold.lean: 8 theorems + 6 examples, 0 sorry, fold/split proved); Task 6 (CORRESPONDENCE.md updated with Crc16Fold section); Task 10 (REPORT.md: Layer 7 added, totals updated to 259/123/6)",
   "report_exists": true,
-  "correspondence_coverage": "ALL 19 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis, SignFromBoolSq (23 C++ targets total). Last audit: run50 (2026-04-19). No C++ source changes found.",
-  "lean_files": 19,
+  "correspondence_coverage": "ALL 20 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis, SignFromBoolSq, Crc16Fold (24 C++ targets total). Last audit: run51.",
+  "lean_files": 20,
   "notes": [
     "set tactic NOT available in Lean 4 stdlib",
     "norm_num tactic NOT available in Lean 4 stdlib",
@@ -76,7 +76,7 @@
     "InterpolateN.lean uses namespace PX4.InterpolateN, imports FVSquad.Interpolate, opens PX4.Interpolate",
     "half: Rat = (1:Rat)/(2:Rat) as a private def - use native_decide to prove facts about it",
     "Mathlib cache proxy blocks with 403; lake update works but lake build from source would take hours",
-    "CORRESPONDENCE.md now covers all 19 Lean files (23 C++ targets) - complete as of run50",
+    "CORRESPONDENCE.md now covers all 20 Lean files (24 C++ targets) - complete as of run51",
     "LaTeX/pdflatex not available in CI (no sudo) - paper.tex written but PDF not compiled",
     "Paper in formal-verification/paper/ uses ACM sigconf format (acmart.cls). Use latexmk locally.",
     "signFromBool target: Bool->+-1, all 7 theorems by rcases Bool.eq_false_or_eq_true + simp/decide",
@@ -86,8 +86,10 @@
     "Rat.mul_left_comm does NOT exist - use Rat.mul_assoc + Rat.mul_comm for rearrangement",
     "ac_rfl does NOT work for Rat - rearrange manually via calc",
     "native_decide works for concrete Rat values like (-5:Rat), (3/2:Rat) - prefer over decide for Rat",
-    "crc16 fold: List.foldl_append is key; UInt8/UInt16 types have modular semantics matching C uint8_t/uint16_t",
+    "crc16 fold: List.foldl_append is @[simp] already so it is REDUNDANT to pass it explicitly to simp",
+    "Crc16Fold.lean uses namespace PX4.Crc16; crc16Step, crc16, crc16Continue are namespace-qualified",
+    "UInt8 toUInt16 zero-extends; UInt16 toUInt8 takes low 8 bits; both match C uint8_t/uint16_t semantics exactly",
     "WrapAngle: wrapInt has 8 theorems (not 9); wrapRat has 7 theorems (not 6). wrapRat_idempotent is proved by composition but transitively unverified (relies on sorry-guarded floor lemmas). Total 15 theorems.",
-    "Next priorities: (1) Crc16Fold.lean Phase 3-5 (foldl model, easy simp proof); (2) atmosphere_density Phase 2 informal spec; (3) compile PDF when LaTeX available"
+    "Next priorities: (1) atmosphere_density Phase 2 informal spec (ISA ideal gas law); (2) commander_arming_fsm Phase 2; (3) compile PDF when LaTeX available; (4) update paper.tex to 259 theorems"
   ]
 }
