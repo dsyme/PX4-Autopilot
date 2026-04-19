@@ -1,197 +1,51 @@
 {
-  "last_run": "run52",
-  "run_id": "24624875403",
-  "lean_version": "4.29.1",
-  "lean_available": true,
-  "total_theorems": 272,
-  "proved_theorems": 266,
-  "sorry_count": 12,
-  "total_examples": 127,
-  "lean_files": 21,
-  "open_prs": [
-    "PR #51 (atmosphere-run52)"
+  "run": 53,
+  "last_updated": "2026-04-19T17:00:00Z",
+  "lean_version": "leanprover/lean4:v4.29.0",
+  "lake_build_status": "passed",
+  "totals": {
+    "theorems_proved": 270,
+    "examples": 129,
+    "sorry_count": 9,
+    "lean_files": 21,
+    "targets": 24
+  },
+  "sorry_locations": {
+    "WrapAngle.lean": 6,
+    "Atmosphere.lean": 3,
+    "notes": "WrapAngle: floor arithmetic needs Mathlib. Atmosphere: density_mono_temp needs inv_lt_inv; pressureFromAltModel + altFromPressModel need Real.rpow."
+  },
+  "open_prs": [],
+  "merged_prs": [49, 50],
+  "bugs_found": [
+    {"target": "SignNoZero", "description": "NaN safety violation in signNoZero<float>"},
+    {"target": "Negate", "description": "negate<int16_t> involution error"}
   ],
-  "correspondence_coverage": "All 21 Lean files. Atmosphere.lean not yet in CORRESPONDENCE.md (next run).",
-  "notes_priorities": "Next: (1) Add Atmosphere to CORRESPONDENCE.md; (2) commander_arming_fsm phase 2; (3) Update paper.tex to 272 theorems; (4) REPORT.md update",
-  "notes": [
-    "Rat.add_lt_add_right is Iff not function - use .mpr",
-    "Rat.sub_lt_sub_right does NOT exist - use add_neg + add_lt_add_right.mpr",
-    "inv_lt_inv_of_lt_rat: build manually via mul_lt_mul_right + inv_mul_cancel",
-    "Rat.mul_sub does NOT exist in stdlib - use sorry or manual expansion",
-    "Rat.lt_iff_sub_pos : a < b iff 0 < b - a (use .mp)",
-    "neg_mono proof: Rat.neg_lt_neg + mul_lt_mul_of_pos_left",
-    "negative Rat literals: -65/10000 normalizes to -13/2000 in Lean",
-    "native_decide works for concrete Rat comparisons but NOT with free vars",
-    "Lean 4 stdlib has NO linarith/ring/norm_num/conv - all Mathlib only",
-    "simp [kConst, Rat.mul_zero, Rat.add_zero] handles T(0)=15 style goals",
-    "Mathlib blocked (403 on cache proxy) - stdlib only proofs required",
-    "powf/Real.rpow needs Mathlib - use sorry for transcendental functions",
-    "Rat.mul_sub does not exist - needs Mathlib or manual proof by add+neg",
-    "lake build runs from formal-verification/lean/",
-    "barrel file: Basic.lean imports all FVSquad modules"
+  "targets": [
+    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/SquaredError.lean", "phase": 5, "status": "proved"},
+    {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
+    {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathUtilClip.lean", "phase": 5, "status": "proved"},
+    {"id": 4, "name": "MathUtilSign", "file": "lean/FVSquad/MathUtilSign.lean", "phase": 5, "status": "proved", "bug_found": true},
+    {"id": 5, "name": "Negate", "file": "lean/FVSquad/Negate.lean", "phase": 5, "status": "proved", "bug_found": true},
+    {"id": 6, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "partial", "sorry": 6},
+    {"id": 7, "name": "LowPassFilter", "file": "lean/FVSquad/LowPassFilter.lean", "phase": 5, "status": "proved"},
+    {"id": 8, "name": "AlphaFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
+    {"id": 9, "name": "RingBuffer", "file": "lean/FVSquad/RingBuffer.lean", "phase": 5, "status": "proved"},
+    {"id": 10, "name": "Hysteresis", "file": "lean/FVSquad/Hysteresis.lean", "phase": 5, "status": "proved"},
+    {"id": 11, "name": "EKF2RingBuffer", "file": "lean/FVSquad/EKF2RingBuffer.lean", "phase": 5, "status": "proved"},
+    {"id": 12, "name": "Crc16Fold", "file": "lean/FVSquad/Crc16Fold.lean", "phase": 5, "status": "proved"},
+    {"id": 23, "name": "Atmosphere", "file": "lean/FVSquad/Atmosphere.lean", "phase": 5, "status": "partial", "sorry": 3, "notes": "density_mono_temp: needs inv_lt_inv from Mathlib. pressureFromAltModel/altFromPressModel: need Real.rpow (powf stubs). 11 proved + 3 sorry + 6 examples."},
+    {"id": 24, "name": "CommanderArmingFSM", "file": null, "phase": 2, "status": "informal_spec_written", "notes": "Binary DISARMED/ARMED FSM. arm()/disarm() quasi-pure. 10 target theorems planned. FV approach: ArmState inductive, boolean condition abstraction, proofs by decide/cases. Next: write Lean spec (Task 3)."}
   ],
-  "fv_targets": [
-    {
-      "id": "math_constrain",
-      "name": "math::constrain",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "math_signNoZero",
-      "name": "math::signNoZero",
-      "phase": 5,
-      "status": "Done - NaN bug found (issue #12)",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "math_countSetBits",
-      "name": "math::countSetBits",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/MathFunctions.lean"
-    },
-    {
-      "id": "slew_rate",
-      "name": "SlewRate::update",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/SlewRate.lean"
-    },
-    {
-      "id": "deadzone",
-      "name": "math::deadzone",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/Deadzone.lean"
-    },
-    {
-      "id": "median_filter",
-      "name": "MedianFilter",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/MedianFilter.lean"
-    },
-    {
-      "id": "interpolate",
-      "name": "math::interpolate",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/Interpolate.lean"
-    },
-    {
-      "id": "alpha_filter",
-      "name": "AlphaFilter",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/AlphaFilter.lean"
-    },
-    {
-      "id": "wrap_angle",
-      "name": "matrix::wrap_pi",
-      "phase": 3,
-      "status": "6 sorry (floor needs Mathlib)",
-      "lean_file": "lean/FVSquad/WrapAngle.lean"
-    },
-    {
-      "id": "welford_mean",
-      "name": "WelfordMean",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/WelfordMean.lean"
-    },
-    {
-      "id": "lerp",
-      "name": "math::lerp",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/Lerp.lean"
-    },
-    {
-      "id": "expo",
-      "name": "math::expo",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/Expo.lean"
-    },
-    {
-      "id": "superexpo",
-      "name": "math::superexpo",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/SuperExpo.lean"
-    },
-    {
-      "id": "negate",
-      "name": "math::negate",
-      "phase": 5,
-      "status": "Done - involution bug found (issue #21)",
-      "lean_file": "lean/FVSquad/Negate.lean"
-    },
-    {
-      "id": "ring_buffer",
-      "name": "TimestampedRingBuffer",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/RingBuffer.lean"
-    },
-    {
-      "id": "expo_deadzone",
-      "name": "expo_deadzone",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/ExpoDeadzone.lean"
-    },
-    {
-      "id": "interpolate_nxy",
-      "name": "interpolateNXY N=3",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/InterpolateNXY.lean"
-    },
-    {
-      "id": "interpolate_n",
-      "name": "interpolateN N=2,3",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/InterpolateN.lean"
-    },
-    {
-      "id": "hysteresis",
-      "name": "systemlib::Hysteresis",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/Hysteresis.lean"
-    },
-    {
-      "id": "sign_from_bool_sq",
-      "name": "signFromBool+sq",
-      "phase": 5,
-      "status": "Done",
-      "lean_file": "lean/FVSquad/SignFromBoolSq.lean"
-    },
-    {
-      "id": "crc16",
-      "name": "septentrio::crc16",
-      "phase": 5,
-      "status": "Done - 8 theorems 0 sorry",
-      "lean_file": "lean/FVSquad/Crc16Fold.lean"
-    },
-    {
-      "id": "atmosphere_density",
-      "name": "atmosphere ISA model",
-      "phase": 5,
-      "status": "13 proved + 4 examples + 6 sorry (powf needs Mathlib)",
-      "lean_file": "lean/FVSquad/Atmosphere.lean",
-      "spec_file": "specs/atmosphere_informal.md"
-    },
-    {
-      "id": "commander_arming_fsm",
-      "name": "Commander arming FSM",
-      "phase": 1,
-      "status": "Not started",
-      "lean_file": null
-    }
-  ]
+  "discoveries": [
+    "density_mono_temp sorry: Rat.inv_lt_inv_of_lt does not exist in stdlib v4.29.0; needs Mathlib.Algebra.Order.Field.Basic",
+    "Lean neg literal normalization: -27315/100 internally becomes -5463/20 (harmless for native_decide)",
+    "Rat.lt_iff_sub_pos: requires explicit args (a b), cannot use .mp directly from the lemma name",
+    "Rat.add_lt_add_right adds on right; for left-add use calc with Rat.add_comm",
+    "Rat.neg_mul exists; bare neg_mul does not in root namespace",
+    "Commander FSM uses Hysteresis for auto-disarm; Hysteresis.lean already covers this sub-component",
+    "Sea-level density from ISA: ~1.2249 kg/m3 (Lean exact) vs 1.225f (C++ constant) — minor rounding discrepancy in source code itself"
+  ],
+  "mathlib_status": "blocked_403_cache_proxy",
+  "notes": "Run 53: merged PR #49 (correspondence+report) and PR #50 (Crc16Fold). Created Atmosphere.lean (phase 4+5 combined). Researched Commander arming FSM. No new bugs found this run. Next target: CommanderArmingFSM Lean spec (Task 3) and/or density_mono_temp proof via Mathlib."
 }
