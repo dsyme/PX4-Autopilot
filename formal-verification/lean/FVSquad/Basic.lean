@@ -14,3 +14,4 @@ import FVSquad.MedianFilter
 import FVSquad.SuperExpo
 import FVSquad.ExpoDeadzone
 import FVSquad.SignFromBoolSq
+import FVSquad.Crc16Fold

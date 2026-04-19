@@ -2,29 +2,29 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 251 theorems · 117 verified examples · 6 `sorry` · Lean 4.29.1
+**Status**: 🔄 ACTIVE — 259 theorems · 123 verified examples · 6 `sorry` · Lean 4.29.1
 
 ## Last Updated
 
-- **Date**: 2026-04-18 16:30 UTC
-- **Commit**: `d47f5a1929`
+- **Date**: 2026-04-19 01:05 UTC
+- **Commit**: `fe5a32de83`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **251 named theorems and 117 concrete examples** across
-**19 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
-the EKF2 ring-buffer (`src/lib/ringbuffer/`), and the `systemlib::Hysteresis` state machine
-(`src/lib/hysteresis/`). Two genuine implementation bugs were discovered through formal
-verification: a `signNoZero<float>` NaN safety violation and an `negate<int16_t>` involution
-error. Six `sorry`-guarded theorems remain in `WrapAngle.lean` pending Mathlib support for
-floor arithmetic. All other 17 targets are sorry-free, verified by `lake build` with Lean
-4.29.1. The newest addition is `Hysteresis.lean` (20 theorems + 6 examples, 0 sorry),
-formalising the time-delayed boolean state machine used for arming/disarming and flight-mode
-transitions — including delay lower-bound, immediate-commit (zero-delay), request-cancellation,
-and settlement invariants. Research for run 44 identified five new targets: `signFromBool`,
-`sq`, `crc16_signature` fold property, `atmosphere` ISA model, and the Commander arming FSM.
+The Lean Squad has formally verified **259 named theorems and 123 concrete examples** across
+**20 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
+(`src/lib/hysteresis/`), and the Septentrio GNSS CRC-16 algorithm
+(`src/drivers/gnss/septentrio/util.cpp`). Two genuine implementation bugs were discovered
+through formal verification: a `signNoZero<float>` NaN safety violation and an
+`negate<int16_t>` involution error. Six `sorry`-guarded theorems remain in `WrapAngle.lean`
+pending Mathlib support for floor arithmetic. All other 18 targets are sorry-free, verified
+by `lake build` with Lean 4.29.1. The newest addition is `Crc16Fold.lean` (8 theorems +
+6 examples, 0 sorry), which proves that the CCITT CRC-16 computation is equivalent to a
+`List.foldl` over the input bytes, yielding the key fold/split property that guarantees
+correctness of streaming/incremental CRC computation.
 
 ---
 
@@ -42,6 +42,7 @@ graph TD
     L4["Layer 4: Integer Utilities<br/>Negate.lean · WrapAngle.lean<br/>28 theorems (6 sorry in WrapAngle)"]
     L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>35 theorems · 22 examples"]
     L6["Layer 6: State Machines<br/>Hysteresis.lean<br/>20 theorems · 6 examples"]
+    L7["Layer 7: Protocol Utilities<br/>Crc16Fold.lean<br/>8 theorems · 6 examples"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
@@ -225,6 +226,34 @@ graph LR
 - `mkHysteresis_settled`: freshly constructed object has no pending change.
 - 6× concrete `native_decide` examples: zero-delay, delayed, cancellation, timer restart.
 
+---
+
+### Layer 7 — Protocol Utilities (1 file, 8 theorems, 6 examples)
+
+`Crc16Fold.lean` models and verifies `septentrio::buffer_crc16` from
+`src/drivers/gnss/septentrio/util.cpp` — the CCITT CRC-16 checksum used to verify
+integrity of SBF (Septentrio Binary Format) GNSS receiver packets.
+
+```mermaid
+graph LR
+    CF["Crc16Fold.lean<br/>8 theorems · 6 examples<br/>CCITT CRC-16 fold property"]
+    S["crc16Step<br/>Per-byte update (UInt16 × UInt8 → UInt16)"]
+    C["crc16<br/>List.foldl crc16Step 0"]
+    CC["crc16Continue<br/>Incremental CRC from partial state"]
+    CF --- S
+    CF --- C
+    CF --- CC
+```
+
+**Key results**:
+- `crc16_append` (**fold/split**): `crc16 (a ++ b) = crc16Continue (crc16 a) b` — proves streaming correctness.
+- `crc16_nil`: empty buffer yields CRC = 0 (initial state).
+- `crc16_singleton` / `crc16_two`: unfold structure for 1- and 2-byte buffers.
+- `crc16_append3`: three-part split, enabling chunked packet processing.
+- Concrete `native_decide` example: `crc16 [0xFF] = 0x1EF0` validates the CCITT polynomial (0x1021).
+
+**Correspondence**: **exact** — `UInt8`/`UInt16` modular arithmetic matches C `uint8_t`/`uint16_t` with no gap.
+
 | File | Theorems | Examples | Sorry | Phase | Key result |
 |------|----------|----------|-------|-------|------------|
 | `MathFunctions.lean` | 16 | 17 | 0 | ✅ Phase 5 | constrain/signNoZero/countSetBits |
@@ -245,8 +274,9 @@ graph LR
 | `RingBuffer.lean` | 24 | 19 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
 | `Hysteresis.lean` | 20 | 6 | 0 | ✅ Phase 5 | Time-delayed boolean FSM: dwell lb, commit, cancel |
 | `SignFromBoolSq.lean` | 17 | 5 | 0 | ✅ Phase 5 | `signFromBool` (range {-1,1}, ne_zero) + `sq` (non-neg, even, iff-zero, mul) |
+| `Crc16Fold.lean` | 8 | 6 | 0 | ✅ Phase 5 | CRC-16 fold/split: streaming correctness, CCITT polynomial validated |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **251** | **117** | **6** | — | **2 bugs found** |
+| **Total** | **259** | **123** | **6** | — | **2 bugs found** |
 
 ---
 
@@ -409,6 +439,13 @@ timeline
         SignFromBoolSq : signFromBool (7 thms, 0 sorry) + sq (10 thms, 0 sorry) — 251 total
         CRC16 spec     : buffer_crc16 fold property informal spec written (phase 2)
         Paper          : updated to 251 theorems, 19 files, 23 targets
+    section Run 50
+        Correspondence : full audit all 19 files, no C++ changes found
+        REPORT         : run50 timeline entry added
+    section Run 51
+        Crc16Fold      : buffer_crc16 fold/split formally proved (8 thms + 6 examples, 0 sorry)
+        Layer 7        : Protocol Utilities layer added to proof architecture
+        Total          : 259 theorems, 20 files, 0 new sorry
 ```
 
 ---
@@ -437,6 +474,6 @@ timeline
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
 > *`lake build` verified with Lean 4.29.1. 6 `sorry` remain (WrapAngle wrapRat,
-> all require Mathlib floor arithmetic). 251 theorems across 19 files.*
-> *CORRESPONDENCE.md covers all 19 Lean files (23 C++ targets).*
-> *Run 49: SignFromBoolSq.lean added (17 theorems, 0 sorry); crc16_fold informal spec written.*
+> all require Mathlib floor arithmetic). 259 theorems across 20 files.*
+> *CORRESPONDENCE.md covers all 20 Lean files (24 C++ targets).*
+> *Run 51: Crc16Fold.lean added (8 theorems + 6 examples, 0 sorry); fold/split property proved for CCITT CRC-16.*
