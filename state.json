@@ -1,6 +1,6 @@
 {
-  "last_run": "run49",
-  "run_id": "24608803125",
+  "last_run": "run50",
+  "run_id": "24616806167",
   "lean_version": "4.29.1",
   "lean_available": true,
   "ci_created": true,
@@ -20,7 +20,7 @@
     {"id": "MedianFilter", "phase": 5, "status": "10 proved, 0 sorry + 6 examples", "lean_file": "lean/FVSquad/MedianFilter.lean"},
     {"id": "interpolate", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Interpolate.lean"},
     {"id": "AlphaFilter", "phase": 5, "status": "13 proved, 0 sorry", "lean_file": "lean/FVSquad/AlphaFilter.lean"},
-    {"id": "wrap_pi", "phase": 3, "status": "wrapInt: 9 proved 0 sorry. wrapRat: 6 theorems, 6 sorry (Mathlib floor needed).", "lean_file": "lean/FVSquad/WrapAngle.lean"},
+    {"id": "wrap_pi", "phase": 3, "status": "wrapInt: 8 proved 0 sorry. wrapRat: 7 theorems (6 sorry + 1 proved-by-composition-but-transitively-unverified). Needs Mathlib floor.", "lean_file": "lean/FVSquad/WrapAngle.lean"},
     {"id": "WelfordMean", "phase": 5, "status": "11 proved, 0 sorry", "lean_file": "lean/FVSquad/WelfordMean.lean"},
     {"id": "lerp", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Lerp.lean"},
     {"id": "expo", "phase": 5, "status": "17 proved, 0 sorry", "lean_file": "lean/FVSquad/Expo.lean"},
@@ -29,7 +29,7 @@
     {"id": "RingBuffer", "phase": 5, "status": "24 theorems + 19 examples, 0 sorry", "lean_file": "lean/FVSquad/RingBuffer.lean"},
     {"id": "ExpoDeadzone", "phase": 5, "status": "9 proved (incl. expoDeadzone_odd), 0 sorry", "lean_file": "lean/FVSquad/ExpoDeadzone.lean"},
     {"id": "InterpolateNXY", "phase": 5, "status": "9 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry", "lean_file": "lean/FVSquad/InterpolateNXY.lean"},
-    {"id": "InterpolateN", "phase": 5, "status": "18 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry", "lean_file": "lean/FVSquad/InterpolateN.lean"},
+    {"id": "InterpolateN", "phase": 5, "status": "19 proved (incl. continuity, mono, in_range for N=2 and N=3), 0 sorry", "lean_file": "lean/FVSquad/InterpolateN.lean"},
     {"id": "Hysteresis", "phase": 5, "status": "20 proved (dwell_lb, commits, stays, zero_delay, cancel, constructor, setHysteresisTimeFrom) + 6 examples, 0 sorry", "lean_file": "lean/FVSquad/Hysteresis.lean", "spec_file": "specs/hysteresis_informal.md"},
     {"id": "signFromBool", "phase": 5, "status": "7 proved, 0 sorry: ne_zero, natAbs, sq=1, not-negates, range={-1,1}. All by rcases Bool.eq_false_or_eq_true + decide.", "lean_file": "lean/FVSquad/SignFromBoolSq.lean", "spec_file": "specs/sign_from_bool_informal.md"},
     {"id": "sq", "phase": 5, "status": "10 proved, 0 sorry: sqRat(7) nonneg+even+eq_zero_iff+mul, sqInt(3) zero+nonneg+even. native_decide for Rat concrete, Int.neg_mul_neg for sqInt_even.", "lean_file": "lean/FVSquad/SignFromBoolSq.lean", "spec_file": "specs/sq_informal.md"},
@@ -47,9 +47,9 @@
   "proved_theorems": 245,
   "sorry_count": 6,
   "total_examples": 117,
-  "run49_tasks": "Task 3+4+5 (SignFromBoolSq.lean: 17 theorems 5 examples 0 sorry for signFromBool+sq); Task 2 (crc16_fold informal spec, phase 2); Task 11 (paper updated: 251 thms, 19 files, 23 targets)",
+  "run50_tasks": "Task 6 (Correspondence Review: full audit, no C++ changes found, all 19 files verified); Task 10 (REPORT.md updated: run50 timeline entry + footer note)",
   "report_exists": true,
-  "correspondence_coverage": "ALL 19 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis, SignFromBoolSq (23 C++ targets total)",
+  "correspondence_coverage": "ALL 19 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis, SignFromBoolSq (23 C++ targets total). Last audit: run50 (2026-04-19). No C++ source changes found.",
   "lean_files": 19,
   "notes": [
     "set tactic NOT available in Lean 4 stdlib",
@@ -76,7 +76,7 @@
     "InterpolateN.lean uses namespace PX4.InterpolateN, imports FVSquad.Interpolate, opens PX4.Interpolate",
     "half: Rat = (1:Rat)/(2:Rat) as a private def - use native_decide to prove facts about it",
     "Mathlib cache proxy blocks with 403; lake update works but lake build from source would take hours",
-    "CORRESPONDENCE.md now covers all 19 Lean files (23 C++ targets) - complete as of run49",
+    "CORRESPONDENCE.md now covers all 19 Lean files (23 C++ targets) - complete as of run50",
     "LaTeX/pdflatex not available in CI (no sudo) - paper.tex written but PDF not compiled",
     "Paper in formal-verification/paper/ uses ACM sigconf format (acmart.cls). Use latexmk locally.",
     "signFromBool target: Bool->+-1, all 7 theorems by rcases Bool.eq_false_or_eq_true + simp/decide",
@@ -87,6 +87,7 @@
     "ac_rfl does NOT work for Rat - rearrange manually via calc",
     "native_decide works for concrete Rat values like (-5:Rat), (3/2:Rat) - prefer over decide for Rat",
     "crc16 fold: List.foldl_append is key; UInt8/UInt16 types have modular semantics matching C uint8_t/uint16_t",
+    "WrapAngle: wrapInt has 8 theorems (not 9); wrapRat has 7 theorems (not 6). wrapRat_idempotent is proved by composition but transitively unverified (relies on sorry-guarded floor lemmas). Total 15 theorems.",
     "Next priorities: (1) Crc16Fold.lean Phase 3-5 (foldl model, easy simp proof); (2) atmosphere_density Phase 2 informal spec; (3) compile PDF when LaTeX available"
   ]
 }
