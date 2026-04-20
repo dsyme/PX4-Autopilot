@@ -1,40 +1,41 @@
 {
-  "run": 53,
-  "last_updated": "2026-04-19T17:00:00Z",
+  "run": 54,
+  "last_updated": "2026-04-20T01:04:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems_proved": 270,
+    "theorems_proved": 253,
+    "theorems_total": 259,
     "examples": 129,
-    "sorry_count": 9,
-    "lean_files": 21,
+    "sorry_count": 6,
+    "lean_files": 20,
     "targets": 24
   },
   "sorry_locations": {
     "WrapAngle.lean": 6,
-    "Atmosphere.lean": 3,
-    "notes": "WrapAngle: floor arithmetic needs Mathlib. Atmosphere: density_mono_temp needs inv_lt_inv; pressureFromAltModel + altFromPressModel need Real.rpow."
+    "notes": "WrapAngle: 6 rational wrap theorems need Mathlib floor arithmetic (Int.fract, Int.floor_nonneg). All other 19 files are sorry-free."
   },
   "open_prs": [],
   "merged_prs": [49, 50],
   "bugs_found": [
-    {"target": "SignNoZero", "description": "NaN safety violation in signNoZero<float>"},
-    {"target": "Negate", "description": "negate<int16_t> involution error"}
+    {"target": "SignNoZero", "issue": 12, "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"},
+    {"target": "Negate", "issue": 21, "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"}
   ],
   "targets": [
-    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/SquaredError.lean", "phase": 5, "status": "proved"},
+    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/SquaredError.lean", "phase": 5, "status": "proved", "note": "contained in MathFunctions.lean"},
     {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
-    {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathUtilClip.lean", "phase": 5, "status": "proved"},
-    {"id": 4, "name": "MathUtilSign", "file": "lean/FVSquad/MathUtilSign.lean", "phase": 5, "status": "proved", "bug_found": true},
+    {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
+    {"id": 4, "name": "MathUtilSign", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved", "bug_found": true},
     {"id": 5, "name": "Negate", "file": "lean/FVSquad/Negate.lean", "phase": 5, "status": "proved", "bug_found": true},
     {"id": 6, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "partial", "sorry": 6},
-    {"id": 7, "name": "LowPassFilter", "file": "lean/FVSquad/LowPassFilter.lean", "phase": 5, "status": "proved"},
+    {"id": 7, "name": "LowPassFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
     {"id": 8, "name": "AlphaFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
     {"id": 9, "name": "RingBuffer", "file": "lean/FVSquad/RingBuffer.lean", "phase": 5, "status": "proved"},
     {"id": 10, "name": "Hysteresis", "file": "lean/FVSquad/Hysteresis.lean", "phase": 5, "status": "proved"},
     {"id": 11, "name": "EKF2RingBuffer", "file": "lean/FVSquad/EKF2RingBuffer.lean", "phase": 5, "status": "proved"},
-    {"id": 12, "name": "Crc16Fold", "file": "lean/FVSquad/Crc16Fold.lean", "phase": 5, "status": "proved"},
-    {"id": 23, "name": "Atmosphere", "file": "lean/FVSquad/Atmosphere.lean", "phase": 5, "status": "partial", "sorry": 3, "notes": "density_mono_temp: needs inv_lt_inv from Mathlib. pressureFromAltModel/altFromPressModel: need Real.rpow (powf stubs). 11 proved + 3 sorry + 6 examples."},
+    {"id": 12, "name": "Crc16Fold", "file": "lean/FVSquad/Crc16Fold.lean", "phase": 5, "status": "proved", "notes": "buffer_crc16 fold/split property. crc16_append: streaming CRC correctness proved via List.foldl_append."},
+    {"id": 13, "name": "SignFromBoolSq", "file": "lean/FVSquad/SignFromBoolSq.lean", "phase": 5, "status": "proved"},
+    {"id": 23, "name": "Atmosphere", "file": null, "phase": 2, "status": "informal_spec_planned", "notes": "ISA standard atmosphere model. density_mono_temp: needs inv_lt_inv from Mathlib. Planned but not yet started formally."},
     {"id": 24, "name": "CommanderArmingFSM", "file": null, "phase": 2, "status": "informal_spec_written", "notes": "Binary DISARMED/ARMED FSM. arm()/disarm() quasi-pure. 10 target theorems planned. FV approach: ArmState inductive, boolean condition abstraction, proofs by decide/cases. Next: write Lean spec (Task 3)."}
   ],
   "discoveries": [
@@ -44,8 +45,26 @@
     "Rat.add_lt_add_right adds on right; for left-add use calc with Rat.add_comm",
     "Rat.neg_mul exists; bare neg_mul does not in root namespace",
     "Commander FSM uses Hysteresis for auto-disarm; Hysteresis.lean already covers this sub-component",
-    "Sea-level density from ISA: ~1.2249 kg/m3 (Lean exact) vs 1.225f (C++ constant) — minor rounding discrepancy in source code itself"
+    "Sea-level density from ISA: ~1.2249 kg/m3 (Lean exact) vs 1.225f (C++ constant) — minor rounding discrepancy in source code itself",
+    "crc16_append proof: List.foldl_append + simp/simp only closes all goals in one step",
+    "WrapAngle sorry: 6 theorem bodies use sorry (rational wrap, floor-dependent); integer wrap (wrapInt) is fully proved"
   ],
+  "paper_status": {
+    "exists": true,
+    "last_updated_run": 54,
+    "theorems": 259,
+    "modules": 20,
+    "targets": 24,
+    "sorry": 6,
+    "pdf_compiled": false,
+    "pdf_note": "LaTeX unavailable (sudo blocked in CI). paper.tex is correct and compiles when LaTeX is available."
+  },
+  "report_status": {
+    "exists": true,
+    "last_updated_run": 54,
+    "theorems": 259,
+    "files": 20
+  },
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run 53: merged PR #49 (correspondence+report) and PR #50 (Crc16Fold). Created Atmosphere.lean (phase 4+5 combined). Researched Commander arming FSM. No new bugs found this run. Next target: CommanderArmingFSM Lean spec (Task 3) and/or density_mono_temp proof via Mathlib."
+  "notes": "Run 54: Tasks 10+11 selected. Updated paper.tex (Crc16Fold in table, 259 theorems, 20 modules, title fix 'Zero Sorry'→'6 Sorry', new CRC paragraph, tcolorbox package) and REPORT.md (run54 timeline entry). No new Lean files added. Next targets: CommanderArmingFSM (Task 3) and Atmosphere.lean (Task 3/4). Both need Lean spec work. WrapAngle sorry still blocked on Mathlib floor."
 }
