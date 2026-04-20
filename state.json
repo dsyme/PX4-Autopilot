@@ -1,14 +1,14 @@
 {
-  "run": 55,
+  "run": 56,
   "last_updated": "2026-04-20T09:00:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems_proved": 253,
+    "theorems_proved": 273,
     "theorems_total": 259,
     "examples": 129,
     "sorry_count": 6,
-    "lean_files": 20,
+    "lean_files": 21,
     "targets": 24
   },
   "sorry_locations": {
@@ -112,7 +112,8 @@
       "name": "EKF2RingBuffer",
       "file": "lean/FVSquad/EKF2RingBuffer.lean",
       "phase": 5,
-      "status": "proved"
+      "status": "stale",
+      "notes": " | EKF2RingBuffer.lean does NOT exist in repo; Basic.lean import removed in run 56."
     },
     {
       "id": 12,
@@ -142,9 +143,12 @@
       "id": 24,
       "name": "CommanderArmingFSM",
       "file": null,
-      "phase": 2,
-      "status": "informal_spec_written",
-      "notes": "Binary DISARMED/ARMED FSM. arm()/disarm() quasi-pure. 10 target theorems planned. FV approach: ArmState inductive, boolean condition abstraction, proofs by decide/cases. Next: write Lean spec (Task 3)."
+      "phase": 5,
+      "status": "proved",
+      "notes": "20 theorems, 0 sorry. armFSM/disarmFSM pure model. 9-bool ArmConditions. Idempotence, state-result correspondence, forced disarm, calibration guard, trichotomy, sequential arm-disarm. lake build passed Lean 4.30.0-rc2.",
+      "lean_file": "formal-verification/lean/FVSquad/CommanderArming.lean",
+      "theorems_proved": 20,
+      "sorry": 0
     }
   ],
   "discoveries": [
@@ -185,6 +189,26 @@
       "files_audited": 20,
       "targets_covered": 26,
       "drift_detected": false
+    }
+  ],
+  "run_history": [
+    {
+      "run": 56,
+      "date": "2026-04-20",
+      "task": "Tasks 3+4+5: CommanderArming Lean spec+impl+proofs",
+      "new_theorems": 20,
+      "new_files": [
+        "CommanderArming.lean"
+      ],
+      "sorry_added": 0,
+      "pr_branch": "lean-squad/commander-arming-fsm-run56-24678404188",
+      "notes": "Proof tactic: rcases Bool.eq_false_or_eq_true for 128-case brute force on Bool guards. Removed stale EKF2RingBuffer import from Basic.lean."
+    }
+  ],
+  "technical_notes": [
+    {
+      "run": 56,
+      "note": "split at h FAILS for Prod.snd projections wrapping if-then-else. Use rcases Bool.eq_false_or_eq_true on each Bool field to generate concrete hypotheses, then simp_all closes trivially. EKF2RingBuffer target was stale \u2014 file never existed, removed from barrel import."
     }
   ]
 }
