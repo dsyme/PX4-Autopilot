@@ -4,34 +4,39 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-18 08:26 UTC
-- **Commit**: `d47f5a1929`
+- **Date**: 2026-04-21 01:00 UTC
+- **Commit**: `b8bf2e6792`
 
 ---
 
 ## Overall Assessment
 
-Twenty-three targets from PX4's mathlib, control library, and sensor-fusion stack have
-been identified; 18 have Lean files with verified theorems, and 2 more have complete
-informal specifications ready for Lean formalisation. The library now covers
-**234 theorem statements, 228 fully proved, 6 `sorry`-guarded** (Lean 4 v4.29.1,
-standard library only) across `constrain`, `signNoZero`, `countSetBits`,
-`SlewRate::update`, `deadzone`, `interpolate`, `AlphaFilter::updateCalculation`,
-`WelfordMean::update`, `math::lerp`, `math::negate<int16_t>`, `math::expo`,
-`TimestampedRingBuffer` (index arithmetic), **`MedianFilter`** (3-element window,
-range/head/spike theorems), **`math::superexpo`** (RC super-rate curve, odd symmetry,
-denom-positive), **`expo+deadzone composition`** (9 theorems including `expodz_odd`),
-**`interpolate` with explicit 3-point breakpoints** (`InterpolateNXY`, 9 theorems),
-**uniform-grid multi-point interpolation** (`InterpolateN`, 15 theorems, N=2 and N=3
-continuity+monotonicity), and **`Hysteresis`** (time-delayed boolean FSM, 20 theorems,
-dwell time lower bounds, commit/stay/cancel semantics, zero-delay, constructor, and
-`setHysteresisTimeFrom` — the most complex state machine verified to date, 0 sorry).
+Twenty-four targets from PX4's mathlib, control library, sensor-fusion stack, and
+Commander module have been identified; 21 have Lean files with verified theorems, and 1
+more has a complete informal specification ready for Lean formalisation (`atmosphere`).
+The library now covers **~273 theorem statements, ~267 fully proved, 6 `sorry`-guarded**
+(Lean 4 v4.29.1/4.30.0-rc2, standard library only) across `constrain`, `signNoZero`,
+`countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
+`AlphaFilter::updateCalculation`, `WelfordMean::update`, `math::lerp`,
+`math::negate<int16_t>`, `math::expo`, `TimestampedRingBuffer` (index arithmetic),
+**`MedianFilter`** (3-element window, range/head/spike theorems), **`math::superexpo`**
+(RC super-rate curve, odd symmetry, denom-positive), **`expo+deadzone composition`**
+(9 theorems including `expodz_odd`), **`interpolate` with explicit 3-point breakpoints**
+(`InterpolateNXY`, 9 theorems), **uniform-grid multi-point interpolation**
+(`InterpolateN`, 18 theorems, N=2 and N=3 continuity+monotonicity),
+**`Hysteresis`** (time-delayed boolean FSM, 20 theorems, dwell time lower bounds,
+commit/stay/cancel semantics — the most complex state machine verified to date),
+**`signFromBool` and `sq`** (`SignFromBoolSq.lean`, 17 theorems, 0 sorry — finite-domain
+bool→±1 and quadratic properties proved by `decide`/`omega`),
+**`septentrio::buffer_crc16`** (`Crc16Fold.lean`, 8 theorems, 0 sorry — exact UInt16
+model, fold/split property `crc16(a++b) = crc16_append(crc16(a), b)`), and
+**Commander arming FSM** (`CommanderArming.lean`, 20 theorems, 0 sorry — safety-critical
+DISARMED↔ARMED transition machine: idempotence, denial conditions, forced-disarm
+infallibility, calibration guard, trichotomy).
 The 6 remaining sorrys are all in `WrapAngle.lean` and require
 `Mathlib.Algebra.Order.Floor`. Two confirmed bugs remain open: `signNoZero<float>`
 returns 0 for NaN, and `negate<int16_t>` has an incorrect INT16_MAX special case.
-`signFromBool` and `sq` have been promoted to phase 2 (informal specs written, run46)
-and are ready for Lean formalisation. Three targets remain at phase 1: `crc16_fold`,
-`atmosphere_density`, and `commander_arming_fsm`.
+One target remains phase 2 (informal spec only): `atmosphere_density`.
 
 ---
 
@@ -138,6 +143,27 @@ and are ready for Lean formalisation. Three targets remain at phase 1: `crc16_fo
 | `setStateAndUpdate_cancel` / `_cancel_state` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | **high** | **high** | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Cancel: reverting request resets the dwell timer |
 | `mkHysteresis_state` / `_requested` / `_settled` / `_delays` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | mid | medium | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Constructor: initial state is settled with correct fields |
 | `setHysteresisTimeFrom_true` / `_false` / `_*_preserves_*` | [Hysteresis.lean](lean/FVSquad/Hysteresis.lean) | mid | medium | [L] | [C++](../src/lib/hysteresis/hysteresis.h) | Config: delay setters update only the relevant direction |
+| `signFromBool_true` / `_false` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | low | low | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L63) | Concrete values: `true→+1`, `false→-1` |
+| `signFromBool_ne_zero` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L63) | Safety: result is never 0 (no division-by-zero risk) |
+| `signFromBool_sq` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | **high** | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L63) | Square is always 1: used in unit-vector normalisation |
+| `signFromBool_not` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L63) | Negation: `signFromBool(!b) = -signFromBool(b)` |
+| `signFromBool_range` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L63) | Range: result ∈ {-1, +1} always |
+| `sqRat_nonneg` / `sqInt_nonneg` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L69) | Non-negativity: x² ≥ 0 for all x |
+| `sqRat_even` / `sqInt_even` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L69) | Symmetry: sq(-x) = sq(x) |
+| `sqRat_mul` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L69) | Multiplicativity: sq(x·y) = sq(x)·sq(y) |
+| `sqRat_eq_zero_iff` | [SignFromBoolSq.lean](lean/FVSquad/SignFromBoolSq.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp#L69) | Zero characterisation: sq(x) = 0 ↔ x = 0 |
+| `crc16_nil` / `_singleton` / `_cons` | [Crc16Fold.lean](lean/FVSquad/Crc16Fold.lean) | mid | medium | [L] | [C++](../src/drivers/gnss/septentrio/util.cpp) | Base cases for empty/single/prepended buffers |
+| `crc16_append` | [Crc16Fold.lean](lean/FVSquad/Crc16Fold.lean) | **high** | **high** | [L] | [C++](../src/drivers/gnss/septentrio/util.cpp) | **Key**: `crc16(a++b) = crc16_append(crc16(a), b)` — streaming CRC correctness |
+| `crc16_append_eq` / `_append3` | [Crc16Fold.lean](lean/FVSquad/Crc16Fold.lean) | **high** | **high** | [L] | [C++](../src/drivers/gnss/septentrio/util.cpp) | Fold form and 3-part split; GNSS fragmented-packet correctness |
+| `crc16Continue_zero` | [Crc16Fold.lean](lean/FVSquad/Crc16Fold.lean) | mid | medium | [L] | [C++](../src/drivers/gnss/septentrio/util.cpp) | Identity: continuing from CRC=0 is same as fresh computation |
+| `arm_when_armed` / `disarm_when_disarmed` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Idempotence: redundant arm/disarm → `NOT_CHANGED`, state unchanged |
+| `arm_changed_implies_armed` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | State consistency: `CHANGED` result → vehicle is now `ARMED` |
+| `arm_denied_state_unchanged` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Denial safety: `DENIED` result → state is still `DISARMED` |
+| `forced_disarm_always_succeeds` / `_ignores_landing` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Emergency disarm: always reaches DISARMED regardless of landing state |
+| `arm_denied_when_calibrating` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Safety guard: calibration active → arm always `DENIED` |
+| `arm_result_trichotomy` / `disarm_result_trichotomy` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | mid | medium | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Completeness: result is always exactly one of three outcomes |
+| `arm_then_force_disarm` / `_result` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Sequential safety: arm then force-disarm always returns DISARMED+CHANGED |
+| `arm_not_changed_state_stable` / `disarm_not_changed_state_stable` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | medium | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Stability: `NOT_CHANGED` result → state is identical to input |
 
 ---
 
@@ -172,38 +198,29 @@ and are ready for Lean formalisation. Three targets remain at phase 1: `crc16_fo
    symmetry property formally confirms that the RC pipeline preserves the stick sign
    convention.
 
-6. **`commander_arming_fsm` — safety-critical arming state machine** (phase 1 research):
-   The arming/disarming FSM in `src/modules/commander/` is the most safety-critical
-   state machine in PX4. Verifying properties such as "the vehicle can only arm if all
-   pre-arm checks pass" and "the vehicle cannot re-arm within N seconds of disarming" would
-   directly prevent class-of-failure bugs. The `Hysteresis.lean` proof (run43) provides
-   directly reusable sub-components. **Recommendation**: prioritise this as the next
-   phase-3/4/5 target; write informal spec first.
+6. ~~**`commander_arming_fsm` — safety-critical arming state machine**~~ ✅ **DONE** (run56):
+   `CommanderArming.lean` proves 20 theorems with 0 sorry, including forced-disarm
+   infallibility (`forced_disarm_always_succeeds`), calibration guard (`arm_denied_when_calibrating`),
+   trichotomy, idempotence, sequential arm-then-force-disarm, and state-stability properties.
+   The most important safety property — "the vehicle cannot arm while calibration is active"
+   — is now formally verified.
 
-7. **`signFromBool` — bool → ±1 conversion** (phase 2, informal spec written): Fully
-   decidable (all theorems can be closed by `decide`). Very tractable. Spec:
-   `signFromBool(false) = -1`, `signFromBool(true) = +1`, and
-   `signFromBool(b) * signFromBool(b) = 1`. Informal spec written in run46 and is
-   comprehensive.
-   **Recommendation**: immediate Task 3/4/5 run; all ~5 theorems should be 0-sorry by
-   `by cases b <;> decide`.
+7. ~~**`signFromBool` / `sq`**~~ ✅ **DONE** (run49): `SignFromBoolSq.lean` proves 17 theorems
+   with 0 sorry, including `signFromBool_ne_zero`, `signFromBool_sq`, `sqRat_nonneg`,
+   `sqRat_eq_zero_iff`, and multiplicativity. All closed by `decide`, `omega`, or
+   `Rat.mul_self_nonneg`.
 
-8. **`sq` — x² non-negativity and monotonicity** (phase 2, informal spec written):
-   Simple algebraic properties: `sq(x) ≥ 0`, `sq(-x) = sq(x)`, `sq(0) = 0`. For
-   `Int`, these follow by `omega`; for `Rat`, by `Rat.mul_self_nonneg`. Informal spec
-   written in run46 covering 7 properties including multiplicativity.
-   **Recommendation**: immediate Task 3/4/5 run; all ~7 theorems should be 0-sorry.
+8. ~~**`crc16_fold` — CRC fold/split property**~~ ✅ **DONE** (run51): `Crc16Fold.lean`
+   proves 8 theorems with 0 sorry, including the key `crc16_append` fold/split property.
+   Correspondence is **exact** — `UInt8`/`UInt16` arithmetic matches C `uint8_t`/`uint16_t`.
 
-9. **`crc16_fold` — CRC fold/split property** (phase 1 research): The key property is
-   `crc16(a ++ b) = crc16_append(crc16(a), b)` using `List.foldl_append`. This is a
-   textbook "fold composition" theorem and is accessible without float arithmetic.
-   **Recommendation**: Task 3/4/5 run; proves an important data-integrity invariant.
-
-10. **`atmosphere_density` — ISA ideal gas law** (phase 1 research): The function computes
-    air density from temperature and pressure. Key properties: sign (density > 0),
-    monotonicity in pressure, antitone in temperature. Requires rational arithmetic with
-    a precondition `temperature_celsius > -273.15`. **Recommendation**: Task 3/4/5 run;
-    verifies a physics model used in barometric altitude estimation.
+9. **`atmosphere_density` — ISA ideal gas law** (phase 2, informal spec written run55):
+   The function computes air density from temperature and pressure. Key properties: density > 0,
+   monotonicity in pressure, antitone in temperature. Informal spec written in run55.
+   `getStandardTemperatureAtAltitude` and `getDensityFromPressureAndTemp` are ready for
+   Lean formalisation; `getPressureFromAltitude` / `getAltitudeFromPressure` need
+   `Real.rpow` (Mathlib). **Recommendation**: Task 3/4/5 for the linear temperature law
+   and ideal gas density; both provable with rational arithmetic and `omega`/`native_decide`.
 
 ### Medium priority
 
@@ -381,6 +398,32 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
     timer (consistency: no spurious transitions). These properties directly cover the
     `Hysteresis` component used in PX4's arming state machine.
 
+16. **`signFromBool` and `sq` fully verified (0 sorry)**: `SignFromBoolSq.lean` proves
+    17 theorems with 0 sorry. `signFromBool_ne_zero` is a direct safety property: the
+    result is never 0, ruling out division-by-zero for callers that use the output as
+    a divisor. `signFromBool_sq` proves the unit-square property (used in unit-vector
+    normalisation). The `sqRat_eq_zero_iff` and `sqRat_nonneg` theorems establish the
+    quadratic non-negativity invariant for rational-model signal processing. All proofs
+    use `decide`, `omega`, or `Rat.mul_self_nonneg` — no Mathlib required.
+
+17. **`septentrio::buffer_crc16` streaming correctness proved (0 sorry)**: `Crc16Fold.lean`
+    proves the key `crc16_append` theorem: `crc16(a ++ b) = crc16_append(crc16(a), b)`.
+    This formally confirms that the Septentrio GNSS driver's CRC computation is correct
+    for fragmented SBF packets (packets arriving in multiple network chunks). The proof
+    uses `List.foldl_append` directly. Correspondence is **exact** — `UInt8`/`UInt16`
+    arithmetic in Lean matches C `uint8_t`/`uint16_t` modular arithmetic bit-for-bit.
+
+18. **Commander arming FSM fully verified (0 sorry)**: `CommanderArming.lean` proves 20
+    theorems about the safety-critical DISARMED↔ARMED state machine in
+    `src/modules/commander/Commander.cpp`. The most important result is
+    `arm_denied_when_calibrating` — "if any calibration mode is active, `arm()` always
+    returns `DENIED`" — which formally rules out the class of bugs where a vehicle arms
+    during ESC or RC calibration. `forced_disarm_always_succeeds` proves that the
+    emergency disarm path always works regardless of landing state.
+    The proof technique (`rcases Bool.eq_false_or_eq_true` case-splitting on the 9
+    boolean guards) is directly reusable for other Commander state machines (e.g.,
+    failsafe, mode selection).
+
 
 ---
 
@@ -393,79 +436,58 @@ not mathematical gaps):
 `wrapRat_ge_lo`, `wrapRat_lt_hi`, `wrapRat_in_range`, `wrapRat_periodic`,
 `wrapRat_congruent`, and `wrapRat_zero`. All require `Mathlib.Algebra.Order.Floor`
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
-(`wrapInt`, Part 1 of the same file) has **zero sorry** and 8 fully proved theorems.
+(`wrapInt`, Part 1 of the same file) has **zero sorry** and 9 fully proved theorems.
 
-All other targets (17 files, 228 theorems) are at zero sorry. All files added since
-run38 (`InterpolateNXY.lean`, `InterpolateN.lean`, `Hysteresis.lean`) were delivered
-with zero sorry. `ExpoDeadzone.lean` added `expodz_odd` with zero sorry.
+All other targets (20 active Lean files, ~267 theorems) are at zero sorry. All files
+added since run38 have been delivered with zero sorry.
 
 ---
 
 ## Paper Review
 
 The conference paper `formal-verification/paper/paper.tex` (ACM sigconf format, ~11 pages)
-was most recently revised in run47 and reviewed again in this run48 critique. The paper
-covers the campaign's methodology, results, bugs found, and lessons learned.
+was most recently revised in run54. The paper now has **stale content** that needs to be
+updated to reflect run49–56 additions.
 
-### Status of run47 Recommendations
+### Stale Items (run57 assessment)
 
-All four actionable recommendations from the run47 critique have been addressed:
+Since the last paper update (run54), three new Lean files have been added and fully proved:
 
-1. ✅ **Run URL updated** — the AI disclosure box was updated to run47 in the run47 PR
-   and is again updated to run48 (24600733577) in this run.
-2. ✅ **Target count corrected** — the introduction now reads "21 C++ targets with Lean
-   proofs (23 targets identified overall)", correctly distinguishing proved from identified.
-3. ✅ **signFromBool / sq progress** — Future Work now explicitly notes that both have
-   complete informal specifications and are the next pipeline targets.
-4. ✅ **CI mention added** — §5 (Discussion) now includes a paragraph describing the
-   `lean-ci.yml` GitHub Actions workflow that checks all proofs on every PR and push.
+1. **`SignFromBoolSq.lean`** (run49, 17 theorems): `signFromBool` and `sq` should be
+   added to Table 1 (theorem inventory). The `signFromBool_ne_zero` safety property
+   should be mentioned in §3.2 (Findings) or §3.1 (Proof Inventory). The paper's
+   Future Work section currently lists `signFromBool/sq` as upcoming — these items
+   should be moved to the Results section.
 
-### Accuracy (run48 assessment)
+2. **`Crc16Fold.lean`** (run51, 8 theorems): The streaming CRC correctness proof
+   (`crc16_append`) is a new **exact correspondence** result for the Septentrio GNSS
+   driver. The Methodology section should note this as an example of exact-model
+   (not just abstraction-level) verification. Table 1 needs a new row.
 
-The paper's claims remain well-supported:
+3. **`CommanderArming.lean`** (run56, 20 theorems): The most safety-critical result
+   in the project. The abstract should note that the Commander arming FSM is now
+   verified, including `arm_denied_when_calibrating` and `forced_disarm_always_succeeds`.
+   §3.1 (Proof Inventory) should include a subsection or paragraph on Commander arming.
+   The commander results warrant a brief architectural discussion in §4.1 (Proof Utility).
 
-- Abstract and introduction: "228 proved theorems" and "6 sorry-guarded" still match the
-  theorem count exactly (no new Lean files since run47).
-- Both bugs (signNoZero NaN, negate16 involution) are described with mechanically-verified
-  counterexamples. The infinite-loop impact description (rtl_direct_mission_land.cpp L73) is accurate.
-- Table 1 (theorem inventory, 18 files) is correct for the current state.
-- The tactic inventory and stdlib-only constraint description are accurate.
+### Accuracy (run57 assessment)
 
-**No accuracy issues found in run48.**
+- Abstract theorem count ("228 proved theorems") is **stale** — actual count is ~267 proved.
+- Table 1 is missing three files (SignFromBoolSq, Crc16Fold, CommanderArming).
+- The "21 C++ targets with Lean proofs" claim is stale — actual is 27 C++ targets.
+- Future Work references `signFromBool`, `sq`, `crc16_fold`, and `commander_arming_fsm`
+  as upcoming — all four are now complete and should be moved to the Results section.
 
-### Completeness
+### Remaining Open Suggestions
 
-- All 18 Lean files and both confirmed bugs are covered.
-- Future Work covers signFromBool, sq, CRC16, atmosphere density, and Commander arming FSM.
-- The CI workflow is now mentioned in the methodology/discussion section.
-- signFromBool and sq phase-2 status is noted in both the introduction and Future Work.
-
-### Intellectual Honesty
-
-The paper maintains appropriate intellectual honesty:
-
-- The float-vs-rational abstraction gap is clearly described in §4.3.
-- The signNoZero bug discovery methodology (correspondence → gap → bug) is well-explained.
-- The 6 sorry-guarded theorems are disclosed in both abstract and results.
-- The stdlib-only constraint and its impact on proof effort are documented.
-
-**No overclaims found.** The paper consistently frames the work as verifying abstract models.
-
-### Clarity
-
-- Structure is clear: Background → Methodology → Results → Discussion → Conclusion.
-- The two code listings (Welford step and SlewRate theorem) are well-chosen.
-- The Hysteresis dwell theorem is correctly highlighted as the most complex and safety-critical.
-
-### Remaining Open Suggestions for Future Runs
-
-1. **PDF compilation**: LaTeX is not available in the CI environment; the paper is submitted
+1. **Update paper for run56 additions**: Add CommanderArming, Crc16Fold, SignFromBoolSq
+   to Table 1, update abstract count, revise Future Work. This is the highest-priority
+   paper update needed.
+2. **PDF compilation**: LaTeX is not available in the CI environment; the paper is submitted
    as `.tex` source only. If LaTeX becomes available, compiling and committing `paper.pdf`
    would be valuable for accessibility.
-2. **Proof dependency figure**: The Methodology section would benefit from a figure showing
-   the proof architecture layers (already exists in REPORT.md as a mermaid diagram; could
-   be exported as a static image for the paper).
 3. **WrapAngle sorry resolution**: When Mathlib becomes available, resolving the 6
    sorry-guarded theorems in `WrapAngle.lean` would allow the abstract to say "0 sorry".
-4. **signFromBool.lean and sq.lean**: Once these Phase 2 targets are promoted to Phase 5
-   (full proofs), update §3.1 (Results) and Table 1 to include them.
+4. **Proof dependency figure**: The Methodology section would benefit from a figure showing
+   the proof architecture layers (already exists in REPORT.md as a mermaid diagram; could
+   be exported as a static image for the paper).
