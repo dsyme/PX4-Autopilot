@@ -4,8 +4,19 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-19 00:02 UTC
-- **Commit**: `fe5a32de83`
+- **Date**: 2026-04-20 09:00 UTC
+- **Commit**: `d20618caaf`
+
+### Run 55 Review Notes
+
+Run 55 added a dedicated correspondence section for `Hysteresis.lean` (20 theorems + 6
+examples, 0 sorry), which had appeared only in the summary table since run 47. The
+`Crc16Fold.lean` section added in run 51 and `SignFromBoolSq.lean` section from run 49
+were audited and confirmed accurate — no source drift detected.
+
+All 20 Lean files (26 C++ targets) were verified against the current source tree
+(`git log --since=2026-04-19` returned no changes to the relevant libs). All documented
+correspondences remain accurate.
 
 ### Run 50 Review Notes
 
@@ -1088,6 +1099,97 @@ model captures the mathematical ideal without the UB.
 | `sqInt_zero` | `sqInt 0 = 0` |
 | `sqInt_nonneg` | `0 ≤ sqInt x` for all `x` |
 | `sqInt_even` | `sqInt (-x) = sqInt x` |
+
+---
+
+## `FVSquad/Hysteresis.lean`
+
+Source file: `formal-verification/lean/FVSquad/Hysteresis.lean`
+C++ source: `src/lib/hysteresis/hysteresis.h` and `src/lib/hysteresis/hysteresis.cpp`
+Informal spec: `formal-verification/specs/hysteresis_informal.md`
+
+### `PX4.Hysteresis.HS` and `hysteresisUpdate`
+
+| Lean name | C++ name | C++ location | Correspondence | Notes |
+|-----------|----------|--------------|---------------|-------|
+| `PX4.Hysteresis.HS` | `systemlib::Hysteresis` | [`src/lib/hysteresis/hysteresis.h`](../src/lib/hysteresis/hysteresis.h) | **abstraction** | Four-field record; thread-safety and `hrt_abstime` overflow not modelled |
+| `PX4.Hysteresis.hysteresisUpdate` | `Hysteresis::update(now_us)` | [`src/lib/hysteresis/hysteresis.cpp`](../src/lib/hysteresis/hysteresis.cpp) | **abstraction** | Pure function model of a mutable method |
+| `PX4.Hysteresis.setStateAndUpdate` | `Hysteresis::set_state(val)` + `update(now_us)` | `hysteresis.h` / `hysteresis.cpp` | **abstraction** | Combined setter+update |
+| `PX4.Hysteresis.setHysteresisTimeFrom` | `Hysteresis::set_hysteresis_time_from` | `hysteresis.h` | **exact** | Delay update; field assignment |
+| `PX4.Hysteresis.mkHysteresis` | `Hysteresis(bool initial)` constructor | `hysteresis.h` | **exact** | Constructor invariants fully captured |
+
+**Lean model**:
+
+```lean
+structure HS where
+  state     : Bool
+  requested : Bool
+  delayTF   : Nat   -- delay true→false (µs)
+  delayFT   : Nat   -- delay false→true (µs)
+```
+
+The C++ class additionally carries `_last_time_to_change_state : hrt_abstime`, which
+marks when the last state-change request arrived. In the Lean model this is captured
+implicitly through the `now` argument to `hysteresisUpdate` and the inequality
+`now ≥ h.lastChange + delay`. The Lean model does *not* track `lastChange` as a field;
+instead, theorems are stated with explicit timing hypotheses (e.g.,
+`now ≥ h.lastChange + h.delayTF` for a true→false commit). This is a deliberate
+abstraction: it lets us prove timing properties without encoding the full timestamp-update
+logic, at the cost of making initial-change-time a universally-quantified hypothesis.
+
+**Divergences**:
+
+1. **Timestamp type**: C++ uses `hrt_abstime` (64-bit µs counter). Lean uses `Nat`
+   (unbounded). C++ `uint64_t` wraps after ~5.8×10¹¹ years; practically never wraps,
+   but the Lean model is strictly more general.
+2. **Mutable state**: C++ `Hysteresis` is a mutable class. The Lean model is a pure
+   function `HS → Nat → HS`. The `_last_time_to_change_state` field is omitted; timing
+   preconditions are stated explicitly in each theorem.
+3. **Thread safety**: The C++ implementation is not thread-safe. The Lean model has no
+   concurrency; theorems apply to single-threaded update sequences.
+4. **`_last_time_to_change_state` update**: In C++, `_last_time_to_change_state` is
+   updated whenever `requested != state`. The Lean model elides this field; as a result,
+   `update_settled_noop` covers the `requested = state` case but the timing-reset
+   behaviour on re-request is not directly modelled.
+5. **Clock monotonicity**: C++ assumes `now_us` is non-decreasing. The Lean model makes
+   no such assumption; theorems hold for any `now : Nat`.
+
+**Impact on proofs**: All 20 theorems characterise the *logical structure* of the
+hysteresis dwell check. The key safety property — that a state transition cannot occur
+unless the dwell time has elapsed — is proved by `update_tf_delay_lb` and
+`update_ft_delay_lb`. The commit properties (`update_tf_commits`, `update_ft_commits`)
+confirm that transitions DO occur as soon as the dwell is satisfied. These properties
+hold within the abstraction. The elision of `lastChange` tracking means the model
+cannot directly prove a bounded-response-time property for a sequence of updates, but
+this is a known gap, not a mismatch.
+
+**Proved properties** (20 theorems + 6 examples):
+
+| Theorem | Property |
+|---------|---------|
+| `update_settled_noop` | When `requested = state`, update is identity |
+| `update_settled_state` | State unchanged when settled |
+| `update_tf_stays` | True→false: state stays when dwell not met |
+| `update_ft_stays` | False→true: state stays when dwell not met |
+| `update_tf_delay_lb` | True→false transition only after `≥ delayTF` ticks |
+| `update_ft_delay_lb` | False→true transition only after `≥ delayFT` ticks |
+| `update_tf_commits` | True→false commits exactly when dwell elapsed |
+| `update_ft_commits` | False→true commits exactly when dwell elapsed |
+| `setStateAndUpdate_zero_delay_fresh` | Zero-delay → immediate commit |
+| `setStateAndUpdate_cancel` | Requesting current state cancels pending transition |
+| `setStateAndUpdate_cancel_state` | State invariant under cancel |
+| `mkHysteresis_state` | Constructor sets `state` field |
+| `mkHysteresis_requested` | Constructor sets `requested = initial` |
+| `mkHysteresis_settled` | Constructor is settled (`state = requested`) |
+| `mkHysteresis_delays` | Constructor sets both delays to 0 |
+| `setHysteresisTimeFrom_true` | Sets `delayTF` |
+| `setHysteresisTimeFrom_false` | Sets `delayFT` |
+| `setHysteresisTimeFrom_true_preserves_false` | `delayFT` unchanged |
+| `setHysteresisTimeFrom_false_preserves_true` | `delayTF` unchanged |
+| `setHysteresisTimeFrom_preserves_state` | State unchanged by delay-update |
+
+6 concrete examples verified by `native_decide` covering zero-delay commits and dwell
+enforcement for both transition directions.
 
 ---
 
