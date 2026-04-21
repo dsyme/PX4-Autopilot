@@ -41,7 +41,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 21 | `math::sq` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SignFromBoolSq.lean` | Square function; 10 theorems (Rat+Int), 0 sorry; even, non-neg, iff-zero, multiplicativity |
 | 22 | `septentrio::buffer_crc16` fold property | `src/drivers/gnss/septentrio/util.cpp` | 2 | 🔄 Informal Spec | — | `fold_split`: incremental computation via `List.foldl_append`; informal spec written |
 | 23 | `atmosphere::getDensityFromPressureAndTemp` | `src/lib/atmosphere/atmosphere.h` | 1 | ⬜ Research | — | ISA model; sign + monotonicity in pressure/temperature; ideal gas law |
-| 24 | Commander arming FSM | `src/modules/commander/Commander.hpp` | 1 | ⬜ Research | — | Safety-critical arming FSM; temporal properties using `Hysteresis.lean` as sub-component |
+| 24 | Commander arming FSM | `src/modules/commander/Commander.hpp` | 5 | ✅ Proved | `lean/FVSquad/CommanderArming.lean` | 20 theorems, 6 examples, 0 sorry; idempotence, state↔result correspondence, forced disarm, calibration guard, trichotomy, sequential arm-then-disarm |
 
 ## Non-Lean Targets (other tools recommended)
 
