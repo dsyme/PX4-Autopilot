@@ -1,12 +1,12 @@
 {
-  "run": 58,
-  "last_updated": "2026-04-21T09:00:00Z",
+  "run": 59,
+  "last_updated": "2026-04-21T16:36:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems_proved": 279,
-    "theorems_total": 288,
-    "examples": 129,
+    "theorems_proved": 294,
+    "theorems_total": 303,
+    "examples": 141,
     "sorry_count": 9,
     "lean_files": 22,
     "targets": 24
@@ -16,9 +16,7 @@
     "notes": "WrapAngle: 6 rational wrap theorems need Mathlib floor arithmetic. Atmosphere: 3 sorry (densityRat_anti_mono_temp, tempAtAlt_lapse_rate, tempAtAlt_strict_anti) need mul_lt_mul_of_neg_left / ring. All other 21 files are sorry-free.",
     "Atmosphere.lean": 3
   },
-  "open_prs": [
-    55
-  ],
+  "open_prs": [],
   "merged_prs": [
     49,
     50,
@@ -177,13 +175,13 @@
   },
   "report_status": {
     "exists": true,
-    "last_updated_run": 54,
-    "theorems": 259,
-    "files": 20,
-    "stale": true
+    "last_updated_run": 59,
+    "theorems": 294,
+    "files": 22,
+    "stale": false
   },
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run 57: Tasks 7+6. Updated CRITIQUE.md (Overall Assessment: 21 files/273 theorems, added SignFromBoolSq/Crc16Fold/CommanderArming rows to theorem table, marked completed recommendations, new positive findings 16-18, updated paper review). Updated CORRESPONDENCE.md (fixed duplicate headers, added full CommanderArming section, updated summary to 21 files/27 targets). Next: Task 10 (REPORT.md update) or Task 11 (paper update) are high priority. Atmosphere (Task 3/4/5) is next new target.",
+  "notes": "Run 59: Tasks 8+10. CommanderArming correspondence tests (4102/4102, all 14 invariants). REPORT.md updated: 294t, 22 files, Layers 8+9 added. Next: Attempt Atmosphere sorry (need Mathlib), or pick new target for Task 3/1.",
   "correspondence_runs": [
     {
       "run": 55,
@@ -202,9 +200,33 @@
       "files_audited": 21,
       "targets_covered": 27,
       "drift_detected": false
+    },
+    {
+      "run": 59,
+      "added_sections": [
+        "CommanderArming.lean"
+      ],
+      "files_audited": 22,
+      "targets_covered": 28,
+      "drift_detected": false
     }
   ],
   "run_history": [
+    {
+      "run": 59,
+      "date": "2026-04-21",
+      "task": "Tasks 8+10: CommanderArming correspondence tests (4102/4102) + REPORT.md update",
+      "new_theorems": 0,
+      "new_files": [],
+      "sorry_added": 0,
+      "pr_branch": "lean-squad/commander-arming-tests-report-run59-24734331090",
+      "correspondence_tests": {
+        "target": "CommanderArming",
+        "route": "B",
+        "cases": 4102,
+        "pass": 4102
+      }
+    },
     {
       "run": 57,
       "date": "2026-04-21",
