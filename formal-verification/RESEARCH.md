@@ -718,3 +718,165 @@ A conference paper (Task 11) has been written covering the full verification cam
 `formal-verification/paper/paper.tex`. The paper covers 234 theorems, 2 bugs found,
 and the stdlib-only Lean 4 methodology. See `formal-verification/CRITIQUE.md` for
 the full proof utility assessment that informed the paper's Discussion section.
+
+---
+
+## Status Update (run 59)
+
+Run 59 completed: `Atmosphere.lean` (12 theorems, 3 sorry), `CommanderArming.lean`
+(20 theorems, 0 sorry), and correspondence tests for both. The project now has
+22 Lean files, 294 theorems proved, 9 sorry (6 WrapAngle, 3 Atmosphere), and 2
+confirmed bugs (signNoZero NaN, negate<int16_t> INT16_MAX).
+
+---
+
+## Research Targets (run 60)
+
+Incorporating critique feedback from CRITIQUE.md (run 57) and surveying new areas of
+the PX4 codebase that have not yet been explored. The critique recommended:
+- Closing WrapAngle/Atmosphere sorrys (needs Mathlib floor / mul_lt_mul_of_neg_left)
+- New targets in collision prevention, trajectory math, or control allocation
+
+Three new FV-amenable targets have been identified:
+
+---
+
+### 25. `ObstacleMath::wrap_bin` — Collision Prevention Bin Index Wrapping
+
+**File**: `src/lib/collision_prevention/ObstacleMath.cpp` (line 120)
+
+```cpp
+int wrap_bin(int bin, int bin_count)
+{
+    return (bin + bin_count) % bin_count;
+}
+```
+
+**Purpose**: Wraps a possibly-negative bin index into the range `[0, bin_count)`.
+Used by `get_bin_at_angle` and `get_offset_bin_index` to convert obstacle-sensor
+readings into circular histogram bins (the OBSTACLE_DISTANCE MAVLink message uses
+a circular array of range bins).
+
+**Benefit**: This is a safety-relevant function — an out-of-range bin index causes
+array-out-of-bounds access in the collision prevention module, which could corrupt
+memory or silently ignore an obstacle report. The function has a **latent correctness
+bug**: for `bin < -bin_count`, the expression `(bin + bin_count)` is still negative,
+so `% bin_count` yields a negative result in C++ (C++11 truncation semantics: `(-13 +
+12) % 12 = -1 % 12 = -1`). The result is outside `[0, bin_count)`, violating the
+invariant the callers assume. We expect formal verification to confirm this finding.
+
+**Specification**:
+- **Correct range (assumed input range)**: for `bin ∈ (-bin_count, ∞)` and `bin_count > 0`,
+  result ∈ `[0, bin_count)`.
+- **Idempotent on valid bins**: for `bin ∈ [0, bin_count)`, `wrap_bin(bin, bin_count) = bin`.
+- **Periodic**: `wrap_bin(bin + bin_count, n) = wrap_bin(bin, n)`.
+- **Bug theorem**: for `bin ≤ -bin_count`, result is **negative** (out of range).
+
+**Tractability**: EASY — all proofs by `omega`. Integer modular arithmetic is fully
+decidable and handled by `omega` in Lean 4 stdlib.
+
+**Spec size**: ~40 Lean lines (6–8 theorems including the bug theorem).
+
+**Approximations**: `int` → `Int` (unbounded). In C++, `int` overflow is UB for very
+large values, but bin indices are small in practice. All theorems conditioned on
+`bin_count > 0`.
+
+**Approach**: Direct `omega` proofs with case splits on sign of `bin + bin_count`.
+
+**Bug-finding potential**: **HIGH** — the function returns a negative value for
+`bin ≤ -bin_count`. The callers that use it as an array index would exhibit UB.
+
+---
+
+### 26. `math::sqrt_linear` — Piecewise Sqrt/Linear Utility
+
+**File**: `src/lib/mathlib/math/Functions.hpp` (line ~235)
+
+```cpp
+template<typename T>
+const T sqrt_linear(const T &value)
+{
+    if (value < static_cast<T>(0)) {
+        return static_cast<T>(0);
+    } else if (value < static_cast<T>(1)) {
+        return sqrtf(value);
+    } else {
+        return value;
+    }
+}
+```
+
+**Purpose**: A piecewise function that clips negatives to zero, applies square root on
+`[0,1)`, and is identity for `≥ 1`. Used in distance-weighted control blending and
+speed scaling where a square-root-compressed sensitivity profile is needed.
+
+**Benefit**: Verifying boundary conditions and range invariants catches off-by-one
+errors at the piecewise boundaries (is `value = 1` in the sqrt branch or the linear
+branch?) and confirms the output is always non-negative.
+
+**Tractability**:
+- **Linear branch (x ≥ 1)**: `sqrt_linear(x) = x` — provable with rational/integer model.
+- **Zero branch (x < 0)**: `sqrt_linear(x) = 0` — trivially provable.
+- **Boundary (x = 1)**: `sqrt_linear(1) = 1` — provable by case analysis.
+- **Monotonicity for x ≥ 1**: `x₁ ≤ x₂ → sqrt_linear(x₁) ≤ sqrt_linear(x₂)` — provable.
+- **Non-negativity**: `sqrt_linear(x) ≥ 0` for all x — provable (each branch ≥ 0).
+- **Sqrt branch (0 ≤ x < 1)**: proving `sqrt_linear(x) ∈ [0, 1)` requires
+  `Real.sqrt_nonneg` and `Real.sqrt_lt_one` from Mathlib. Use `sorry` for now.
+
+**Spec size**: ~50 Lean lines (7–9 theorems; 4 fully proved, 2–3 sorry-guarded).
+
+**Approximations**: Rational model for the linear and boundary cases. The sqrt branch
+is modelled abstractly as `sorry` — a correct model needs `Real.sqrt` (Mathlib).
+
+**Bug-finding potential**: MEDIUM — boundary conditions at 0 and 1 are natural sources
+of off-by-one errors. The current code uses strict `< 1` for the sqrt branch, so `x = 1`
+correctly goes to the identity branch; a future refactor could break this.
+
+---
+
+### 27. `ObstacleMath::get_bin_at_angle` — Angle-to-Bin Index Conversion
+
+**File**: `src/lib/collision_prevention/ObstacleMath.cpp` (line 54)
+
+```cpp
+int get_bin_at_angle(float bin_width, float angle)
+{
+    int bin_at_angle = (int)round(matrix::wrap(angle, 0.f, 360.f) / bin_width);
+    return wrap_bin(bin_at_angle, 360 / bin_width);
+}
+```
+
+**Purpose**: Converts a bearing angle (degrees) to the index of the nearest collision-
+prevention histogram bin.
+
+**Benefit**: Verifying that the output is always in `[0, N)` where `N = 360 / bin_width`
+is critical for array safety. If `wrap_bin` has the bug documented in target 25, then
+`get_bin_at_angle` inherits it. This is a higher-level function that depends on both
+`wrap` (matrix) and `wrap_bin` — verifying it requires the target 25 bug to be addressed
+first (or clearly conditioned on correct inputs to `wrap_bin`).
+
+**Tractability**: MEDIUM — depends on floating-point `round()` and `matrix::wrap`
+(float variant using `floor`). The float `round` and `wrap` require Mathlib for a
+complete formal model. An integer approximation (model `angle` as rational) can prove
+range containment conditioned on `wrap_bin` being correct.
+
+**Spec size**: ~60 Lean lines; depends on target 25 being done first.
+
+**Approximations**: Float → Rat for `angle`; `round` modelled as `Int.round` (Mathlib)
+or left as `sorry`. Correct proof requires Mathlib.
+
+**Bug-finding potential**: HIGH — inherits the `wrap_bin` bug, and a wrong angle
+index can cause an obstacle to be recorded in the wrong bin, silently degrading
+collision avoidance performance.
+
+---
+
+## Updated Priority Order (run 60)
+
+| Priority | Target | Phase | Rationale |
+|----------|--------|-------|-----------|
+| 1 | `ObstacleMath::wrap_bin` (target 25) | ⬜ Research | Simple integer modulo; potential bug; all proofs by `omega` |
+| 2 | `math::sqrt_linear` (target 26) | ⬜ Research | Partial FV (linear+boundary); sqrt branch needs Mathlib |
+| 3 | `ObstacleMath::get_bin_at_angle` (target 27) | ⬜ Research | Depends on #25; float round needs Mathlib |
+| 4 | `wrapRat` theorems (WrapAngle.lean) | 🔄 Phase 3 | 6 sorrys need Mathlib floor |
+| 5 | `Atmosphere` sorrys | 🔄 Phase 3 | 3 sorrys need Mathlib mul_lt_mul_of_neg_left |

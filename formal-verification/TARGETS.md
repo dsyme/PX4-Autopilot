@@ -39,9 +39,17 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 |---|------|------|-------|--------|-----------|-------|
 | 20 | `math::signFromBool` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SignFromBoolSq.lean` | Bool-to-±1 conversion; 7 theorems, 0 sorry |
 | 21 | `math::sq` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/SignFromBoolSq.lean` | Square function; 10 theorems (Rat+Int), 0 sorry; even, non-neg, iff-zero, multiplicativity |
-| 22 | `septentrio::buffer_crc16` fold property | `src/drivers/gnss/septentrio/util.cpp` | 2 | 🔄 Informal Spec | — | `fold_split`: incremental computation via `List.foldl_append`; informal spec written |
+| 22 | `septentrio::buffer_crc16` fold property | `src/drivers/gnss/septentrio/util.cpp` | 5 | ✅ Proved | `lean/FVSquad/Crc16Fold.lean` | `fold_split`: incremental computation via `List.foldl_append`; 8 theorems, 0 sorry |
 | 23 | `atmosphere::getDensityFromPressureAndTemp` | `src/lib/atmosphere/atmosphere.h` | 3 | 🔄 Lean Spec | `lean/FVSquad/Atmosphere.lean` | ISA model; 12 proved, 3 sorry; density positivity, gas law, mono pressure, proportionality; correspondence tests in `tests/atmosphere/` (26/26 pass) |
 | 24 | Commander arming FSM | `src/modules/commander/Commander.hpp` | 5 | ✅ Proved | `lean/FVSquad/CommanderArming.lean` | 20 theorems, 6 examples, 0 sorry; idempotence, state↔result correspondence, forced disarm, calibration guard, trichotomy, sequential arm-then-disarm |
+
+## New Research Targets (Phase 1 — identified in run 60)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Integer modulo-wrap for collision-prevention bin indices; potential correctness bug for `bin ≤ -bin_count`; all proofs by `omega` |
+| 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Piecewise sqrt+linear utility; linear branch and boundaries provable with stdlib; sqrt branch needs Mathlib |
+| 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Angle-to-bin conversion; depends on target 25; float `round` needs Mathlib for complete proof |
 
 ## Non-Lean Targets (other tools recommended)
 
