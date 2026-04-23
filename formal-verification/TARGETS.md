@@ -48,7 +48,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
 | 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Integer modulo-wrap for collision-prevention bin indices; potential correctness bug for `bin ≤ -bin_count`; all proofs by `omega` |
-| 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Piecewise sqrt+linear utility; linear branch and boundaries provable with stdlib; sqrt branch needs Mathlib |
+| 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 5 | 🔄 Partial | `lean/FVSquad/SqrtLinear.lean` | 12 theorems proved, 3 sorry (sqrt branch needs Mathlib `Real.sqrt`); informal spec written |
 | 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Angle-to-bin conversion; depends on target 25; float `round` needs Mathlib for complete proof |
 
 ## Non-Lean Targets (other tools recommended)
