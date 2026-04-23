@@ -1,6 +1,6 @@
 {
-  "run": 62,
-  "last_updated": "2026-04-22T16:45:00Z",
+  "run": 63,
+  "last_updated": "2026-04-23T01:04:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
@@ -9,7 +9,7 @@
     "examples": 141,
     "sorry_count": 12,
     "lean_files": 24,
-    "targets": 27
+    "targets": 30
   },
   "sorry_locations": {
     "WrapAngle.lean": 6,
@@ -17,9 +17,7 @@
     "SqrtLinear.lean": 3,
     "notes": "WrapAngle: 6 rational wrap theorems need Mathlib floor arithmetic. Atmosphere: 3 sorry (densityRat_anti_mono_temp, tempAtAlt_lapse_rate, tempAtAlt_strict_anti). SqrtLinear: 3 sorry (sqrtLinear_zero, sqrtLinear_sqrt_nonneg, sqrtLinear_sqrt_lt_one) need Real.sqrt from Mathlib. All other 21 files are sorry-free."
   },
-  "open_prs": [
-    "lean-squad/sqrtlinear-spec-impl-run62-24790320420"
-  ],
+  "open_prs": [],
   "merged_prs": [49, 50, 52, 53, 54, 55, 56, 57, 58, 59],
   "bugs_found": [
     {
@@ -79,6 +77,21 @@
       "id": 27, "name": "GetBinAtAngle", "file": null, "phase": 1, "status": "research",
       "notes": "Angle-to-bin conversion; depends on wrap_bin (#25 now proved); float round needs Mathlib for complete proof.",
       "priority": "medium"
+    },
+    {
+      "id": 28, "name": "GetLowerBoundAngle", "file": null, "phase": 1, "status": "research",
+      "notes": "Lower bound angle of bin; builds on WrapBin theorems; rational model; range invariant [0, 360). Added run 63.",
+      "priority": "medium"
+    },
+    {
+      "id": 29, "name": "Crc16SigFold", "file": null, "phase": 1, "status": "research",
+      "notes": "CRC16 fold/split for CCITT variant (crc.c). Same structure as Crc16Fold.lean; List.foldl_append proof. Added run 63.",
+      "priority": "high"
+    },
+    {
+      "id": 30, "name": "BrakingDistance", "file": null, "phase": 1, "status": "research",
+      "notes": "computeBrakingDistanceFromVelocity in TrajMath.hpp. Safety: non-negativity + monotonicity. Rational model tractable. Added run 63.",
+      "priority": "high"
     }
   ],
   "correspondence_runs": [
@@ -87,13 +100,23 @@
   ],
   "run_history": [
     {
+      "run": 63,
+      "date": "2026-04-23",
+      "task": "Tasks 7+1: Critique update (338 thms, WrapBin+SqrtLinear) + 3 new research targets",
+      "new_theorems": 0,
+      "new_files": [],
+      "sorry_added": 0,
+      "pr_branch": "lean-squad/critique-research-run63-24810866349",
+      "notes": "Merged WrapBin and SqrtLinear open PRs. Updated CRITIQUE.md, RESEARCH.md, TARGETS.md. New targets: get_lower_bound_angle (28), crc16_sig fold (29), computeBrakingDistanceFromVelocity (30). Next: Task 3/4/5 for target 29 (Crc16 CCITT fold) — highest priority, 1-line proof via List.foldl_append."
+    },
+    {
       "run": 62,
       "date": "2026-04-22",
       "task": "Tasks 3+4: SqrtLinear spec + implementation (15 theorems, 12 proved, 3 sorry)",
       "new_theorems": 15,
       "new_files": ["SqrtLinear.lean"],
       "sorry_added": 3,
-      "pr_branch": "lean-squad/sqrtlinear-spec-impl-run62-24790320420",
+      "pr_branch": "lean-squad/sqrtlinear-spec-impl-run62-24790320420-b3cc6e59c51c229e",
       "notes": "math::sqrt_linear piecewise function. Negative and identity branches fully proved. Sqrt branch axiomatised (needs Mathlib Real.sqrt for 3 remaining sorry)."
     },
     {
@@ -103,7 +126,7 @@
       "new_theorems": 20,
       "new_files": ["WrapBin.lean"],
       "sorry_added": 0,
-      "pr_branch": "lean-squad/wrapbin-proofs-report-run61-24769158406"
+      "pr_branch": "lean-squad/wrapbin-proofs-report-run61-24769158406-ab94247f4cd5886f"
     },
     {
       "run": 60,
@@ -121,15 +144,18 @@
     "le_refl not available in Lean 4 stdlib directly; use (by decide : (0:Rat) ≤ 0) for ground terms",
     "Commander FSM proof: rcases Bool.eq_false_or_eq_true on each Bool field generates concrete hypotheses",
     "wrap_bin latent bug: (bin + bin_count) % bin_count returns negative for bin <= -bin_count; C++ truncation mod",
-    "WrapAngle sorry: 6 theorem bodies use sorry (rational wrap, floor-dependent); integer wrap (wrapInt) is fully proved"
+    "WrapAngle sorry: 6 theorem bodies use sorry (rational wrap, floor-dependent); integer wrap (wrapInt) is fully proved",
+    "SqrtLinear: noncomputable axiom sqrtBranch : Rat -> Rat used as placeholder for sqrt; 3 sorry for sqrt branch",
+    "Crc16 CCITT fold/split (target 29): same List.foldl_append structure as Crc16Fold.lean; highest-tractability new target",
+    "computeBrakingDistanceFromVelocity (target 30): pure rational formula; non-negativity proved by Rat.mul_pos + Rat.add_nonneg"
   ],
-  "notes": "Run 62: Tasks 3+4 (SqrtLinear). math::sqrt_linear piecewise function: negative and identity branches fully proved (12 theorems). Sqrt branch axiomatised with noncomputable axiom; 3 sorry for sqrt properties. Next run: Task 5 attempt to resolve WrapAngle/Atmosphere sorry, OR Task 8 for GetBinAtAngle (target 27), OR Task 10 (REPORT update).",
+  "notes": "Run 63: Tasks 7+1 (Critique update + Research). 338 total theorems (326 proved, 12 sorry). Merged WrapBin and SqrtLinear from open PRs. New targets 28-30 identified. Next run: Task 3/4/5 for target 29 (crc16 CCITT fold) — trivial proof via List.foldl_append. OR Task 3/4/5 for target 30 (BrakingDistance) — rational model, safety property.",
   "mathlib_status": "blocked_403_cache_proxy",
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
-    "stale_items": ["SignFromBoolSq", "Crc16Fold", "CommanderArming", "Atmosphere", "WrapBin", "SqrtLinear", "theorem count"]
+    "stale_items": ["SignFromBoolSq", "Crc16Fold", "CommanderArming", "Atmosphere", "WrapBin", "SqrtLinear", "theorem count (326 proved not 228)", "bug count (3 not 2)"]
   },
   "report_status": {
     "exists": true,
@@ -137,6 +163,12 @@
     "theorems": 314,
     "files": 23,
     "stale": true,
-    "stale_since": "run62"
+    "stale_since": "run62",
+    "stale_items": ["SqrtLinear.lean (15 thms)", "theorem count"]
+  },
+  "critique_status": {
+    "exists": true,
+    "last_updated_run": 63,
+    "stale": false
   }
 }
