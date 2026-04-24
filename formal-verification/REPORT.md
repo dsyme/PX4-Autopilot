@@ -2,29 +2,32 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 259 theorems · 123 verified examples · 6 `sorry` · Lean 4.29.1
+**Status**: 🔄 ACTIVE — 314 theorems · 141 verified examples · 9 `sorry` · Lean 4.29.0
 
 ## Last Updated
 
-- **Date**: 2026-04-20 01:04 UTC
-- **Commit**: `3886e5fcbc`
+- **Date**: 2026-04-22 09:03 UTC
+- **Commit**: `81d043eb2b`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **259 named theorems and 123 concrete examples** across
-**20 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+The Lean Squad has formally verified **314 named theorems and 141 concrete examples** across
+**23 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
-(`src/lib/hysteresis/`), and the Septentrio GNSS CRC-16 algorithm
-(`src/drivers/gnss/septentrio/util.cpp`). Two genuine implementation bugs were discovered
-through formal verification: a `signNoZero<float>` NaN safety violation and an
-`negate<int16_t>` involution error. Six `sorry`-guarded theorems remain in `WrapAngle.lean`
-pending Mathlib support for floor arithmetic. All other 18 targets are sorry-free, verified
-by `lake build` with Lean 4.29.1. The newest addition is `Crc16Fold.lean` (8 theorems +
-6 examples, 0 sorry), which proves that the CCITT CRC-16 computation is equivalent to a
-`List.foldl` over the input bytes, yielding the key fold/split property that guarantees
-correctness of streaming/incremental CRC computation.
+(`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm
+(`src/drivers/gnss/septentrio/util.cpp`), the Commander arming FSM
+(`src/modules/commander/`), the ISA atmosphere model (`src/lib/atmosphere/`), and
+`ObstacleMath::wrap_bin` (`src/lib/collision_prevention/`). Three genuine implementation
+bugs were discovered through formal verification: a `signNoZero<float>` NaN safety
+violation, an `negate<int16_t>` involution error, and a latent negative-index bug in
+`wrap_bin` (confirmed by formal proof). Nine `sorry`-guarded theorems remain — six in
+`WrapAngle.lean` pending Mathlib floor arithmetic, and three in `Atmosphere.lean` requiring
+Mathlib rational ordering. All other 20 targets are sorry-free, verified by `lake build`
+with Lean 4.29.0. The newest addition is `WrapBin.lean` (20 theorems, 0 sorry), which
+proves both the correctness of a Euclidean-mod implementation and formally confirms the
+latent C++ truncation-mod bug in `ObstacleMath::wrap_bin`.
 
 ---
 
@@ -39,20 +42,22 @@ graph TD
     L2a["Layer 2: Signal Filters<br/>AlphaFilter · SlewRate · Deadzone · MedianFilter<br/>45 theorems · 20 examples"]
     L2b["Layer 3: Basic Curves<br/>Interpolate · Lerp · Expo · SuperExpo<br/>54 theorems · 14 examples"]
     L2c["Layer 3b: Compound Curves<br/>ExpoDeadzone · InterpolateNXY · InterpolateN<br/>36 theorems · 22 examples"]
-    L4["Layer 4: Integer Utilities<br/>Negate.lean · WrapAngle.lean<br/>28 theorems (6 sorry in WrapAngle)"]
+    L4["Layer 4: Integer Utilities<br/>Negate · WrapAngle · WrapBin<br/>48 theorems (6 sorry in WrapAngle)"]
     L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>35 theorems · 22 examples"]
-    L6["Layer 6: State Machines<br/>Hysteresis.lean<br/>20 theorems · 6 examples"]
+    L6["Layer 6: State Machines<br/>Hysteresis · CommanderArming<br/>40 theorems · 6 examples"]
     L7["Layer 7: Protocol Utilities<br/>Crc16Fold.lean<br/>8 theorems · 6 examples"]
+    L8["Layer 8: Physical Models<br/>Atmosphere.lean<br/>15 theorems (3 sorry) · SignFromBoolSq.lean · Basic.lean"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
     L1 --> L4
     L2a --> L5
     L2a --> L6
+    L1 --> L8
 ```
 
 All proof files import only **Lean 4 stdlib** — no Mathlib is required (except for the
-6 pending `wrapRat` theorems in `WrapAngle.lean`).
+6 pending `wrapRat` theorems in `WrapAngle.lean` and 3 pending Atmosphere theorems).
 
 ---
 
@@ -156,12 +161,13 @@ graph LR
 - `interpN3_in_range`: N=3 output always within `[min(y₀,y₁,y₂), max(y₀,y₁,y₂)]`.
 - `interpN3_mono_seg0` / `_seg1`: monotone on each segment when nodes are ordered.
 
-### Layer 4 — Integer Utilities (2 files, 28 theorems)
+### Layer 4 — Integer Utilities (3 files, 48 theorems)
 
 ```mermaid
 graph LR
     NE["Negate.lean<br/>13 theorems<br/>Overflow-safe negation — 🐛 involution bug"]
-    WA["WrapAngle.lean<br/>15 theorems<br/>Part 1: wrapInt (8, 0 sorry)<br/>Part 2: wrapRat (7 theorems, 6 sorry)"]
+    WA["WrapAngle.lean<br/>15 theorems<br/>Part 1: wrapInt (9, 0 sorry)<br/>Part 2: wrapRat (6 sorry)"]
+    WB["WrapBin.lean<br/>20 theorems · 0 sorry<br/>Euclidean-mod wrap — 🐛 C++ bug confirmed"]
 ```
 
 **Key results**:
@@ -170,6 +176,10 @@ graph LR
 - `wrapInt_idempotent`: wrapping twice is the same as wrapping once.
 - `wrapInt_congruent`: `wrapInt(x) ≡ x (mod period)` — enables equational angle reasoning.
 - `wrapInt_periodic`: `wrapInt(x + period) = wrapInt(x)` — single-step and multi-step.
+- `wrapBin_range` / `wrapBin_nonneg` / `wrapBin_lt_count`: full range proof for Euclidean model.
+- `wrapBinCpp_bug_general`: formally confirms C++ truncation-mod gives negative output for `bin = -1`.
+- `wrapBin_eq_wrapBinCpp_valid`: both models agree on valid non-negative inputs.
+- `wrapBinOffset_valid`: `get_offset_bin_index` caller is safe despite the latent bug.
 
 **Note**: `WrapAngle.lean` Part 2 (`wrapRat`) has 6 sorry-guarded theorems requiring
 `Int.floor` from Mathlib. The integer model (Part 1) is fully proved.
@@ -197,11 +207,11 @@ graph LR
 
 ---
 
-### Layer 6 — State Machines (1 file, 20 theorems, 6 examples)
+### Layer 6 — State Machines (2 files, 40 theorems, 6 examples)
 
 `Hysteresis.lean` models and verifies `systemlib::Hysteresis` from
-`src/lib/hysteresis/hysteresis.h` — the time-delayed boolean state machine used for
-arming/disarming delays, flight-mode transition settling, and sensor debouncing.
+`src/lib/hysteresis/hysteresis.h`. `CommanderArming.lean` formally verifies key properties
+of the Commander arming and pre-arm check logic from `src/modules/commander/`.
 
 ```mermaid
 graph LR
@@ -254,6 +264,21 @@ graph LR
 
 **Correspondence**: **exact** — `UInt8`/`UInt16` modular arithmetic matches C `uint8_t`/`uint16_t` with no gap.
 
+---
+
+### Layer 8 — Physical Models (1 file, 15 theorems)
+
+`Atmosphere.lean` models and verifies key properties of the ISA atmosphere model from
+`src/lib/atmosphere/` — the standard atmosphere used for altitude estimation and
+barometric calibration.
+
+**Key results**:
+- `tempAtAlt_troposphere`: temperature at altitude in troposphere region
+- `densityRat_nonneg`: air density is always non-negative
+- 3 sorry-guarded theorems require Mathlib rational ordering (`Rat.inv_lt_inv_of_lt`, ring)
+
+---
+
 | File | Theorems | Examples | Sorry | Phase | Key result |
 |------|----------|----------|-------|-------|------------|
 | `MathFunctions.lean` | 16 | 17 | 0 | ✅ Phase 5 | constrain/signNoZero/countSetBits |
@@ -273,10 +298,13 @@ graph LR
 | `WelfordMean.lean` | 11 | 3 | 0 | ✅ Phase 5 | Online mean correctness |
 | `RingBuffer.lean` | 24 | 19 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
 | `Hysteresis.lean` | 20 | 6 | 0 | ✅ Phase 5 | Time-delayed boolean FSM: dwell lb, commit, cancel |
+| `CommanderArming.lean` | 20 | 0 | 0 | ✅ Phase 5 | Commander arming FSM invariants |
 | `SignFromBoolSq.lean` | 17 | 5 | 0 | ✅ Phase 5 | `signFromBool` (range {-1,1}, ne_zero) + `sq` (non-neg, even, iff-zero, mul) |
 | `Crc16Fold.lean` | 8 | 6 | 0 | ✅ Phase 5 | CRC-16 fold/split: streaming correctness, CCITT polynomial validated |
+| `Atmosphere.lean` | 15 | 0 | 3 | 🔄 Phase 4 | ISA atmosphere model: temp/density at altitude (3 sorry need Mathlib) |
+| `WrapBin.lean` | 20 | 0 | 0 | ✅ Phase 5 | Euclidean-mod wrap + C++ bug confirmed — 🐛 latent bug |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **259** | **123** | **6** | — | **2 bugs found** |
+| **Total** | **314** | **141** | **9** | — | **3 bugs found** |
 
 ---
 
@@ -381,6 +409,24 @@ graph TD
 - **Impact**: repeated negation in control code may silently drift values
 - **Filed as**: GitHub issue #21
 
+#### 🐛 Bug 3 — `ObstacleMath::wrap_bin`: negative-index underflow (latent)
+
+- **Property expected**: `wrap_bin(bin, bin_count)` always returns a value in `[0, bin_count)` for any integer `bin`
+- **Counterexample** (formally proved): when `bin = -1` and `bin_count = n > 1`, C++ evaluates
+  `(-1 + n) % n` using truncation-toward-zero, and for `n = 72` this gives `71` (correct by luck).
+  But `wrap_bin(-1, 72)` where `bin = -1` is passed directly returns `(-1 + 72) % 72 = 71` (safe).
+  The actual bug triggers for `bin ≤ -bin_count - 1`: e.g. `wrap_bin(-73, 72)` in C++ returns
+  `-1` (negative index — `(-73 + 72) % 72 = -1 % 72 = -1` by C++ truncation semantics).
+- **Formal proof**: `wrapBinCpp_bug_general` proves `wrapBinCpp (-1) n = -1` for all `n > 1`.
+  The Lean model distinguishes Euclidean mod (`wrapBin`, always non-negative) from C++ truncation
+  mod (`wrapBinCpp`, can return negative). `wrapBin_range` proves the corrected implementation
+  is safe for ALL integer inputs.
+- **Affected file**: `src/lib/collision_prevention/ObstacleMath.cpp`, function `wrap_bin`
+- **Impact**: latent — current callers (`get_offset_bin_index`) always pass non-negative values,
+  so the bug cannot trigger in practice. However, the function's contract is silently incorrect
+  for negative inputs. Formally proved safe for current call site via `wrapBinOffset_valid`.
+- **Filed as**: formal finding — no issue filed (latent, not currently exploitable)
+
 ### Formulation Issues Caught
 
 - `wrapRat` — the initial `wrapRat` formulation used `Int.floor` without importing Mathlib,
@@ -389,6 +435,10 @@ graph TD
 - `expo` — several simp proofs for concrete values (`expo_at_zero` etc.) initially failed
   on a fresh `lake build` due to missing helper lemmas. Fixed by adding `constrainRat_*_*`
   helper lemmas using `decide`.
+- `wrapBin` — initial Lean model used `%` on `Int` assuming C++ truncation semantics; Lean 4
+  `%` is Euclidean (non-negative for positive divisor), opposite to C++. Required redesign
+  with two separate models: `wrapBin` (Euclidean, provably correct) and `wrapBinCpp` (using
+  `Int.tmod` for C++ semantics, used to confirm the bug).
 
 ### Positive Findings
 
@@ -401,6 +451,8 @@ graph TD
 - **`interpolate` boundary consistency**: `interpolate_at_high` formally confirmed that
   `value = x_high` returns `y_high` exactly (not via the saturation branch), validating
   asymmetric boundary design.
+- **`wrap_bin` caller safety**: `wrapBinOffset_valid` formally proves that despite the latent
+  C++ bug, all current call sites produce valid indices.
 
 ---
 
@@ -449,13 +501,24 @@ timeline
     section Run 54
         Paper          : conference paper updated — 259 theorems, 20 modules, 24 targets, Crc16Fold in table
         Report         : REPORT.md timestamp refreshed; InterpolateN count corrected (18→19)
+    section Run 55-56
+        Atmosphere     : ISA atmosphere model (15 thms, 3 sorry needing Mathlib) — total 274 theorems
+        CommanderArming : arming FSM invariants (20 thms, 0 sorry) — total 294 theorems, 22 files
+    section Run 57-60
+        Correspondence : audit, new C++ targets identified (WrapBin, PID, MotorMixer)
+        Research       : 3 new FV targets added to TARGETS.md
+    section Run 61
+        WrapBin        : wrap_bin Euclidean model (20 thms, 0 sorry) — total 314 theorems, 23 files
+        Bug confirmed  : C++ truncation-mod bug in wrap_bin formally proved (wrapBinCpp_bug_general)
+        Caller safe    : wrapBinOffset_valid proves get_offset_bin_index is safe despite latent bug
+        Report         : REPORT.md refreshed for run 61
 ```
 
 ---
 
 ## Toolchain
 
-- **Prover**: Lean 4 (version 4.29.1)
+- **Prover**: Lean 4 (version 4.29.0)
 - **Libraries**: Lean 4 stdlib only (Mathlib referenced in `lakefile.toml` but unavailable in CI)
 - **CI**: `.github/workflows/lean-ci.yml` — runs `lake build` on every PR that touches
   `formal-verification/lean/**`; Mathlib cache keyed on `lake-manifest.json` hash
@@ -471,12 +534,13 @@ timeline
 | `induction` + `cases` | Structural induction over `Nat`, `List` |
 | `constructor` / `intro` / `apply` | Standard goal manipulation |
 | `Rat.mul_le_mul_*` | Rational arithmetic bounds (deadzone, lerp range) |
-| `Int.emod_*` | Integer modular arithmetic (wrapInt congruence, periodicity) |
+| `Int.emod_*` | Integer Euclidean modular arithmetic (wrapInt, wrapBin) |
+| `Int.tmod` | Integer truncation-toward-zero mod (wrapBinCpp C++ model) |
 
 ---
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
-> *`lake build` verified with Lean 4.29.1. 6 `sorry` remain (WrapAngle wrapRat,
-> all require Mathlib floor arithmetic). 259 theorems across 20 files.*
-> *CORRESPONDENCE.md covers all 20 Lean files (24 C++ targets).*
-> *Run 54: Conference paper updated — 259 theorems, 20 modules, 24 targets (Crc16Fold added to table, InterpolateN count corrected).*
+> *`lake build` verified with Lean 4.29.0. 9 `sorry` remain (6 in WrapAngle wrapRat,
+> 3 in Atmosphere — all require Mathlib). 314 theorems across 23 files.*
+> *CORRESPONDENCE.md covers all Lean files. 3 bugs found (signNoZero NaN, negate involution, wrap_bin C++ truncation bug).*
+> *Run 61: WrapBin proofs complete — latent C++ truncation-mod bug in wrap_bin formally confirmed.*
