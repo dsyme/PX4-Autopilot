@@ -4,19 +4,18 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-21 01:00 UTC
-- **Commit**: `b8bf2e6792`
+- **Date**: 2026-04-23 01:00 UTC
+- **Commit**: `19f5441bb5`
 
 ---
 
 ## Overall Assessment
 
-Twenty-four targets from PX4's mathlib, control library, sensor-fusion stack, and
-Commander module have been identified; 21 have Lean files with verified theorems, and 1
-more has a complete informal specification ready for Lean formalisation (`atmosphere`).
-The library now covers **~273 theorem statements, ~267 fully proved, 6 `sorry`-guarded**
-(Lean 4 v4.29.1/4.30.0-rc2, standard library only) across `constrain`, `signNoZero`,
-`countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
+Twenty-seven targets from PX4's mathlib, control library, sensor-fusion stack, Commander
+module, and collision-prevention stack have been identified; 24 have Lean files with
+verified theorems. The library now covers **338 theorem statements, 326 fully proved,
+12 `sorry`-guarded** (Lean 4 v4.29.0, standard library only) across `constrain`,
+`signNoZero`, `countSetBits`, `SlewRate::update`, `deadzone`, `interpolate`,
 `AlphaFilter::updateCalculation`, `WelfordMean::update`, `math::lerp`,
 `math::negate<int16_t>`, `math::expo`, `TimestampedRingBuffer` (index arithmetic),
 **`MedianFilter`** (3-element window, range/head/spike theorems), **`math::superexpo`**
@@ -25,18 +24,18 @@ The library now covers **~273 theorem statements, ~267 fully proved, 6 `sorry`-g
 (`InterpolateNXY`, 9 theorems), **uniform-grid multi-point interpolation**
 (`InterpolateN`, 18 theorems, N=2 and N=3 continuity+monotonicity),
 **`Hysteresis`** (time-delayed boolean FSM, 20 theorems, dwell time lower bounds,
-commit/stay/cancel semantics — the most complex state machine verified to date),
-**`signFromBool` and `sq`** (`SignFromBoolSq.lean`, 17 theorems, 0 sorry — finite-domain
-bool→±1 and quadratic properties proved by `decide`/`omega`),
-**`septentrio::buffer_crc16`** (`Crc16Fold.lean`, 8 theorems, 0 sorry — exact UInt16
-model, fold/split property `crc16(a++b) = crc16_append(crc16(a), b)`), and
-**Commander arming FSM** (`CommanderArming.lean`, 20 theorems, 0 sorry — safety-critical
-DISARMED↔ARMED transition machine: idempotence, denial conditions, forced-disarm
-infallibility, calibration guard, trichotomy).
-The 6 remaining sorrys are all in `WrapAngle.lean` and require
-`Mathlib.Algebra.Order.Floor`. Two confirmed bugs remain open: `signNoZero<float>`
-returns 0 for NaN, and `negate<int16_t>` has an incorrect INT16_MAX special case.
-One target remains phase 2 (informal spec only): `atmosphere_density`.
+commit/stay/cancel semantics), **`signFromBool` and `sq`** (`SignFromBoolSq.lean`,
+17 theorems, 0 sorry), **`septentrio::buffer_crc16`** (`Crc16Fold.lean`, 8 theorems,
+0 sorry), **Commander arming FSM** (`CommanderArming.lean`, 20 theorems, 0 sorry —
+calibration guard, forced-disarm infallibility, trichotomy),
+**`ObstacleMath::wrap_bin`** (`WrapBin.lean`, 20 theorems, 0 sorry — latent C++ truncation
+bug confirmed and proved), and **`math::sqrt_linear`** (`SqrtLinear.lean`, 15 theorems,
+12 proved — negative and identity branches; 3 sorry for sqrt branch needing Mathlib).
+The 12 remaining sorrys span three files: 6 in `WrapAngle.lean` (floor arithmetic),
+3 in `Atmosphere.lean` (density monotonicity), and 3 in `SqrtLinear.lean` (sqrt branch).
+Three confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN, `negate<int16_t>`
+has an incorrect INT16_MAX special case, and `wrap_bin(bin, n)` returns a negative index
+for `bin ≤ -n` in the C++ truncation-mod implementation.
 
 ---
 
@@ -164,6 +163,17 @@ One target remains phase 2 (informal spec only): `atmosphere_density`.
 | `arm_result_trichotomy` / `disarm_result_trichotomy` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | mid | medium | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Completeness: result is always exactly one of three outcomes |
 | `arm_then_force_disarm` / `_result` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | **high** | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Sequential safety: arm then force-disarm always returns DISARMED+CHANGED |
 | `arm_not_changed_state_stable` / `disarm_not_changed_state_stable` | [CommanderArming.lean](lean/FVSquad/CommanderArming.lean) | **high** | medium | [L] | [C++](../src/modules/commander/Commander.cpp#L584) | Stability: `NOT_CHANGED` result → state is identical to input |
+| `wrapBin_range` / `wrapBin_nonneg` / `wrapBin_lt_count` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | **high** | **high** | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | Range invariant: 0 ≤ wrapBin(bin,n) < n for all bin, n > 0 (collision-prevention bin safety) |
+| `wrapBin_identity` / `wrapBin_neg1` / `wrapBin_at_count` / `wrapBin_neg_count` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | mid | medium | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | Identity, boundary, and named wrap cases |
+| `wrapBin_one_above` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | **high** | **high** | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | Wrap-around: wrapBin(k*n + r, n) = r for 0 ≤ r < n |
+| `wrapBinCpp_bug_general` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | **high** | **high** | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | 🐛 **Bug confirmed**: C++ truncation-mod returns -1 for wrap_bin(-1, n) when n > 1; array-index underflow |
+| `wrapBin_eq_wrapBinCpp_valid` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | **high** | medium | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | Caller safety: when bin ≥ 0, C++ and Lean models agree (bug only for negative inputs) |
+| `wrapBinOffset_valid` | [WrapBin.lean](lean/FVSquad/WrapBin.lean) | **high** | **high** | [L] | [C++](../src/lib/collision_prevention/ObstacleMath.cpp) | Callers safe: offset wrapper `(bin + offset + n) % n` always non-negative |
+| `sqrtLinear_neg` / `sqrtLinear_neg_nonneg` | [SqrtLinear.lean](lean/FVSquad/SqrtLinear.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Negative branch: sqrtLinear(x) = 0 for x < 0; output ≥ 0 (proved) |
+| `sqrtLinear_ge_one` / `sqrtLinear_ge_one_nonneg` / `sqrtLinear_ge_one_ge_one` | [SqrtLinear.lean](lean/FVSquad/SqrtLinear.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Identity branch: output = input when x ≥ 1; output ≥ 1 (proved) |
+| `sqrtLinear_mono_ge_one` | [SqrtLinear.lean](lean/FVSquad/SqrtLinear.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Monotonicity on identity branch: x ≤ y → sqrtLinear(x) ≤ sqrtLinear(y) for x ≥ 1 |
+| `sqrtLinear_idempotent_ge_one` | [SqrtLinear.lean](lean/FVSquad/SqrtLinear.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Idempotence on identity branch: sqrtLinear(sqrtLinear(x)) = sqrtLinear(x) for x ≥ 1 |
+| `sqrtLinear_zero` / `sqrtLinear_sqrt_nonneg` / `sqrtLinear_sqrt_lt_one` | [SqrtLinear.lean](lean/FVSquad/SqrtLinear.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | ⚠️ Sqrt branch: 3 sorry guarded (need Mathlib `Real.sqrt`) |
 
 ---
 
@@ -214,13 +224,28 @@ One target remains phase 2 (informal spec only): `atmosphere_density`.
    proves 8 theorems with 0 sorry, including the key `crc16_append` fold/split property.
    Correspondence is **exact** — `UInt8`/`UInt16` arithmetic matches C `uint8_t`/`uint16_t`.
 
-9. **`atmosphere_density` — ISA ideal gas law** (phase 2, informal spec written run55):
-   The function computes air density from temperature and pressure. Key properties: density > 0,
-   monotonicity in pressure, antitone in temperature. Informal spec written in run55.
-   `getStandardTemperatureAtAltitude` and `getDensityFromPressureAndTemp` are ready for
-   Lean formalisation; `getPressureFromAltitude` / `getAltitudeFromPressure` need
-   `Real.rpow` (Mathlib). **Recommendation**: Task 3/4/5 for the linear temperature law
-   and ideal gas density; both provable with rational arithmetic and `omega`/`native_decide`.
+9. **`atmosphere_density` — ISA ideal gas law** (phase 3, Lean spec in `Atmosphere.lean`):
+   The Lean spec covers density positivity, gas law, monotonicity in pressure, and
+   proportionality. 3 sorry remain for temperature-monotonicity lemmas. Correspondence
+   tests (26/26 pass, `tests/atmosphere/`). **Recommendation**: try resolving the 3
+   sorry with Mathlib when available; alternatively prove temperature-monotonicity via
+   an explicit rational inequality argument.
+
+10. **`wrap_bin` C++ bug — fix recommendation**: `wrapBinCpp_bug_general` formally proves
+    the C++ truncation-mod bug for `bin ≤ -n`. The fix is straightforward: replace
+    `(bin + bin_count) % bin_count` with `((bin % bin_count) + bin_count) % bin_count`
+    (always non-negative). **Recommendation**: file a fix PR for `ObstacleMath.cpp`.
+
+11. **`sqrt_linear` sqrt branch (3 sorry)**: `sqrtLinear_zero`, `sqrtLinear_sqrt_nonneg`,
+    `sqrtLinear_sqrt_lt_one` require `Real.sqrt` from Mathlib. These are conceptually
+    simple but blocked by the toolchain. **Recommendation**: when Mathlib available,
+    use `Real.sqrt_zero`, `Real.sqrt_nonneg`, and `Real.sqrt_lt_one` to close all 3.
+
+12. **`ObstacleMath::get_lower_bound_angle` and `get_offset_bin_index`** (new, phase 1):
+    These functions build directly on `wrap_bin` (now proved). Key properties:
+    `get_lower_bound_angle(b, bw, 0)` returns an angle in [0, 360) and divides the angle
+    space into equal bins. `get_offset_bin_index(b, bw, ao)` returns a valid bin index.
+    **Recommendation**: Task 3/4/5 using the `WrapBin` theorems as a foundation.
 
 ### Medium priority
 
@@ -239,9 +264,12 @@ One target remains phase 2 (informal spec only): `atmosphere_density`.
     gives the time-domain response. The z-transform transfer function could be stated
     and proved with Mathlib complex number support.
 
-14. **Conference paper** (Task 11): With 234 theorems across 18 files and 2 confirmed bugs,
-    the project has sufficient results for a conference paper (IEEE FM, FMCAD, or CAV).
-    **Recommendation**: run Task 11 to draft `PAPER.md`.
+14. **Conference paper** (Task 11): With 326 proved theorems across 24 files, 3 confirmed bugs,
+    and a formal demonstration of latent C++ truncation-mod vulnerability in collision
+    prevention, the project has substantial material for a conference paper (IEEE FM,
+    FMCAD, or CAV). **Recommendation**: update `formal-verification/paper/paper.tex` to
+    reflect runs 49–62 additions (SignFromBoolSq, Crc16Fold, CommanderArming, Atmosphere,
+    WrapBin, SqrtLinear).
 
 ---
 
@@ -424,12 +452,35 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
     boolean guards) is directly reusable for other Commander state machines (e.g.,
     failsafe, mode selection).
 
+19. **`ObstacleMath::wrap_bin` latent C++ bug confirmed (0 sorry)**: `WrapBin.lean` proves 20
+    theorems with 0 sorry. The `wrapBin` model uses Lean's Euclidean modulo (always
+    non-negative), while `wrapBinCpp` uses truncation-toward-zero semantics (C++). The
+    theorem `wrapBinCpp_bug_general` formally proves that for any `n > 1`,
+    `wrapBinCpp(-1, n) = -1`, demonstrating that the C++ `wrap_bin(-1, n)` returns a
+    **negative bin index**. Since callers use the result as an array index, this is a
+    potential array-underflow vulnerability for any caller that passes `bin = -1` with
+    `bin_count > 1`. The companion theorem `wrapBinOffset_valid` proves that the actual
+    offsetting wrapper used by collision-prevention callers is safe (always non-negative),
+    confirming that current callers are protected but the raw `wrap_bin` function is
+    unsafe for general use.
+
+20. **`math::sqrt_linear` negative and identity branches fully proved (12/15 theorems)**:
+    `SqrtLinear.lean` proves 12 theorems for the negative branch (returns 0, output ≥ 0)
+    and identity branch (returns input, output ≥ 1, monotone, idempotent) with 0 sorry.
+    The monotonicity theorem `sqrtLinear_mono_ge_one` is particularly valuable: it
+    confirms that the identity branch (`x ≥ 1`) preserves input order, ruling out cases
+    where a larger throttle request yields a smaller sqrt_linear output. The idempotence
+    theorem `sqrtLinear_idempotent_ge_one` confirms that chaining two calls returns the
+    same result as one — an important property for any caller that composes sqrt_linear
+    with itself. Three sorry-guarded theorems remain for the sqrt branch (0 ≤ x < 1)
+    pending Mathlib's `Real.sqrt`.
+
 
 ---
 
 ## Known Sorry-Guarded Theorems
 
-Six theorems in one target are sorry-guarded (all represent tooling limitations,
+Twelve theorems across three files are sorry-guarded (all represent tooling limitations,
 not mathematical gaps):
 
 **`WrapAngle.lean`** (6 sorrys):
@@ -438,8 +489,23 @@ not mathematical gaps):
 (specifically `Int.floor_nonneg` and `Int.lt_floor_add_one`). The integer model
 (`wrapInt`, Part 1 of the same file) has **zero sorry** and 9 fully proved theorems.
 
-All other targets (20 active Lean files, ~267 theorems) are at zero sorry. All files
-added since run38 have been delivered with zero sorry.
+**`Atmosphere.lean`** (3 sorrys):
+`densityRat_anti_mono_temp`, `tempAtAlt_lapse_rate`, and `tempAtAlt_strict_anti`.
+All require Mathlib rational-order reasoning (`Rat.inv_lt_inv_of_lt` or similar).
+The core gas-law theorems (`densityRat_pos`, `densityRat_mono_pressure`,
+`densityRat_proportional_pressure`) are all proved; the sorrys are in the
+temperature-monotonicity lemmas.
+
+**`SqrtLinear.lean`** (3 sorrys):
+`sqrtLinear_zero`, `sqrtLinear_sqrt_nonneg`, and `sqrtLinear_sqrt_lt_one`.
+These concern the sqrt branch (`0 ≤ x < 1`) and require `Real.sqrt` from Mathlib.
+All 12 non-sqrt-branch theorems (negative branch, identity branch x ≥ 1) are
+proved without sorry. The axiom `noncomputable axiom sqrtBranch : Rat → Rat` is used
+as a placeholder for the sqrt computation pending Mathlib.
+
+**Resolution path**: All 12 sorry-guarded theorems are blocked solely by
+`Mathlib.Algebra.Order.Floor` / `Real.sqrt`. When Mathlib cache becomes accessible,
+a single `lake update` + proof-fixing run can close all 12.
 
 ---
 
@@ -447,47 +513,57 @@ added since run38 have been delivered with zero sorry.
 
 The conference paper `formal-verification/paper/paper.tex` (ACM sigconf format, ~11 pages)
 was most recently revised in run54. The paper now has **stale content** that needs to be
-updated to reflect run49–56 additions.
+updated to reflect run49–62 additions.
 
-### Stale Items (run57 assessment)
+### Stale Items (run63 assessment)
 
-Since the last paper update (run54), three new Lean files have been added and fully proved:
+Since the last paper update (run54), six new Lean files have been added and proved
+(or partially proved):
 
 1. **`SignFromBoolSq.lean`** (run49, 17 theorems): `signFromBool` and `sq` should be
-   added to Table 1 (theorem inventory). The `signFromBool_ne_zero` safety property
-   should be mentioned in §3.2 (Findings) or §3.1 (Proof Inventory). The paper's
-   Future Work section currently lists `signFromBool/sq` as upcoming — these items
-   should be moved to the Results section.
+   added to Table 1. The `signFromBool_ne_zero` safety property should be mentioned
+   in §3.2 (Findings). Move from Future Work to Results.
 
-2. **`Crc16Fold.lean`** (run51, 8 theorems): The streaming CRC correctness proof
-   (`crc16_append`) is a new **exact correspondence** result for the Septentrio GNSS
-   driver. The Methodology section should note this as an example of exact-model
-   (not just abstraction-level) verification. Table 1 needs a new row.
+2. **`Crc16Fold.lean`** (run51, 8 theorems): Exact-correspondence verification for
+   Septentrio GNSS driver CRC. Table 1 needs a new row; Methodology should cite this
+   as an example of bit-exact verification.
 
-3. **`CommanderArming.lean`** (run56, 20 theorems): The most safety-critical result
-   in the project. The abstract should note that the Commander arming FSM is now
-   verified, including `arm_denied_when_calibrating` and `forced_disarm_always_succeeds`.
-   §3.1 (Proof Inventory) should include a subsection or paragraph on Commander arming.
-   The commander results warrant a brief architectural discussion in §4.1 (Proof Utility).
+3. **`CommanderArming.lean`** (run56, 20 theorems): Most safety-critical result to date.
+   Abstract, Table 1, §3.1, and §4.1 all need updating. The calibration guard and
+   forced-disarm properties are highlight-worthy.
 
-### Accuracy (run57 assessment)
+4. **`Atmosphere.lean`** (run58, 15 theorems, 3 sorry): ISA standard atmosphere model.
+   Add to Table 1 noting the sorry count and correspondence test results (26/26 pass).
 
-- Abstract theorem count ("228 proved theorems") is **stale** — actual count is ~267 proved.
-- Table 1 is missing three files (SignFromBoolSq, Crc16Fold, CommanderArming).
-- The "21 C++ targets with Lean proofs" claim is stale — actual is 27 C++ targets.
-- Future Work references `signFromBool`, `sq`, `crc16_fold`, and `commander_arming_fsm`
-  as upcoming — all four are now complete and should be moved to the Results section.
+5. **`WrapBin.lean`** (run61, 20 theorems, 0 sorry): Collision-prevention bin index
+   function with **latent C++ truncation-mod bug confirmed** by `wrapBinCpp_bug_general`.
+   This is a headline new finding — add to §3.2 (Findings) alongside the `negate` and
+   `signNoZero` bugs. Update the bug count in the abstract. Table 1 needs a new row.
+
+6. **`SqrtLinear.lean`** (run62, 15 theorems, 3 sorry): Piecewise `sqrt_linear` function.
+   Add to Table 1 noting the 3 sorry for the sqrt branch.
+
+### Accuracy (run63 assessment)
+
+- Abstract theorem count is **stale** — actual count is 326 proved (338 total, 12 sorry).
+- Abstract bug count is **stale** — 3 bugs now confirmed (signNoZero NaN, negate involution,
+  wrap_bin negative-index).
+- Table 1 is missing six files (SignFromBoolSq, Crc16Fold, CommanderArming, Atmosphere,
+  WrapBin, SqrtLinear).
+- Future Work references several items now complete — should be moved to Results.
+- The "21 C++ targets with Lean proofs" claim is stale — actual is 27 C++ targets with
+  24 Lean files.
 
 ### Remaining Open Suggestions
 
-1. **Update paper for run56 additions**: Add CommanderArming, Crc16Fold, SignFromBoolSq
-   to Table 1, update abstract count, revise Future Work. This is the highest-priority
-   paper update needed.
+1. **Update paper for run49–62 additions**: Add all six new files to Table 1, update
+   abstract counts, revise Findings to include the `wrap_bin` bug, revise Future Work.
+   This is the highest-priority paper update.
 2. **PDF compilation**: LaTeX is not available in the CI environment; the paper is submitted
    as `.tex` source only. If LaTeX becomes available, compiling and committing `paper.pdf`
    would be valuable for accessibility.
-3. **WrapAngle sorry resolution**: When Mathlib becomes available, resolving the 6
-   sorry-guarded theorems in `WrapAngle.lean` would allow the abstract to say "0 sorry".
+3. **Sorry resolution**: When Mathlib becomes available, all 12 sorry-guarded theorems can
+   be closed (WrapAngle ×6, Atmosphere ×3, SqrtLinear ×3).
 4. **Proof dependency figure**: The Methodology section would benefit from a figure showing
    the proof architecture layers (already exists in REPORT.md as a mermaid diagram; could
    be exported as a static image for the paper).

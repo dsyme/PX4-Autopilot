@@ -47,9 +47,17 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Integer modulo-wrap for collision-prevention bin indices; potential correctness bug for `bin ≤ -bin_count`; all proofs by `omega` |
+| 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/WrapBin.lean` | 20 theorems, 0 sorry; latent C++ truncation-mod bug confirmed by `wrapBinCpp_bug_general` |
 | 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 5 | 🔄 Partial | `lean/FVSquad/SqrtLinear.lean` | 12 theorems proved, 3 sorry (sqrt branch needs Mathlib `Real.sqrt`); informal spec written |
 | 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Angle-to-bin conversion; depends on target 25; float `round` needs Mathlib for complete proof |
+
+## New Research Targets (Phase 1 — identified in run 63)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Lower bound angle of a bin; builds on WrapBin; rational model; range invariant [0, 360) |
+| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC fold/split: `crc16(a++b) = crc16_append(crc16(a),b)`; same structure as Crc16Fold; `List.foldl_append` proof |
+| 30 | `math::computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp` | 1 | ⬜ Research | — | Braking distance formula; safety: non-negativity + monotonicity in velocity; rational model tractable |
 
 ## Non-Lean Targets (other tools recommended)
 
