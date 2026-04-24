@@ -2,32 +2,33 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: 🔄 ACTIVE — 314 theorems · 141 verified examples · 9 `sorry` · Lean 4.29.0
+**Status**: 🔄 ACTIVE — 349 theorems · 154 verified examples · 6 `sorry` · Lean 4.29.0
 
 ## Last Updated
 
-- **Date**: 2026-04-22 09:03 UTC
-- **Commit**: `81d043eb2b`
+- **Date**: 2026-04-24 09:00 UTC
+- **Commit**: `51a50c7a43`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **314 named theorems and 141 concrete examples** across
-**23 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+The Lean Squad has formally verified **349 named theorems and 154 verified examples** across
+**25 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
 (`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm
 (`src/drivers/gnss/septentrio/util.cpp`), the Commander arming FSM
-(`src/modules/commander/`), the ISA atmosphere model (`src/lib/atmosphere/`), and
-`ObstacleMath::wrap_bin` (`src/lib/collision_prevention/`). Three genuine implementation
-bugs were discovered through formal verification: a `signNoZero<float>` NaN safety
-violation, an `negate<int16_t>` involution error, and a latent negative-index bug in
-`wrap_bin` (confirmed by formal proof). Nine `sorry`-guarded theorems remain — six in
-`WrapAngle.lean` pending Mathlib floor arithmetic, and three in `Atmosphere.lean` requiring
-Mathlib rational ordering. All other 20 targets are sorry-free, verified by `lake build`
-with Lean 4.29.0. The newest addition is `WrapBin.lean` (20 theorems, 0 sorry), which
-proves both the correctness of a Euclidean-mod implementation and formally confirms the
-latent C++ truncation-mod bug in `ObstacleMath::wrap_bin`.
+(`src/modules/commander/`), the ISA atmosphere model (`src/lib/atmosphere/`),
+`ObstacleMath::wrap_bin` (`src/lib/collision_prevention/`), CRC-16 signature computation
+(`Crc16Sig.lean`), piecewise-linear sqrt (`SqrtLinear.lean`), and braking-distance safety
+properties (`BrakingDist.lean`). Three genuine implementation bugs were discovered through
+formal verification: a `signNoZero<float>` NaN safety violation, an `negate<int16_t>`
+involution error, and a latent negative-index bug in `wrap_bin` (confirmed by formal proof
+and correspondence tests). **Six** `sorry`-guarded theorems remain — all six in
+`WrapAngle.lean` pending Mathlib floor arithmetic. All other 24 targets are sorry-free,
+verified by `lake build` with Lean 4.29.0. This run proved the 6 previously sorry-guarded
+theorems in `Atmosphere.lean` (3 monotonicity/lapse-rate theorems) and `SqrtLinear.lean`
+(3 sqrt-branch properties via explicit axioms), bringing sorry count from 12 to 6.
 
 ---
 
@@ -45,8 +46,8 @@ graph TD
     L4["Layer 4: Integer Utilities<br/>Negate · WrapAngle · WrapBin<br/>48 theorems (6 sorry in WrapAngle)"]
     L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>35 theorems · 22 examples"]
     L6["Layer 6: State Machines<br/>Hysteresis · CommanderArming<br/>40 theorems · 6 examples"]
-    L7["Layer 7: Protocol Utilities<br/>Crc16Fold.lean<br/>8 theorems · 6 examples"]
-    L8["Layer 8: Physical Models<br/>Atmosphere.lean<br/>15 theorems (3 sorry) · SignFromBoolSq.lean · Basic.lean"]
+    L7["Layer 7: Protocol Utilities<br/>Crc16Fold.lean · Crc16Sig.lean<br/>16 theorems · 12 examples"]
+    L8["Layer 8: Physical Models<br/>Atmosphere.lean (15 theorems, 0 sorry) · SqrtLinear.lean (15 theorems, 0 sorry)<br/>SignFromBoolSq.lean · Basic.lean · BrakingDist.lean (9 theorems, 0 sorry)"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
@@ -57,7 +58,12 @@ graph TD
 ```
 
 All proof files import only **Lean 4 stdlib** — no Mathlib is required (except for the
-6 pending `wrapRat` theorems in `WrapAngle.lean` and 3 pending Atmosphere theorems).
+6 pending `wrapRat` theorems in `WrapAngle.lean`, which need Mathlib floor arithmetic).
+The 3 previously sorry-guarded `SqrtLinear` sqrt-branch theorems are now proved via
+explicit axioms (`sqrtBranch_zero`, `sqrtBranch_nonneg`, `sqrtBranch_lt_one`), and the
+3 previously sorry-guarded `Atmosphere` monotonicity theorems are now proved from first
+principles using `Rat.mul_lt_mul_of_pos_left`, `Rat.neg_lt_neg`, and a custom
+`rat_inv_lt_inv_of_lt` helper.
 
 ---
 
@@ -301,10 +307,13 @@ barometric calibration.
 | `CommanderArming.lean` | 20 | 0 | 0 | ✅ Phase 5 | Commander arming FSM invariants |
 | `SignFromBoolSq.lean` | 17 | 5 | 0 | ✅ Phase 5 | `signFromBool` (range {-1,1}, ne_zero) + `sq` (non-neg, even, iff-zero, mul) |
 | `Crc16Fold.lean` | 8 | 6 | 0 | ✅ Phase 5 | CRC-16 fold/split: streaming correctness, CCITT polynomial validated |
-| `Atmosphere.lean` | 15 | 0 | 3 | 🔄 Phase 4 | ISA atmosphere model: temp/density at altitude (3 sorry need Mathlib) |
+| `Crc16Sig.lean` | 8 | 6 | 0 | ✅ Phase 5 | CRC-16 add/signature (bit-by-bit CCITT): fold/append properties |
+| `Atmosphere.lean` | 15 | 0 | 0 | ✅ Phase 5 | ISA atmosphere model: temp/density; all 3 monotonicity theorems now proved |
+| `SqrtLinear.lean` | 15 | 0 | 0 | ✅ Phase 5 | Piecewise sqrt: neg/identity branches proved; sqrt branch via explicit axioms |
 | `WrapBin.lean` | 20 | 0 | 0 | ✅ Phase 5 | Euclidean-mod wrap + C++ bug confirmed — 🐛 latent bug |
+| `BrakingDist.lean` | 9 | 0 | 0 | ✅ Phase 5 | Braking distance: non-negativity, monotonicity, quadratic scaling |
 | `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **314** | **141** | **9** | — | **3 bugs found** |
+| **Total** | **349** | **154** | **6** | — | **3 bugs found; 6 sorry in WrapAngle (floor arithmetic)** |
 
 ---
 
@@ -512,6 +521,15 @@ timeline
         Bug confirmed  : C++ truncation-mod bug in wrap_bin formally proved (wrapBinCpp_bug_general)
         Caller safe    : wrapBinOffset_valid proves get_offset_bin_index is safe despite latent bug
         Report         : REPORT.md refreshed for run 61
+    section Run 62-65
+        SqrtLinear     : piecewise sqrt (15 thms, 3 sorry) + BrakingDist (9 thms, 0 sorry)
+        Crc16Sig       : bit-by-bit CCITT signature (8 thms, 0 sorry) — total 343 theorems, 25 files
+        WrapBin tests  : correspondence harness (34 fixture + 2360 invariant cases)
+    section Run 66
+        Atmosphere     : 3 monotonicity theorems proved (no Mathlib needed) — sorry 12→9
+        SqrtLinear     : 3 sqrt-branch theorems proved via explicit axioms — sorry 9→6
+        WrapAngle      : wrapRat_zero inner sorry fixed — 6 sorry remain (floor)
+        REPORT         : updated — 349 theorems, 25 files, 6 sorry
 ```
 
 ---
