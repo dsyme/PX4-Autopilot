@@ -1,15 +1,15 @@
 {
-  "run": 64,
-  "last_updated": "2026-04-23T09:00:00Z",
+  "run": 65,
+  "last_updated": "2026-05-02T00:00:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems_proved": 334,
-    "theorems_total": 346,
-    "examples": 147,
+    "theorems_proved": 343,
+    "theorems_total": 355,
+    "examples": 154,
     "sorry_count": 12,
     "lean_files": 25,
-    "targets": 30
+    "targets": 32
   },
   "sorry_locations": {
     "WrapAngle.lean": 6,
@@ -17,19 +17,29 @@
     "SqrtLinear.lean": 3,
     "notes": "All 12 sorry need Mathlib. WrapAngle: floor arithmetic. Atmosphere: mono/anti-mono. SqrtLinear: Real.sqrt branch. All other 22 files sorry-free."
   },
-  "open_prs": [59, 60, 61],
-  "merged_prs": [49, 50, 52, 53, 54, 55, 56, 57, 58],
+  "open_prs": [],
+  "merged_prs": [
+    49,
+    50,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58
+  ],
   "run64_pr_branch": "lean-squad/crc16sig-wrapbin-tests-run64-24825997330",
   "bugs_found": [
     {
       "target": "SignNoZero",
       "issue": 12,
-      "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"
+      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
     },
     {
       "target": "Negate",
       "issue": 21,
-      "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
     },
     {
       "target": "ObstacleMath::wrap_bin",
@@ -38,26 +48,185 @@
     }
   ],
   "targets": [
-    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
-    {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
-    {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
-    {"id": 4, "name": "MathUtilSign", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved", "bug_found": true},
-    {"id": 5, "name": "Negate", "file": "lean/FVSquad/Negate.lean", "phase": 5, "status": "proved", "bug_found": true},
-    {"id": 6, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "partial", "sorry": 6},
-    {"id": 7, "name": "LowPassFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
-    {"id": 8, "name": "AlphaFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
-    {"id": 9, "name": "RingBuffer", "file": "lean/FVSquad/RingBuffer.lean", "phase": 5, "status": "proved"},
-    {"id": 10, "name": "Hysteresis", "file": "lean/FVSquad/Hysteresis.lean", "phase": 5, "status": "proved"},
-    {"id": 12, "name": "Crc16Fold", "file": "lean/FVSquad/Crc16Fold.lean", "phase": 5, "status": "proved"},
-    {"id": 13, "name": "SignFromBoolSq", "file": "lean/FVSquad/SignFromBoolSq.lean", "phase": 5, "status": "proved"},
-    {"id": 23, "name": "Atmosphere", "file": "lean/FVSquad/Atmosphere.lean", "phase": 3, "status": "lean_spec", "theorems": {"proved": 12, "sorry": 3}, "correspondence_tests": "tests/atmosphere/ (26/26 pass)"},
-    {"id": 24, "name": "CommanderArmingFSM", "file": "lean/FVSquad/CommanderArming.lean", "phase": 5, "status": "proved", "theorems_proved": 20, "sorry": 0},
-    {"id": 25, "name": "ObstacleMathWrapBin", "file": "lean/FVSquad/WrapBin.lean", "phase": 5, "status": "proved", "theorems": 20, "sorry": 0, "correspondence_tests": "tests/wrap_bin/ (34/34 fixture + 2360 invariant grid, all pass)"},
-    {"id": 26, "name": "SqrtLinear", "file": "lean/FVSquad/SqrtLinear.lean", "phase": 5, "status": "partial", "theorems_proved": 12, "sorry": 3},
-    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved", "theorems": 8, "examples": 6, "sorry": 0, "notes": "crc16_add / crc16_signature (bit-by-bit CCITT, poly=0x1021). processBit + processBits 8 + crc16AddStep + crc16Sig. Key: crc16Sig_append_self via List.foldl_append. ADDED RUN 64."},
-    {"id": 27, "name": "GetBinAtAngle", "file": null, "phase": 1, "status": "research", "priority": "medium"},
-    {"id": 28, "name": "GetLowerBoundAngle", "file": null, "phase": 1, "status": "research", "priority": "medium"},
-    {"id": 30, "name": "BrakingDistance", "file": null, "phase": 1, "status": "research", "priority": "high", "notes": "computeBrakingDistanceFromVelocity in TrajMath.hpp. Safety: non-negativity + monotonicity. Rational model tractable. Next high-priority target."}
+    {
+      "id": 1,
+      "name": "SquaredError",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 2,
+      "name": "Expo",
+      "file": "lean/FVSquad/Expo.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 3,
+      "name": "MathUtilClip",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 4,
+      "name": "MathUtilSign",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved",
+      "bug_found": true
+    },
+    {
+      "id": 5,
+      "name": "Negate",
+      "file": "lean/FVSquad/Negate.lean",
+      "phase": 5,
+      "status": "proved",
+      "bug_found": true
+    },
+    {
+      "id": 6,
+      "name": "WrapAngle",
+      "file": "lean/FVSquad/WrapAngle.lean",
+      "phase": 5,
+      "status": "partial",
+      "sorry": 6
+    },
+    {
+      "id": 7,
+      "name": "LowPassFilter",
+      "file": "lean/FVSquad/AlphaFilter.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 8,
+      "name": "AlphaFilter",
+      "file": "lean/FVSquad/AlphaFilter.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 9,
+      "name": "RingBuffer",
+      "file": "lean/FVSquad/RingBuffer.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 10,
+      "name": "Hysteresis",
+      "file": "lean/FVSquad/Hysteresis.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 12,
+      "name": "Crc16Fold",
+      "file": "lean/FVSquad/Crc16Fold.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 13,
+      "name": "SignFromBoolSq",
+      "file": "lean/FVSquad/SignFromBoolSq.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 23,
+      "name": "Atmosphere",
+      "file": "lean/FVSquad/Atmosphere.lean",
+      "phase": 3,
+      "status": "lean_spec",
+      "theorems": {
+        "proved": 12,
+        "sorry": 3
+      },
+      "correspondence_tests": "tests/atmosphere/ (26/26 pass)"
+    },
+    {
+      "id": 24,
+      "name": "CommanderArmingFSM",
+      "file": "lean/FVSquad/CommanderArming.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems_proved": 20,
+      "sorry": 0
+    },
+    {
+      "id": 25,
+      "name": "ObstacleMathWrapBin",
+      "file": "lean/FVSquad/WrapBin.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 20,
+      "sorry": 0,
+      "correspondence_tests": "tests/wrap_bin/ (34/34 fixture + 2360 invariant grid, all pass)"
+    },
+    {
+      "id": 26,
+      "name": "SqrtLinear",
+      "file": "lean/FVSquad/SqrtLinear.lean",
+      "phase": 5,
+      "status": "partial",
+      "theorems_proved": 12,
+      "sorry": 3
+    },
+    {
+      "id": 29,
+      "name": "Crc16Sig",
+      "file": "lean/FVSquad/Crc16Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 8,
+      "examples": 6,
+      "sorry": 0,
+      "notes": "crc16_add / crc16_signature (bit-by-bit CCITT, poly=0x1021). processBit + processBits 8 + crc16AddStep + crc16Sig. Key: crc16Sig_append_self via List.foldl_append. ADDED RUN 64."
+    },
+    {
+      "id": 27,
+      "name": "GetBinAtAngle",
+      "file": null,
+      "phase": 1,
+      "status": "research",
+      "priority": "medium"
+    },
+    {
+      "id": 28,
+      "name": "GetLowerBoundAngle",
+      "file": null,
+      "phase": 1,
+      "status": "research",
+      "priority": "medium"
+    },
+    {
+      "id": 30,
+      "name": "BrakingDistance",
+      "file": "lean/FVSquad/BrakingDist.lean",
+      "phase": 5,
+      "status": "proved",
+      "priority": "high",
+      "notes": "9 theorems 0 sorry; non-negativity, monotonicity, quadratic scaling, no-delay formula"
+    },
+    {
+      "id": 31,
+      "name": "math::expo",
+      "file": "src/lib/mathlib/math/Functions.hpp",
+      "phase": 1,
+      "status": "research",
+      "notes": "Expo curve for RC input; bounded output; linear/cubic blend"
+    },
+    {
+      "id": 32,
+      "name": "math::lerp",
+      "file": "src/lib/mathlib/math/Functions.hpp",
+      "phase": 1,
+      "status": "research",
+      "notes": "Linear interpolation; endpoint correctness; convex combination"
+    }
   ],
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
@@ -69,7 +238,10 @@
       "date": "2026-04-23",
       "task": "Task 5+8: Crc16Sig.lean (8 thms 0 sorry) + WrapBin correspondence tests (34+2360 cases)",
       "new_theorems": 8,
-      "new_files": ["Crc16Sig.lean", "tests/wrap_bin/"],
+      "new_files": [
+        "Crc16Sig.lean",
+        "tests/wrap_bin/"
+      ],
       "sorry_added": 0,
       "pr_branch": "lean-squad/crc16sig-wrapbin-tests-run64-24825997330",
       "notes": "Crc16Sig: crc16_add/crc16_signature fold/split (bit-by-bit CCITT). WrapBin tests: 34 fixture + 2360 invariant. Bug region validated. Next: BrakingDistance (target 30) - rational model, safety properties."
@@ -94,6 +266,17 @@
       "task": "Tasks 5+10: WrapBin proofs (20 thms, 0 sorry, latent C++ bug confirmed) + REPORT.md update",
       "new_theorems": 20,
       "pr_branch": "lean-squad/wrapbin-proofs-report-run61-24769158406-ab94247f4cd5886f"
+    },
+    {
+      "run": 65,
+      "date": "2026-05-02",
+      "tasks": "Task 1 (Research: targets 31 expo + 32 lerp identified) + Task 3+4+5 (BrakingDist.lean: 9 theorems 0 sorry)",
+      "pr_title": "BrakingDistance Tasks 1+2+3+4+5 \u2014 9 theorems proved, 0 sorry (run 65)",
+      "lean_files_added": [
+        "BrakingDist.lean"
+      ],
+      "theorems_added": 9,
+      "sorry_added": 0
     }
   ],
   "discoveries": [
@@ -110,18 +293,32 @@
     "SqrtLinear: noncomputable axiom sqrtBranch : Rat -> Rat used as placeholder for sqrt; 3 sorry for sqrt branch",
     "Crc16 CCITT fold/split (target 29): same List.foldl_append structure as Crc16Fold.lean; confirmed trivially provable"
   ],
-  "notes": "Run 64: Task 5 (Crc16Sig.lean, 8 thms 0 sorry) + Task 8 (WrapBin correspondence tests). 346 total theorems (334 proved, 12 sorry). 25 Lean files. Next: Task 3/4/5 for target 30 (BrakingDistance) — pure rational formula, non-negativity + monotonicity provable by omega/Rat arithmetic. OR Task 10 (REPORT.md update to reflect runs 62-64 additions).",
+  "notes": "Run 65: Task 1 (Research: targets 31 expo + 32 lerp identified) + Task 3+4+5 (BrakingDist.lean: 9 theorems 0 sorry). 343 proved / 355 total / 12 sorry / 25 files. Next: crc16_signature (target 29), lerp (target 32), or expo (target 31).",
   "mathlib_status": "blocked_403_cache_proxy",
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
-    "stale_items": ["SignFromBoolSq", "Crc16Fold", "CommanderArming", "Atmosphere", "WrapBin", "SqrtLinear", "Crc16Sig", "theorem count (334 proved not 228)", "bug count (3 not 2)"]
+    "stale_items": [
+      "SignFromBoolSq",
+      "Crc16Fold",
+      "CommanderArming",
+      "Atmosphere",
+      "WrapBin",
+      "SqrtLinear",
+      "Crc16Sig",
+      "theorem count (334 proved not 228)",
+      "bug count (3 not 2)"
+    ]
   },
   "report_status": {
     "exists": true,
     "last_updated_run": 61,
     "stale_since": "run62",
-    "stale_items": ["SqrtLinear.lean (15 thms)", "Crc16Sig.lean (8 thms)", "theorem count (314 -> 346)"]
+    "stale_items": [
+      "SqrtLinear.lean (15 thms)",
+      "Crc16Sig.lean (8 thms)",
+      "theorem count (314 -> 346)"
+    ]
   }
 }
