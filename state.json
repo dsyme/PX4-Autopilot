@@ -1,25 +1,28 @@
 {
-  "run": 66,
-  "last_updated": "2026-04-24T09:00:00Z",
+  "run": 67,
+  "last_updated": "2026-04-24T16:32:59Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems_proved": 349,
-    "theorems_total": 355,
-    "examples": 154,
+    "theorems_proved": 362,
+    "theorems_total": 368,
+    "examples": 162,
     "sorry_count": 6,
-    "lean_files": 25,
-    "targets": 32
+    "lean_files": 26,
+    "targets": 33
   },
   "sorry_locations": {
     "WrapAngle.lean": 6,
-    "notes": "All 6 sorry in WrapAngle: wrapRat floor arithmetic (wrapRat_ge_lo, wrapRat_lt_hi, wrapRat_in_range, wrapRat_periodic, wrapRat_congruent, wrapRat_zero body). Need Mathlib.Algebra.Order.Floor. Atmosphere and SqrtLinear now sorry-free."
+    "notes": "All 6 sorry in WrapAngle: wrapRat floor arithmetic (wrapRat_ge_lo, wrapRat_lt_hi, wrapRat_in_range, wrapRat_periodic, wrapRat_congruent, wrapRat_zero body). Need Mathlib.Algebra.Order.Floor."
   },
-  "open_prs": [],
-  "merged_prs": [
-    49, 50, 52, 53, 54, 55, 56, 57, 58, 62
+  "open_prs": [
+    {
+      "number": 64,
+      "branch": "lean-squad/get-bin-at-angle-run67-24900431008",
+      "title": "feat(formal-verification): GetBinAtAngle — Tasks 2+3+4+5, 13 theorems 0 sorry (run 67)"
+    }
   ],
-  "run66_pr_branch": "lean-squad/sorry-reduction-run66-24881003176",
+  "merged_prs": [49, 50, 52, 53, 54, 55, 56, 57, 58, 62, 63],
   "bugs_found": [
     {
       "target": "SignNoZero",
@@ -43,103 +46,83 @@
     {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
     {"id": 4, "name": "MathUtilSign", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved", "bug_found": true},
     {"id": 5, "name": "Negate", "file": "lean/FVSquad/Negate.lean", "phase": 5, "status": "proved", "bug_found": true},
-    {"id": 6, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "partial", "sorry": 6, "notes": "wrapInt (integer) fully proved; wrapRat (rational/float) 6 sorry, all need Mathlib.Algebra.Order.Floor. Inner sorry in wrapRat_zero condition fixed (run 66)."},
+    {"id": 6, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "partial", "sorry": 6, "notes": "wrapInt fully proved; wrapRat 6 sorry (floor arithmetic, needs Mathlib.Algebra.Order.Floor)"},
     {"id": 7, "name": "LowPassFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
     {"id": 8, "name": "AlphaFilter", "file": "lean/FVSquad/AlphaFilter.lean", "phase": 5, "status": "proved"},
     {"id": 9, "name": "RingBuffer", "file": "lean/FVSquad/RingBuffer.lean", "phase": 5, "status": "proved"},
     {"id": 10, "name": "Hysteresis", "file": "lean/FVSquad/Hysteresis.lean", "phase": 5, "status": "proved"},
     {"id": 12, "name": "Crc16Fold", "file": "lean/FVSquad/Crc16Fold.lean", "phase": 5, "status": "proved"},
     {"id": 13, "name": "SignFromBoolSq", "file": "lean/FVSquad/SignFromBoolSq.lean", "phase": 5, "status": "proved"},
-    {"id": 23, "name": "Atmosphere", "file": "lean/FVSquad/Atmosphere.lean", "phase": 5, "status": "proved", "sorry": 0, "notes": "All 15 theorems proved (run 66). rat_inv_lt_inv_of_lt helper added. No Mathlib needed.", "correspondence_tests": "tests/atmosphere/ (26/26 pass)"},
+    {"id": 23, "name": "Atmosphere", "file": "lean/FVSquad/Atmosphere.lean", "phase": 5, "status": "proved", "sorry": 0, "correspondence_tests": "tests/atmosphere/ (26/26 pass)"},
     {"id": 24, "name": "CommanderArmingFSM", "file": "lean/FVSquad/CommanderArming.lean", "phase": 5, "status": "proved", "theorems_proved": 20, "sorry": 0},
-    {"id": 25, "name": "ObstacleMathWrapBin", "file": "lean/FVSquad/WrapBin.lean", "phase": 5, "status": "proved", "theorems": 20, "sorry": 0, "correspondence_tests": "tests/wrap_bin/ (34/34 fixture + 2360 invariant grid, all pass)"},
-    {"id": 26, "name": "SqrtLinear", "file": "lean/FVSquad/SqrtLinear.lean", "phase": 5, "status": "proved", "theorems_proved": 15, "sorry": 0, "notes": "All 15 theorems proved (run 66). 3 explicit axioms added for sqrtBranch: sqrtBranch_zero, sqrtBranch_nonneg, sqrtBranch_lt_one."},
-    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved", "theorems": 8, "examples": 6, "sorry": 0},
-    {"id": 27, "name": "GetBinAtAngle", "file": null, "phase": 1, "status": "research", "priority": "medium"},
-    {"id": 28, "name": "GetLowerBoundAngle", "file": null, "phase": 1, "status": "research", "priority": "medium"},
-    {"id": 30, "name": "BrakingDistance", "file": "lean/FVSquad/BrakingDist.lean", "phase": 5, "status": "proved", "priority": "high", "notes": "9 theorems 0 sorry; non-negativity, monotonicity, quadratic scaling, no-delay formula"},
-    {"id": 31, "name": "math::expo", "file": "src/lib/mathlib/math/Functions.hpp", "phase": 1, "status": "research", "notes": "Expo curve for RC input; bounded output; linear/cubic blend"},
-    {"id": 32, "name": "math::lerp", "file": "src/lib/mathlib/math/Functions.hpp", "phase": 1, "status": "research", "notes": "Linear interpolation; endpoint correctness; convex combination"}
+    {"id": 25, "name": "ObstacleMathWrapBin", "file": "lean/FVSquad/WrapBin.lean", "phase": 5, "status": "proved", "theorems": 20, "sorry": 0, "correspondence_tests": "tests/wrap_bin/"},
+    {"id": 26, "name": "SqrtLinear", "file": "lean/FVSquad/SqrtLinear.lean", "phase": 5, "status": "proved", "theorems_proved": 15, "sorry": 0},
+    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved", "theorems": 8, "sorry": 0},
+    {"id": 30, "name": "BrakingDistance", "file": "lean/FVSquad/BrakingDist.lean", "phase": 5, "status": "proved", "theorems": 9, "sorry": 0},
+    {"id": 33, "name": "GetBinAtAngle", "file": "lean/FVSquad/GetBinAtAngle.lean", "phase": 5, "status": "proved", "theorems_proved": 13, "sorry": 0, "notes": "getBinI + getOffsetBinI; integer model; key: offset=subtraction mod n; round-trip inverse proved. PR #64."},
+    {"id": 27, "name": "GetBinAtAngle_float", "file": null, "phase": 1, "status": "research", "priority": "medium", "notes": "Float rounding model (needs wrapRat from WrapAngle once Mathlib available)"},
+    {"id": 28, "name": "GetLowerBoundAngle", "file": null, "phase": 1, "status": "research", "priority": "medium", "notes": "get_lower_bound_angle; half-integer boundaries"},
+    {"id": 31, "name": "math::expo_lerp_blend", "file": "src/lib/mathlib/math/Functions.hpp", "phase": 1, "status": "research", "notes": "Already modelled in Expo.lean and Lerp.lean"},
+    {"id": 32, "name": "math::lerp", "file": "src/lib/mathlib/math/Functions.hpp", "phase": 1, "status": "research", "notes": "Already modelled in Lerp.lean"}
   ],
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "wrap_bin": "tests/wrap_bin/ (34/34 fixture + 2360 invariant grid; bug confirmed: wrapBinCpp(-73,72)=-1)"
+    "wrap_bin": "tests/wrap_bin/ (34/34 fixture + 2360 invariant grid; bug confirmed)"
   },
   "run_history": [
     {
+      "run": 67,
+      "date": "2026-04-24",
+      "tasks": "Tasks 4+5 (GetBinAtAngle: 13 theorems, 0 sorry, phase 5)",
+      "new_theorems": 13,
+      "new_files": ["GetBinAtAngle.lean", "specs/get_bin_at_angle_informal.md"],
+      "sorry_added": 0,
+      "sorry_removed": 0,
+      "pr_branch": "lean-squad/get-bin-at-angle-run67-24900431008",
+      "notes": "getBinI + getOffsetBinI integer models. Key theorems: eq_getBinI_sub (offset=subtraction mod n), inverse (round-trip). Int.add_emod_right and Int.sub_emod are key lemmas. Int.fmod_nonneg_of_pos exists for positive divisor. Merged PR #63 (run 66 sorry reduction)."
+    },
+    {
       "run": 66,
       "date": "2026-04-24",
-      "tasks": "Task 5 (Proof Assistance: sorry 12->6) + Task 10 (REPORT.md update)",
+      "tasks": "Task 5 (sorry 12→6) + Task 10 (REPORT.md update)",
       "new_theorems": 6,
-      "new_files": [],
-      "sorry_added": 0,
       "sorry_removed": 6,
-      "pr_branch": "lean-squad/sorry-reduction-run66-24881003176",
-      "notes": "Proved 3 Atmosphere theorems (rat_inv_lt_inv_of_lt helper, Rat.add_lt_add_right, Rat.neg_mul/neg_lt_neg). Proved 3 SqrtLinear theorems via explicit axioms (sqrtBranch_zero/nonneg/lt_one). Fixed WrapAngle wrapRat_zero inner sorry (Std.lt_trans). Discovered: Std.lt_trans for Rat transitivity (vs missing Rat.lt_trans). ring/linarith/mul_sub NOT in stdlib v4.29 without imports."
+      "pr_branch": "lean-squad/sorry-reduction-run66-24881003176"
     },
     {
       "run": 65,
       "date": "2026-05-02",
-      "tasks": "Task 1 (Research: targets 31 expo + 32 lerp identified) + Task 3+4+5 (BrakingDist.lean: 9 theorems 0 sorry)",
-      "pr_title": "BrakingDistance Tasks 1+2+3+4+5 — 9 theorems proved, 0 sorry (run 65)",
-      "lean_files_added": ["BrakingDist.lean"],
-      "theorems_added": 9,
-      "sorry_added": 0
-    },
-    {
-      "run": 64,
-      "date": "2026-04-23",
-      "task": "Task 5+8: Crc16Sig.lean (8 thms 0 sorry) + WrapBin correspondence tests (34+2360 cases)",
-      "new_theorems": 8,
-      "new_files": ["Crc16Sig.lean", "tests/wrap_bin/"],
-      "sorry_added": 0
-    },
-    {
-      "run": 63,
-      "date": "2026-04-23",
-      "task": "Tasks 7+1: Critique update (338 thms, WrapBin+SqrtLinear) + 3 new research targets",
-      "new_theorems": 0
-    },
-    {
-      "run": 62,
-      "date": "2026-04-22",
-      "task": "Tasks 3+4: SqrtLinear spec + implementation (15 theorems, 12 proved, 3 sorry)"
-    },
-    {
-      "run": 61,
-      "date": "2026-04-22",
-      "task": "Tasks 5+10: WrapBin proofs (20 thms, 0 sorry, latent C++ bug confirmed) + REPORT.md update"
+      "tasks": "Task 1 + Tasks 3+4+5 (BrakingDist: 9 theorems 0 sorry)",
+      "new_theorems": 9,
+      "new_files": ["BrakingDist.lean"]
     }
   ],
   "discoveries": [
-    "Std.lt_trans is the correct transitivity lemma for Rat in Lean 4.29 stdlib (Rat.lt_trans does not exist)",
-    "ring tactic is NOT available in Lean 4.29 stdlib without imports (only with Mathlib)",
+    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma (run 67)",
+    "Int.sub_emod a b n : (a - b) % n = (a%n - b%n) % n — key for congruence proofs (run 67)",
+    "Int.fmod_nonneg_of_pos a (h : 0 < b) : 0 ≤ a.fmod b — works for any sign of a (run 67)",
+    "Int.fmod_lt_of_pos a (h : 0 < b) : a.fmod b < b — upper bound for floor mod (run 67)",
+    "Int.fdiv_mul_add_fmod a b : a.fdiv b * b + a.fmod b = a (run 67)",
+    "omega can prove fdiv_mul_le via: have h1 := fdiv_mul_add_fmod; have h2 := fmod_nonneg_of_pos; omega (run 67)",
+    "Std.lt_trans is the correct transitivity lemma for Rat in Lean 4.29 stdlib",
+    "ring tactic is NOT available in Lean 4.29 stdlib without imports",
     "linarith tactic is NOT available in Lean 4.29 stdlib without imports",
-    "mul_sub is NOT available in Lean 4.29 stdlib without imports",
-    "mul_lt_mul_of_neg_left is NOT available in Lean 4.29 stdlib for Rat",
-    "Rat.inv_lt_inv_of_lt is NOT in stdlib v4.29; can be proved from Rat.mul_lt_mul_right + Rat.inv_mul_cancel",
-    "Rat.sub_lt_sub_right is NOT in stdlib v4.29; use Rat.add_lt_add_right after Rat.sub_eq_add_neg",
-    "Rat.add_lt_add_left: c + a < c + b ↔ a < b (note: iff, use .mpr/.mp)",
-    "Rat.add_lt_add_right: a + c < b + c ↔ a < b (note: iff, use .mpr/.mp)",
-    "wrapRat axiom approach: pure axiom declarations + sorry-free theorem proofs = cleaner than theorem-sorry",
-    "sqrtBranch explicit axioms (sqrtBranch_zero/nonneg/lt_one) fully resolve SqrtLinear sorry",
-    "Crc16Sig: processBits n uses structural recursion on Nat; terminates without partial",
-    "WrapBin correspondence: Python floor % matches Lean Int.% exactly (both Euclidean)",
-    "density_mono_temp sorry: fixed run 66 using rat_inv_lt_inv_of_lt helper",
-    "Commander FSM proof: rcases Bool.eq_false_or_eq_true on each Bool field generates concrete hypotheses"
+    "Int.emod_nonneg requires 0 ≤ a; use Int.emod_nonneg_of_pos for arbitrary a (not in 4.29?)",
+    "Int.emod_nonneg k (by omega) works when k is Int and n > 0 (emod_nonneg takes h : b ≠ 0)",
+    "Rat.inv_lt_inv_of_lt is NOT in stdlib v4.29; can be proved from Rat.mul_lt_mul_right",
+    "wrapRat axiom approach: pure axiom declarations + sorry-free theorem proofs = cleaner than theorem-sorry"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run 66: sorry 12->6. Atmosphere: 3 monotonicity theorems proved from first principles (no Mathlib). SqrtLinear: 3 sqrt-branch theorems proved via explicit axioms. WrapAngle: inner sorry in wrapRat_zero fixed; 6 sorry remain (floor arithmetic). Next: WrapAngle floor proofs (needs Mathlib), or new target (lerp/expo). Consider: when Mathlib becomes available, WrapAngle 6 sorry should be first priority.",
+  "notes": "Run 67: GetBinAtAngle.lean added (13 theorems, 0 sorry). getBinI = k%n, getOffsetBinI = (b-k)%n. Key: offset subtraction commutativity proved. Round-trip inverse proved. Total: 362 theorems proved, 6 sorry (WrapAngle only). 26 Lean files. Next: GetLowerBoundAngle, or WrapAngle when Mathlib available.",
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
-    "stale_items": ["theorem count (349 proved)", "bug count (3)", "Atmosphere now 0 sorry", "SqrtLinear 0 sorry", "Crc16Sig", "BrakingDist"]
+    "stale_items": ["theorem count (362 proved)", "bug count (3)", "GetBinAtAngle new"]
   },
   "report_status": {
     "exists": true,
     "last_updated_run": 66,
-    "stale_since": null,
-    "stale_items": []
+    "stale_items": ["GetBinAtAngle not in report yet"]
   }
 }
