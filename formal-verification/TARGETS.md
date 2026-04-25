@@ -89,3 +89,14 @@ modular arithmetic. Target 20 (`atmosphere`) may use `Mathlib.Analysis.SpecialFu
 for the barometric altitude formula (exponential), but core density/monotonicity proofs
 are stdlib-only using `Rat` arithmetic.
 See `RESEARCH.md §Tool Choice` for details.
+
+## New Research Targets (Phase 1 — identified in run 69)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 33 | `ObstacleMath` composition | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/CollisionPrevComposition.lean` | 8 cross-module theorems; rotation group action on bins; lower bound commutes with composed rotations; 0 sorry |
+| 34 | `ObstacleMath::get_bin_at_angle` (int) | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetBinAtAngle.lean` | 13 theorems, integer model; range, periodicity, idempotence, inverse; 0 sorry |
+| 35 | `ObstacleMath::get_lower_bound_angle` (int) | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetLowerBoundAngle.lean` | 8 theorems, half-bin unit model; range, periodicity, consecutive, centre relation; 0 sorry |
+| 36 | `math::computeBrakingDistanceFromVelocity` (kinematic) | `src/lib/mathlib/math/TrajMath.hpp` | 1 | ⬜ Research | — | `d = v*(v/(2a) + a_delay/j)`. Properties: nonneg for v,a,j>0; monotone in v; quadratic scaling (see BrakingDist.lean for related function). Tractable with Rat arithmetic. |
+| 37 | `crc16_signature` (CCITT) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC fold/split: `crc16(a++b) = crc16_append(crc16(a), b)`. Same structure as Crc16Fold. Decidable finite arithmetic; `List.foldl_append` proof. |
+| 38 | `WelfordMeanVector` scalar projection | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Welford for N-dimensional vectors; each component satisfies the scalar Welford invariant. Could extend WelfordMean.lean. Needs per-component projection lemma. |
