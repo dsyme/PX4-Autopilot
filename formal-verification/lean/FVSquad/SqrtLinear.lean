@@ -56,8 +56,20 @@ namespace PX4.SqrtLinear
 
 /-- Abstract model for `sqrtf(x)` on `[0, 1)`.
     `Real.sqrt` is not available in Lean 4 stdlib; this is an opaque axiom.
-    All theorems that depend on sqrt properties are sorry-guarded. -/
+    The three supporting axioms below (`sqrtBranch_zero`, `sqrtBranch_nonneg`,
+    `sqrtBranch_lt_one`) capture the essential properties needed for verification
+    and are proved as theorems in Mathlib for `Real.sqrt`. -/
 noncomputable axiom sqrtBranch : Rat → Rat
+
+/-- `sqrtBranch 0 = 0`: models `Real.sqrt_zero`. -/
+axiom sqrtBranch_zero : sqrtBranch 0 = 0
+
+/-- `sqrtBranch` returns a non-negative value for non-negative inputs: models `Real.sqrt_nonneg`. -/
+axiom sqrtBranch_nonneg (x : Rat) (h : 0 ≤ x) : 0 ≤ sqrtBranch x
+
+/-- `sqrtBranch` returns a value strictly less than 1 for inputs in `(0, 1)`:
+    models `Real.sqrt_lt_one`. -/
+axiom sqrtBranch_lt_one (x : Rat) (h0 : 0 < x) (h1 : x < 1) : sqrtBranch x < 1
 
 /-! ## Implementation model -/
 
@@ -153,29 +165,26 @@ theorem sqrtLinear_idempotent_ge_one (x : Rat) (h : 1 ≤ x) :
 
 /-- `sqrt_linear(0) = 0`: `sqrtf(0.0) = 0.0` by IEEE 754.
 
-    Requires `sqrtBranch 0 = 0`.
-    In Lean 4 with Mathlib: follows from `Real.sqrt_zero`. -/
+    Proved using `sqrtBranch_zero`. In Lean 4 with Mathlib: follows from `Real.sqrt_zero`. -/
 theorem sqrtLinear_zero : sqrtLinear 0 = 0 := by
   simp only [sqrtLinear, if_neg (by decide : ¬(0 : Rat) < 0),
              if_pos (by decide : (0 : Rat) < 1)]
-  sorry -- sqrtBranch 0 = 0; needs Real.sqrt_zero from Mathlib
+  exact sqrtBranch_zero
 
 /-- For `0 ≤ x < 1`, `sqrt_linear(x) ≥ 0`.
 
-    Requires `0 ≤ sqrtBranch x` (i.e., `Real.sqrt x ≥ 0`).
-    In Lean 4 with Mathlib: follows from `Real.sqrt_nonneg`. -/
+    Proved using `sqrtBranch_nonneg`. In Lean 4 with Mathlib: follows from `Real.sqrt_nonneg`. -/
 theorem sqrtLinear_sqrt_nonneg (x : Rat) (h0 : 0 ≤ x) (h1 : x < 1) :
     0 ≤ sqrtLinear x := by
   simp only [sqrtLinear, if_neg (Rat.not_lt.mpr h0), if_pos h1]
-  sorry -- 0 ≤ sqrtBranch x; needs Real.sqrt_nonneg from Mathlib
+  exact sqrtBranch_nonneg x h0
 
 /-- For `0 < x < 1`, `sqrt_linear(x) < 1`.
 
-    Requires `sqrtBranch x < 1` (i.e., `Real.sqrt x < 1` for `x ∈ (0,1)`).
-    In Lean 4 with Mathlib: follows from `Real.sqrt_lt_one`. -/
+    Proved using `sqrtBranch_lt_one`. In Lean 4 with Mathlib: follows from `Real.sqrt_lt_one`. -/
 theorem sqrtLinear_sqrt_lt_one (x : Rat) (h0 : 0 < x) (h1 : x < 1) :
     sqrtLinear x < 1 := by
   simp only [sqrtLinear, if_neg (Rat.not_lt.mpr (Rat.le_of_lt h0)), if_pos h1]
-  sorry -- sqrtBranch x < 1; needs Real.sqrt_lt_one from Mathlib
+  exact sqrtBranch_lt_one x h0 h1
 
 end PX4.SqrtLinear

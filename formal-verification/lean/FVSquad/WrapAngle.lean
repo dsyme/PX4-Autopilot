@@ -205,7 +205,11 @@ theorem wrapRat_congruent (x lo hi : Rat) (h : lo < hi) :
 
 /-- **[sorry — needs Mathlib floor]** wrap_pi(0) = 0. -/
 theorem wrapRat_zero (P : Rat) (hP : 0 < P) :
-    wrapRat 0 (-P) P (by sorry) = 0 := by
+    wrapRat 0 (-P) P (by
+      -- Prove -P < P: use -P < 0 < P
+      have h1 : -P < -0 := Rat.neg_lt_neg hP
+      simp only [Rat.neg_zero] at h1     -- h1 : -P < 0
+      exact Std.lt_trans h1 hP) = 0 := by
   sorry -- proof: apply wrapRat_in_range with -P ≤ 0 < P (from hP)
 
 /- ## Correspondence to `wrapInt`
