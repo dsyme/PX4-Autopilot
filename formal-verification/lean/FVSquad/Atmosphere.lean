@@ -148,15 +148,36 @@ theorem densityRat_mono_pressure (P1 P2 T_celsius : Rat)
     Proof: reduce to showing (kR * T_K2)⁻¹ < (kR * T_K1)⁻¹ when T_K1 < T_K2.
     This requires `Rat.inv_lt_inv_of_lt` which is not in stdlib v4.29.
     Left as `sorry` pending Mathlib availability. -/
+-- Helper: for positive rationals, strict order is reversed by multiplicative inverse.
+-- `Rat.inv_lt_inv_of_lt` is not in stdlib v4.29, so we prove it from first principles
+-- using `Rat.mul_lt_mul_right`: `B⁻¹ < A⁻¹` iff `B⁻¹ * (A*B) < A⁻¹ * (A*B)` (mult by A*B > 0),
+-- which simplifies to `A < B`.
+private theorem rat_inv_lt_inv_of_lt {A B : Rat} (hA : 0 < A) (hB : 0 < B) (h : A < B) :
+    B⁻¹ < A⁻¹ := by
+  have hAne := Rat.ne_of_gt hA
+  have hBne := Rat.ne_of_gt hB
+  have hAB := Rat.mul_pos hA hB
+  rw [show B⁻¹ < A⁻¹ ↔ B⁻¹ * (A * B) < A⁻¹ * (A * B) from (Rat.mul_lt_mul_right hAB).symm]
+  have lhs : B⁻¹ * (A * B) = A := by
+    rw [Rat.mul_comm A B, ← Rat.mul_assoc, Rat.inv_mul_cancel _ hBne, Rat.one_mul]
+  have rhs : A⁻¹ * (A * B) = B := by
+    rw [← Rat.mul_assoc, Rat.inv_mul_cancel _ hAne, Rat.one_mul]
+  rw [lhs, rhs]; exact h
+
 theorem densityRat_anti_mono_temp (P T1 T2 : Rat)
     (hP : 0 < P) (hT1 : kAbsNull < T1) (hT2 : kAbsNull < T2) (hTlt : T1 < T2) :
     densityRat P T2 < densityRat P T1 := by
   simp only [densityRat, Rat.div_def]
   apply Rat.mul_lt_mul_of_pos_left _ hP
   -- goal: (kR * tempKelvin T2)⁻¹ < (kR * tempKelvin T1)⁻¹
-  -- This requires: T1 < T2 → (kR*T_K2)⁻¹ < (kR*T_K1)⁻¹
-  -- (Rat.inv_lt_inv_of_lt is not available in stdlib v4.29)
-  sorry
+  -- Strategy: apply rat_inv_lt_inv_of_lt; then reduce to tempKelvin T1 < tempKelvin T2.
+  apply rat_inv_lt_inv_of_lt (kR_mul_tempKelvin_pos T1 hT1) (kR_mul_tempKelvin_pos T2 hT2)
+  apply Rat.mul_lt_mul_of_pos_left _ kR_pos
+  -- goal: tempKelvin T1 < tempKelvin T2
+  -- tempKelvin T = T - kAbsNull; use Rat.add_lt_add_right on T1 + (-kAbsNull) < T2 + (-kAbsNull)
+  unfold tempKelvin
+  rw [Rat.sub_eq_add_neg, Rat.sub_eq_add_neg]
+  exact (Rat.add_lt_add_right).mpr hTlt
 
 /-! ## Proportionality -/
 
@@ -181,16 +202,37 @@ theorem tempAtAlt_5km : tempAtAltRat 5000 = -35 / 2 := by native_decide
 
 /-- **Linearity / lapse rate**: temperature drop per metre equals kTempGrad.
     Equivalent to: tempAtAltRat(h2) - tempAtAltRat(h1) = kTempGrad · (h2 - h1).
-    Proof requires `ring` tactic (Mathlib) — left as sorry. -/
+    Proof: manual Rat algebra using `Rat.mul_add`, `Rat.mul_neg`, `Rat.neg_add`,
+    `Rat.add_assoc`, `Rat.add_comm`, `Rat.add_neg_cancel`. -/
 theorem tempAtAlt_lapse_rate (h1 h2 : Rat) :
     tempAtAltRat h2 - tempAtAltRat h1 = kTempGrad * (h2 - h1) := by
-  sorry
+  simp only [tempAtAltRat]
+  -- Simplify LHS: (15 + kTempGrad*h2) - (15 + kTempGrad*h1) = kTempGrad*h2 - kTempGrad*h1
+  have lhs_simp : 15 + kTempGrad * h2 - (15 + kTempGrad * h1) =
+      kTempGrad * h2 - kTempGrad * h1 := by
+    rw [Rat.sub_eq_add_neg, Rat.neg_add]
+    rw [← Rat.add_assoc (15 + kTempGrad * h2) (-15)]
+    rw [Rat.add_assoc 15 (kTempGrad * h2) (-15)]
+    rw [Rat.add_comm (kTempGrad * h2) (-15 : Rat)]
+    rw [← Rat.add_assoc 15 (-15 : Rat) (kTempGrad * h2)]
+    rw [Rat.add_neg_cancel, Rat.zero_add]
+    rw [← Rat.sub_eq_add_neg]
+  -- Simplify RHS: kTempGrad * (h2 - h1) = kTempGrad*h2 - kTempGrad*h1
+  rw [lhs_simp, Rat.sub_eq_add_neg h2 h1, Rat.mul_add, Rat.mul_neg, ← Rat.sub_eq_add_neg]
 
 /-- **Strict monotone decreasing**: temperature strictly decreases with altitude.
-    Proof requires `mul_lt_mul_of_neg_left` for kTempGrad < 0 — not in stdlib v4.29. -/
+    Proof: unfold `tempAtAltRat` (= 15 + kTempGrad * h), use `Rat.add_lt_add_left` to
+    reduce to `kTempGrad * h2 < kTempGrad * h1`.  Then rewrite `kTempGrad = -(13/2000)`
+    and apply `Rat.neg_lt_neg` + `Rat.mul_lt_mul_of_pos_left`. -/
 theorem tempAtAlt_strict_anti (h1 h2 : Rat) (hlt : h1 < h2) :
     tempAtAltRat h2 < tempAtAltRat h1 := by
-  sorry
+  simp only [tempAtAltRat, kTempGrad]
+  rw [Rat.add_lt_add_left]
+  -- goal: (-13 / 2000 : Rat) * h2 < (-13 / 2000 : Rat) * h1
+  -- Rewrite negative coefficient as negation of a positive one
+  have h_neg : (-13 : Rat) / 2000 = -(13 / 2000) := by native_decide
+  rw [h_neg, Rat.neg_mul, Rat.neg_mul]
+  exact Rat.neg_lt_neg (Rat.mul_lt_mul_of_pos_left hlt (by native_decide : (0 : Rat) < 13 / 2000))
 
 /-- Temperature at altitude is an affine function: f(h) = 15 + g*h. -/
 theorem tempAtAlt_affine (h : Rat) :
