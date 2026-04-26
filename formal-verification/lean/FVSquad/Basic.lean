@@ -20,3 +20,4 @@ import FVSquad.Atmosphere
 import FVSquad.WrapBin
 import FVSquad.SqrtLinear
 import FVSquad.BrakingDist
+import FVSquad.GetBinAtAngle
