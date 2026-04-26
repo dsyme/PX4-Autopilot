@@ -15,6 +15,7 @@ import FVSquad.SuperExpo
 import FVSquad.ExpoDeadzone
 import FVSquad.SignFromBoolSq
 import FVSquad.Crc16Fold
+import FVSquad.Crc16Sig
 import FVSquad.CommanderArming
 import FVSquad.Atmosphere
 import FVSquad.WrapBin

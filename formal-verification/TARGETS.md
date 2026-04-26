@@ -49,14 +49,16 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 |---|------|------|-------|--------|-----------|-------|
 | 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/WrapBin.lean` | 20 theorems, 0 sorry; latent C++ truncation-mod bug confirmed by `wrapBinCpp_bug_general` |
 | 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 5 | 🔄 Partial | `lean/FVSquad/SqrtLinear.lean` | 12 theorems proved, 3 sorry (sqrt branch needs Mathlib `Real.sqrt`); informal spec written |
-| 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Angle-to-bin conversion; depends on target 25; float `round` needs Mathlib for complete proof |
+| 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetBinAtAngle.lean` | 13 theorems: range, periodicity, offset rotation group; integer model exact for aligned angles |
+| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetLowerBoundAngle.lean` | 13 theorems: range invariant, periodicity, offset correctness; 334 correspondence tests pass |
 
 ## New Research Targets (Phase 1 — identified in run 63)
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Lower bound angle of a bin; builds on WrapBin; rational model; range invariant [0, 360) |
-| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC fold/split: `crc16(a++b) = crc16_append(crc16(a),b)`; same structure as Crc16Fold; `List.foldl_append` proof |
+| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetLowerBoundAngle.lean` | 13 theorems: range invariant, periodicity, offset correctness; 334 correspondence tests pass |
+| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc16Sig.lean` | fold/split via `List.foldl_append`; 8 theorems, 0 sorry; `crc16_add` bit-by-bit step modelled exactly; `CRC16_OUTPUT_XOR=0` simplifies to pure fold |
+| 33 | `get_bin_at_angle` + `get_lower_bound_angle` + `get_offset_bin_index` composition | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/CollisionPrevComposition.lean` | 8 cross-module theorems: rotation group action, lower-bound commutativity |
 | 30 | `math::computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp` | 5 | ✅ Proved | `lean/FVSquad/BrakingDist.lean` | 9 theorems, 0 sorry; non-negativity, monotonicity, quadratic scaling, no-delay formula; informal spec in `specs/braking_dist_informal.md` |
 | 31 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Expo curve for RC input shaping; bounded output ∈ [−1,1]; fixes ±1 and 0; linear at e=0, cubic at e=1 |
 | 32 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Linear interpolation; endpoint correctness, affinity in s, convex combination for 0≤s≤1 |
