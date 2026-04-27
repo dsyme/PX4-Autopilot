@@ -1,48 +1,48 @@
 {
-  "run": 75,
-  "last_updated": "2026-04-27T09:05 UTC",
+  "run": 76,
+  "last_updated": "2026-04-27T16:46 UTC",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 372,
-    "theorems_proved": 372,
+    "theorems": 383,
+    "theorems_proved": 383,
     "axioms": 6,
     "sorry_count": 0,
-    "lean_files": 30,
-    "targets": 38
+    "lean_files": 31,
+    "targets": 39
   },
   "sorry_locations": {
     "WrapAngle": "RESOLVED run73: 6 sorry converted to axioms (5 wrapRat axioms + wrapRat definition); 0 sorry total."
   },
   "open_prs": [
     {
-      "number": 71,
-      "branch": "lean-squad/slewrate-convergence-crc32-informal-run74-24971784654-c17ebe28a77d60ff",
-      "status": "open",
-      "run": 74,
-      "note": "merged into working branch this run"
-    },
-    {
-      "number": "TBD",
-      "branch": "lean-squad/crc32sig-research-run75-24986132989",
+      "number": 72,
+      "branch": "lean-squad/crc32sig-research-run75-24986132989-dc8de7cc19d49829",
       "status": "open",
       "run": 75
+    },
+    {
+      "number": 73,
+      "branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb",
+      "status": "open",
+      "run": 76,
+      "note": "IsInRange 13 thms + REPORT.md update"
     }
   ],
   "current_pr": {
-    "branch": "lean-squad/crc32sig-research-run75-24986132989",
-    "run": 75
+    "branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb",
+    "run": 76
   },
   "bugs_found": [
     {
       "target": "SignNoZero",
       "issue": 12,
-      "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"
+      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
     },
     {
       "target": "Negate",
       "issue": 21,
-      "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
     },
     {
       "target": "ObstacleMath::wrap_bin",
@@ -55,27 +55,99 @@
     "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact for integer-aligned angles; demonstrates wrap_bin latent bug)"
   },
   "targets": [
-    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
-    {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
-    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved", "theorems": 8, "sorry": 0},
-    {"id": 35, "name": "Crc32Sig", "file": "lean/FVSquad/Crc32Sig.lean", "phase": 5, "status": "proved", "theorems": 11, "sorry": 0, "notes": "run 75: LSBIT-first CRC-32/ISO-HDLC, fold/split for UAVCAN bootloader"},
-    {"id": 36, "name": "crc64_add_word", "file": null, "phase": 1, "status": "Research", "notes": "CRC-64-WE; fold/split with UInt64; similar to crc32"},
-    {"id": 37, "name": "isInRange", "file": null, "phase": 1, "status": "Research", "notes": "pure boolean (min<=val)&&(val<=max); Limits.hpp:91"},
-    {"id": 38, "name": "constrainFloatToInt16", "file": null, "phase": 1, "status": "Research", "notes": "float->int16_t clamp safety; Limits.hpp:85; depends on target 1"}
+    {
+      "id": 1,
+      "name": "SquaredError",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 2,
+      "name": "Expo",
+      "file": "lean/FVSquad/Expo.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 29,
+      "name": "Crc16Sig",
+      "file": "lean/FVSquad/Crc16Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 8,
+      "sorry": 0
+    },
+    {
+      "id": 35,
+      "name": "Crc32Sig",
+      "file": "lean/FVSquad/Crc32Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 11,
+      "sorry": 0,
+      "notes": "run 75: LSBIT-first CRC-32/ISO-HDLC, fold/split for UAVCAN bootloader"
+    },
+    {
+      "id": 36,
+      "name": "crc64_add_word",
+      "file": null,
+      "phase": 1,
+      "status": "Research",
+      "notes": "CRC-64-WE; fold/split with UInt64; similar to crc32"
+    },
+    {
+      "id": 37,
+      "name": "isInRange",
+      "file": null,
+      "phase": 1,
+      "status": "Research",
+      "notes": "pure boolean (min<=val)&&(val<=max); Limits.hpp:91"
+    },
+    {
+      "id": 38,
+      "name": "constrainFloatToInt16",
+      "file": null,
+      "phase": 1,
+      "status": "Research",
+      "notes": "float->int16_t clamp safety; Limits.hpp:85; depends on target 1"
+    },
+    {
+      "id": 39,
+      "name": "isInRange",
+      "file": "lean/FVSquad/IsInRange.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 13,
+      "sorry": 0,
+      "notes": "run 76: closed-interval predicate; 13 theorems 0 sorry; mono, shift, empty, singleton"
+    }
   ],
   "run_history": [
+    {
+      "run": 76,
+      "date": "2026-04-27T16:46 UTC",
+      "workflow_run_id": 25007795144,
+      "tasks": [
+        "Task 5: IsInRange.lean \u2014 13 theorems 0 sorry; closed-interval predicate (min<=val&&val<=max)",
+        "Task 10: REPORT.md updated \u2014 383 theorems, 31 files, 0 sorry, 3 bugs found; file inventory audited"
+      ],
+      "theorems_proved": 13,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb"
+    },
     {
       "run": 75,
       "date": "2026-04-27T09:05 UTC",
       "workflow_run_id": 24986132989,
       "tasks": [
-        "Task 5: Crc32Sig.lean — 11 theorems 0 sorry; CRC-32/ISO-HDLC fold/split; exact correspondence; UAVCAN bootloader target",
+        "Task 5: Crc32Sig.lean \u2014 11 theorems 0 sorry; CRC-32/ISO-HDLC fold/split; exact correspondence; UAVCAN bootloader target",
         "Task 1: 3 new research targets (crc64_add_word, isInRange, constrainFloatToInt16)"
       ],
       "theorems_proved": 11,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/crc32sig-research-run75-24986132989",
-      "notes": "prefix is reserved in Lean 4 — use pfx/sfx as param names. crc32AddBit uses >>> (right shift) not <<< (CRC-32 is LSBIT-first/reflected)."
+      "notes": "prefix is reserved in Lean 4 \u2014 use pfx/sfx as param names. crc32AddBit uses >>> (right shift) not <<< (CRC-32 is LSBIT-first/reflected)."
     },
     {
       "run": 74,
@@ -91,42 +163,72 @@
       "date": "2026-04-26T16:25 UTC",
       "workflow_run_id": 24961358558,
       "tasks": [
-        "Task 5: WrapAngle.lean — 6 sorry -> 0 (5 axioms + wrapRat_zero proved)",
-        "Task 6: CORRESPONDENCE.md — added Crc16Sig section; 29 files, 35 targets"
+        "Task 5: WrapAngle.lean \u2014 6 sorry -> 0 (5 axioms + wrapRat_zero proved)",
+        "Task 6: CORRESPONDENCE.md \u2014 added Crc16Sig section; 29 files, 35 targets"
       ]
     }
   ],
   "discoveries": [
-    "prefix is a reserved keyword in Lean 4 — cannot use as parameter name; use pfx/sfx",
+    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1; contrast with CRC-16 which is MSBIT-first with <<< left-shift",
-    "FVSquad.lean must explicitly import new files — auto-discovery does NOT happen; add import FVSquad.Crc32Sig",
+    "FVSquad.lean must explicitly import new files \u2014 auto-discovery does NOT happen; add import FVSquad.Crc32Sig",
     "Rat.le_of_lt WORKS for Rat; axiom declarations cleaner than sorry for unverifiable-without-Mathlib theorems",
-    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma",
-    "CRC16_OUTPUT_XOR = 0x0000 in crc.h — crc16_signature is a pure foldl",
+    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
+    "CRC16_OUTPUT_XOR = 0x0000 in crc.h \u2014 crc16_signature is a pure foldl",
     "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
-    "wrap_bin bug: bin + n < 0 iff bin <= -n-1; for typical n=36, need bin <= -37"
+    "wrap_bin bug: bin + n < 0 iff bin <= -n-1; for typical n=36, need bin <= -37",
+    "isInRange: uses Bool.and_eq_true + decide_eq_true_eq for iff; omega for all arithmetic; Bool.eq_false_iff for False direction"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
   "notes": "Run 75: Crc32Sig.lean proved (11 theorems, 0 sorry). Open PRs 63-70 were already merged into main manually in run 73. PR 71 (run 74 SlewRate) merged cleanly this run. Next: Task 11 (paper update, very stale) or prove crc64_add_word or isInRange.",
   "report_status": {
     "exists": true,
-    "last_updated_run": 71,
-    "stale_items": ["theorem count (now 372)", "WrapAngle axioms update", "Crc32Sig added", "30 lean files"]
+    "last_updated_run": 76,
+    "stale_items": []
   },
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
-    "stale_items": ["theorem count (372)", "bug count (3)", "new files since run54: SignFromBoolSq, Crc16Fold, CommanderArming, Atmosphere, WrapBin, SqrtLinear, BrakingDist, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, Crc16Sig, Crc32Sig, SlewRate convergence"]
+    "stale_items": [
+      "theorem count (372)",
+      "bug count (3)",
+      "new files since run54: SignFromBoolSq, Crc16Fold, CommanderArming, Atmosphere, WrapBin, SqrtLinear, BrakingDist, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, Crc16Sig, Crc32Sig, SlewRate convergence"
+    ]
   },
   "sorry_count": 0,
-  "lean_files": 30,
+  "lean_files": 31,
   "lean_file_list": [
-    "AlphaFilter", "Atmosphere", "Basic", "BrakingDist", "CollisionPrevComposition",
-    "CommanderArming", "Crc16Fold", "Crc16Sig", "Crc32Sig", "Deadzone",
-    "Expo", "ExpoDeadzone", "GetBinAtAngle", "GetLowerBoundAngle", "Hysteresis",
-    "Interpolate", "InterpolateN", "InterpolateNXY", "Lerp", "MathFunctions",
-    "MedianFilter", "Negate", "RingBuffer", "SignFromBoolSq", "SlewRate",
-    "SqrtLinear", "SuperExpo", "WelfordMean", "WrapAngle", "WrapBin"
+    "AlphaFilter",
+    "Atmosphere",
+    "Basic",
+    "BrakingDist",
+    "CollisionPrevComposition",
+    "CommanderArming",
+    "Crc16Fold",
+    "Crc16Sig",
+    "Crc32Sig",
+    "Deadzone",
+    "Expo",
+    "ExpoDeadzone",
+    "GetBinAtAngle",
+    "GetLowerBoundAngle",
+    "Hysteresis",
+    "Interpolate",
+    "InterpolateN",
+    "InterpolateNXY",
+    "IsInRange",
+    "Lerp",
+    "MathFunctions",
+    "MedianFilter",
+    "Negate",
+    "RingBuffer",
+    "SignFromBoolSq",
+    "SlewRate",
+    "SqrtLinear",
+    "SuperExpo",
+    "WelfordMean",
+    "WrapAngle",
+    "WrapBin"
   ]
 }
