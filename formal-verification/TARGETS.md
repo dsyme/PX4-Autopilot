@@ -56,11 +56,19 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
 | 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Lower bound angle of a bin; builds on WrapBin; rational model; range invariant [0, 360) |
-| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC fold/split: `crc16(a++b) = crc16_append(crc16(a),b)`; same structure as Crc16Fold; `List.foldl_append` proof |
-| 35 | `crc32_signature` fold/split (ISO-HDLC) | `src/lib/crc/crc.c` | 2 | ✅ Informal Spec | — | CRC-32/ISO-HDLC (poly `0xEDB88320`); informal spec in `specs/crc32_informal.md`; fold property mirrors Crc16Fold; used in UAVCAN bootloader |
+| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc16Sig.lean` | 8 theorems, 0 sorry; fold/split via `List.foldl_append` |
+| 35 | `crc32_signature` fold/split (ISO-HDLC) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc32Sig.lean` | 11 theorems, 0 sorry; LSBIT-first CRC-32/ISO-HDLC; fold/split + 6 concrete examples; used in UAVCAN bootloader |
 | 30 | `math::computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp` | 5 | ✅ Proved | `lean/FVSquad/BrakingDist.lean` | 9 theorems, 0 sorry; non-negativity, monotonicity, quadratic scaling, no-delay formula; informal spec in `specs/braking_dist_informal.md` |
 | 31 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Expo curve for RC input shaping; bounded output ∈ [−1,1]; fixes ±1 and 0; linear at e=0, cubic at e=1 |
 | 32 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Linear interpolation; endpoint correctness, affinity in s, convex combination for 0≤s≤1 |
+
+## New Research Targets (Phase 1 — identified in run 75)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 36 | `crc64_add_word` fold/split (CRC-64-WE) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC-64-WE (poly `0x42F0E1EBA9EA3693`); processes 4 bytes per call (32-bit word); fold/split mirrors crc32; `UInt64` model; high value for flight-data integrity |
+| 37 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 1 | ⬜ Research | — | Pure boolean `(min ≤ val) && (val ≤ max)`; trivial spec but used in guards throughout PX4; good to prove conjunction/monotonicity invariants |
+| 38 | `math::constrainFloatToInt16` | `src/lib/mathlib/math/Limits.hpp:85` | 1 | ⬜ Research | — | `constrain(float, INT16_MIN, INT16_MAX)` cast to `int16_t`; conversion-overflow class; range-safety proof; depends on target 1 |
 
 ## Non-Lean Targets (other tools recommended)
 
