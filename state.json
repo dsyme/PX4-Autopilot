@@ -1,65 +1,41 @@
 {
-  "run": 73,
-  "last_updated": "2026-04-26T16:25 UTC",
+  "run": 74,
+  "last_updated": "2026-05-13T00:00 UTC",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 352,
-    "theorems_proved": 352,
+    "theorems": 361,
+    "theorems_proved": 361,
     "axioms": 6,
     "sorry_count": 0,
     "lean_files": 29,
-    "targets": 35
+    "targets": 36
   },
   "sorry_locations": {
     "WrapAngle": "RESOLVED run73: 6 sorry converted to axioms (5 wrapRat axioms + wrapRat definition); wrapRat_zero PROVED; wrapRat_idempotent PROVED. 0 sorry total."
   },
   "open_prs": [
     {
-      "number": 63,
-      "branch": "lean-squad/sorry-reduction-run66-24881003176-fdfe0938a07c1627",
-      "status": "merged_locally"
-    },
-    {
-      "number": 64,
-      "branch": "lean-squad/get-bin-at-angle-run67-24900431008-3dfd9d8139961b87",
-      "status": "merged_locally"
-    },
-    {
-      "number": 65,
-      "branch": "lean-squad/get-lower-bound-angle-run68-24918656528-ef001ace76-657b8734fe724c7f",
-      "status": "merged_locally"
-    },
-    {
-      "number": 66,
-      "branch": "lean-squad/collision-prev-composition-run69-24926789262-d3f18ed65775f587",
-      "status": "merged_manually_run73"
-    },
-    {
-      "number": 67,
-      "branch": "lean-squad/correspondence-run70-24935257092-6e4baecab4011757",
-      "status": "merged_manually_run73"
-    },
-    {
-      "number": 68,
-      "branch": "lean-squad/proof-report-run71-24944863277-940b5bfd40acef6d",
-      "status": "merged_manually_run73"
+      "number": "TBD",
+      "branch": "lean-squad/slewrate-convergence-crc32-informal-run74-24971784654",
+      "status": "open",
+      "run": 74
     }
   ],
   "current_pr": {
-    "branch": "lean-squad/wrapangle-correspondence-run73-24961358558",
-    "run": 73
+    "branch": "lean-squad/slewrate-convergence-crc32-informal-run74-24971784654",
+    "run": 74
   },
   "bugs_found": [
     {
       "target": "SignNoZero",
       "issue": 12,
-      "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"
+      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
     },
     {
       "target": "Negate",
       "issue": 21,
-      "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
     },
     {
       "target": "ObstacleMath::wrap_bin",
@@ -72,15 +48,92 @@
     "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact for integer-aligned angles; demonstrates wrap_bin latent bug)"
   },
   "targets": [
-    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
-    {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
-    {"id": 3, "name": "MathUtilClip", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
-    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved", "theorems": 8, "sorry": 0},
-    {"id": 30, "name": "BrakingDistance", "file": "lean/FVSquad/BrakingDist.lean", "phase": 5, "status": "proved", "theorems": 14, "sorry": 0},
-    {"id": 33, "name": "GetBinAtAngle", "file": "lean/FVSquad/GetBinAtAngle.lean", "phase": 5, "status": "proved", "theorems": 13, "sorry": 0},
-    {"id": 34, "name": "GetLowerBoundAngle", "file": "lean/FVSquad/GetLowerBoundAngle.lean", "phase": 5, "status": "proved", "theorems": 13, "sorry": 0},
-    {"id": 35, "name": "CollisionPrevComposition", "file": "lean/FVSquad/CollisionPrevComposition.lean", "phase": 5, "status": "proved", "theorems": 8, "sorry": 0},
-    {"id": 36, "name": "WrapAngle", "file": "lean/FVSquad/WrapAngle.lean", "phase": 5, "status": "proved+axioms", "theorems": 10, "axioms": 6, "sorry": 0, "notes": "5 floor-arithmetic axioms; wrapRat_zero proved run73; 0 sorry"}
+    {
+      "id": 1,
+      "name": "SquaredError",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 2,
+      "name": "Expo",
+      "file": "lean/FVSquad/Expo.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 3,
+      "name": "MathUtilClip",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 29,
+      "name": "Crc16Sig",
+      "file": "lean/FVSquad/Crc16Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 8,
+      "sorry": 0
+    },
+    {
+      "id": 30,
+      "name": "BrakingDistance",
+      "file": "lean/FVSquad/BrakingDist.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 14,
+      "sorry": 0
+    },
+    {
+      "id": 33,
+      "name": "GetBinAtAngle",
+      "file": "lean/FVSquad/GetBinAtAngle.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 13,
+      "sorry": 0
+    },
+    {
+      "id": 34,
+      "name": "GetLowerBoundAngle",
+      "file": "lean/FVSquad/GetLowerBoundAngle.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 13,
+      "sorry": 0
+    },
+    {
+      "id": 35,
+      "name": "CollisionPrevComposition",
+      "file": "lean/FVSquad/CollisionPrevComposition.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 8,
+      "sorry": 0
+    },
+    {
+      "id": 36,
+      "name": "WrapAngle",
+      "file": "lean/FVSquad/WrapAngle.lean",
+      "phase": 5,
+      "status": "proved+axioms",
+      "theorems": 10,
+      "axioms": 6,
+      "sorry": 0,
+      "notes": "5 floor-arithmetic axioms; wrapRat_zero proved run73; 0 sorry"
+    },
+    {
+      "id": 35,
+      "name": "crc32_signature fold/split",
+      "file": "src/lib/crc/crc.c",
+      "phase": 2,
+      "status": "Informal Spec",
+      "lean_file": null,
+      "notes": "CRC-32/ISO-HDLC (0xEDB88320); informal spec in specs/crc32_informal.md; fold/append property; used in UAVCAN bootloader"
+    }
   ],
   "run_history": [
     {
@@ -88,8 +141,8 @@
       "date": "2026-04-26T16:25 UTC",
       "workflow_run_id": 24961358558,
       "tasks": [
-        "Task 5: WrapAngle.lean — 6 sorry -> 0 (5 axioms + wrapRat_zero proved from wrapRat_in_range)",
-        "Task 6: CORRESPONDENCE.md — added Crc16Sig section; WrapAngle updated; 29 files, 35 targets"
+        "Task 5: WrapAngle.lean \u2014 6 sorry -> 0 (5 axioms + wrapRat_zero proved from wrapRat_in_range)",
+        "Task 6: CORRESPONDENCE.md \u2014 added Crc16Sig section; WrapAngle updated; 29 files, 35 targets"
       ],
       "theorems_proved": 1,
       "sorry_changes": -6,
@@ -101,21 +154,21 @@
       "date": "2026-04-26T01:00 UTC",
       "workflow_run_id": 24944863277,
       "tasks": [
-        "Task 5: Crc16Sig.lean — crc16_add + crc16_signature fold/split (8 theorems, 0 sorry)",
+        "Task 5: Crc16Sig.lean \u2014 crc16_add + crc16_signature fold/split (8 theorems, 0 sorry)",
         "Task 10: REPORT.md updated 388 theorems, 29 files, 9 layers, 187 examples"
       ]
     }
   ],
   "discoveries": [
     "Rat.le_of_lt WORKS for Rat (despite old note saying it doesn't); use Rat.le_of_lt not le_of_lt",
-    "Rat.not_lt WORKS: Rat.not_lt.mpr and Rat.not_lt.mp for ¬< ↔ ≥",
+    "Rat.not_lt WORKS: Rat.not_lt.mpr and Rat.not_lt.mp for \u00ac< \u2194 \u2265",
     "simp only [Rat.neg_zero] converts h: -P < -0 to h: (-P).blt 0 = true (Bool form); Rat.le_of_lt still works on this",
     "axiom declarations are cleaner than sorry for unverifiable-without-Mathlib theorems",
     "wrapRat_zero proof: apply wrapRat_in_range, then Rat.le_of_lt (Rat.neg_lt_neg + simp neg_zero), then exact hP",
-    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma (run 67)",
-    "CRC16_OUTPUT_XOR = 0x0000 in crc.h — crc16_signature is a pure foldl (no XOR needed)",
+    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma (run 67)",
+    "CRC16_OUTPUT_XOR = 0x0000 in crc.h \u2014 crc16_signature is a pure foldl (no XOR needed)",
     "CORRESPONDENCE.md: complete coverage 29 files, 35 C++ targets as of run 73",
-    "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0) — simplifies test scripts",
+    "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0) \u2014 simplifies test scripts",
     "wrap_bin bug: bin + n < 0 iff bin <= -n-1; for typical n=36, need bin <= -37"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
@@ -123,14 +176,28 @@
   "report_status": {
     "exists": true,
     "last_updated_run": 71,
-    "stale_items": ["theorem count (352 total)", "sorry count (now 0)", "WrapAngle update"]
+    "stale_items": [
+      "theorem count (352 total)",
+      "sorry count (now 0)",
+      "WrapAngle update"
+    ]
   },
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
-    "stale_items": ["theorem count", "bug count (3)", "new targets: GetBinAtAngle/GetLowerBound/CollisionPrev/BrakingDist/Crc16Sig/WrapAngle"]
+    "stale_items": [
+      "theorem count",
+      "bug count (3)",
+      "new targets: GetBinAtAngle/GetLowerBound/CollisionPrev/BrakingDist/Crc16Sig/WrapAngle"
+    ]
   },
   "sorry_count": 0,
-  "lean_files": 29
+  "lean_files": 29,
+  "run_notes": [
+    {
+      "run": 74,
+      "notes": "Task5: SlewRate convergence proofs (ring unavailable in stdlib; used omega+simp[Int.mul_add]). Task2: crc32_signature informal spec. Both 0 sorry."
+    }
+  ]
 }
