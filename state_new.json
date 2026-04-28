@@ -1,77 +1,248 @@
 {
-  "last_run": "run43",
-  "run_id": "24524969147",
-  "lean_version": "4.29.1",
-  "lean_available": true,
-  "ci_created": true,
-  "ci_has_lake_update": true,
-  "mathlib_available": false,
-  "mathlib_note": "Mathlib cache proxy blocks with 403 (CONNECT tunnel). lake update resolves manifest but lake build would need to compile from source (hours). Use stdlib-only proofs.",
-  "fv_targets": [
-    {"id": "constrain", "phase": 5, "status": "8 proved, 0 sorry", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "signNoZero", "phase": 5, "status": "6 proved, 0 sorry. BUG: NaN returns 0 - issue #12", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "countSetBits", "phase": 5, "status": "2 theorems + 9 concrete examples", "lean_file": "lean/FVSquad/MathFunctions.lean"},
-    {"id": "SlewRate", "phase": 5, "status": "9 proved, 0 sorry", "lean_file": "lean/FVSquad/SlewRate.lean"},
-    {"id": "deadzone", "phase": 5, "status": "13 proved (incl. deadzone_odd), 0 sorry", "lean_file": "lean/FVSquad/Deadzone.lean"},
-    {"id": "MedianFilter", "phase": 5, "status": "10 proved, 0 sorry + 6 examples", "lean_file": "lean/FVSquad/MedianFilter.lean"},
-    {"id": "interpolate", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Interpolate.lean"},
-    {"id": "AlphaFilter", "phase": 5, "status": "13 proved, 0 sorry", "lean_file": "lean/FVSquad/AlphaFilter.lean"},
-    {"id": "wrap_pi", "phase": 3, "status": "wrapInt: 9 proved 0 sorry. wrapRat: 6 theorems, 6 sorry (Mathlib floor needed).", "lean_file": "lean/FVSquad/WrapAngle.lean"},
-    {"id": "WelfordMean", "phase": 5, "status": "11 proved, 0 sorry", "lean_file": "lean/FVSquad/WelfordMean.lean"},
-    {"id": "lerp", "phase": 5, "status": "10 proved, 0 sorry", "lean_file": "lean/FVSquad/Lerp.lean"},
-    {"id": "expo", "phase": 5, "status": "17 proved, 0 sorry", "lean_file": "lean/FVSquad/Expo.lean"},
-    {"id": "superexpo", "phase": 5, "status": "17 proved, 0 sorry", "lean_file": "lean/FVSquad/SuperExpo.lean"},
-    {"id": "negate", "phase": 5, "status": "13 proved, 0 sorry. BUG: INT16_MAX special case wrong - issue #21.", "lean_file": "lean/FVSquad/Negate.lean"},
-    {"id": "RingBuffer", "phase": 5, "status": "24 theorems + 19 examples, 0 sorry", "lean_file": "lean/FVSquad/RingBuffer.lean"},
-    {"id": "ExpoDeadzone", "phase": 5, "status": "9 proved (incl. expoDeadzone_odd), 0 sorry", "lean_file": "lean/FVSquad/ExpoDeadzone.lean"},
-    {"id": "InterpolateNXY", "phase": 5, "status": "9 proved (incl. interp3_in_range, interp3_mono_seg0/seg1), 0 sorry", "lean_file": "lean/FVSquad/InterpolateNXY.lean"},
-    {"id": "InterpolateN", "phase": 5, "status": "18 proved (5 for N=2, 9 for N=3 incl. continuity, mono, in_range), 0 sorry", "lean_file": "lean/FVSquad/InterpolateN.lean"},
-    {"id": "Hysteresis", "phase": 5, "status": "20 proved (dwell_lb, commits, stays, zero_delay, cancel, constructor, setHysteresisTimeFrom) + 6 examples, 0 sorry", "lean_file": "lean/FVSquad/Hysteresis.lean", "spec_file": "specs/hysteresis_informal.md"}
+  "run": 78,
+  "last_updated": "2026-04-28T09:04 UTC",
+  "lean_version": "leanprover/lean4:v4.29.0",
+  "lake_build_status": "passed",
+  "totals": {
+    "theorems": 413,
+    "theorems_proved": 399,
+    "axioms": 6,
+    "sorry_count": 0,
+    "lean_files": 33,
+    "targets": 40
+  },
+  "sorry_locations": {
+    "WrapAngle": "RESOLVED run73: 6 sorry converted to axioms (5 wrapRat axioms + wrapRat definition); 0 sorry total."
+  },
+  "open_prs": [
+    {
+      "number": null,
+      "branch": "lean-squad/constrain-crc64-run78-25043875261-956ef28049",
+      "status": "pending",
+      "run": 78,
+      "note": "ConstrainToInt16 14 thms + crc64 informal spec; merges 9 prior PRs"
+    }
   ],
-  "open_prs": [],
+  "current_pr": {
+    "branch": "lean-squad/constrain-float-int16-run77-25028204890-b09250e526a9",
+    "run": 77
+  },
   "bugs_found": [
-    {"id": "signNoZero_nan", "description": "signNoZero<float> returns 0 for NaN, violates ne_zero.", "status": "GitHub issue #12 filed"},
-    {"id": "negate_int16_not_involution", "description": "negate<int16_t> not a global involution. negate(negate(-32767))=-32768.", "status": "GitHub issue #21 filed"}
+    {
+      "target": "SignNoZero",
+      "issue": 12,
+      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
+    },
+    {
+      "target": "Negate",
+      "issue": 21,
+      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+    },
+    {
+      "target": "ObstacleMath::wrap_bin",
+      "issue": null,
+      "description": "LATENT BUG (confirmed by FV + 334 correspondence tests): wrap_bin(bin, n) returns negative for bin <= -n-1; C++ truncation mod; callers use result as array index => UB"
+    }
   ],
-  "total_theorems": 234,
-  "total_sorry": 6,
-  "proved_theorems": 228,
-  "sorry_count": 6,
-  "total_examples": 112,
-  "run43_tasks": "Task 3+4 (Hysteresis.lean: 20 theorems 6 examples 0 sorry, time-delayed bool FSM); Task 10 (REPORT.md updated to 234 theorems, 18 files, Layer 6 added)",
-  "report_exists": true,
-  "correspondence_coverage": "ALL 18 LEAN FILES: MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, Hysteresis (21 C++ targets total)",
-  "lean_files": 18,
-  "notes": [
-    "set tactic NOT available in Lean 4 stdlib",
-    "norm_num tactic NOT available in Lean 4 stdlib",
-    "linarith NOT available, ring NOT available",
-    "split_ifs NOT available in Lean 4 stdlib - use by_cases",
-    "by_contra NOT available in Lean 4 stdlib - use Classical.byContradiction",
-    "push_neg NOT available in Lean 4 stdlib",
-    "lemma keyword NOT available in Lean 4 stdlib (only in Mathlib). Use theorem instead.",
-    "Expo.lean is at ROOT namespace (no namespace wrapper) - constrainRat, expoRat, expo_* are all root-level names. open PX4.Expo does NOT work.",
-    "Deadzone.lean is in namespace PX4.Deadzone - use open PX4.Deadzone or fully-qualified PX4.Deadzone.X",
-    "Rat.lt_of_lt_of_le does NOT exist - use Std.lt_of_lt_of_le",
-    "Rat.le_of_lt works for le from lt",
-    "neg/div: Rat.neg_div does not exist. Use Rat.div_def + Rat.neg_mul + simp [Rat.sub_eq_add_neg, Rat.neg_add, Rat.neg_neg]",
-    "omega works for Nat.mod_lt and modular arithmetic",
-    "Unused theorem parameters: prefix with _ to suppress linter warning",
-    "RingBuffer actual theorem count is 24 (not 28 as previously reported in REPORT.md)",
-    "CI lean-ci.yml is healthy: lake update + caching + failure artifacts + GITHUB_STEP_SUMMARY",
-    "InterpolateNXY.lean uses namespace PX4.InterpolateNXY, imports FVSquad.Interpolate, opens PX4.Interpolate",
-    "ExpoDeadzone.lean uses expoDeadzone_* naming (NOT expodz_* from run35)",
-    "decide does NOT work for Rat comparisons involving 1/2 literal - use native_decide",
-    "private theorem works but private lemma does not (lemma unavailable without Mathlib)",
-    "Rat.lt_of_le_of_lt does NOT exist - use Std.lt_of_le_of_lt",
-    "InterpolateN.lean uses namespace PX4.InterpolateN, imports FVSquad.Interpolate, opens PX4.Interpolate",
-    "half: Rat = (1:Rat)/(2:Rat) as a private def - use native_decide to prove facts about it",
-    "Mathlib cache proxy blocks with 403; lake update works but lake build from source would take hours",
-    "CORRESPONDENCE.md now covers all 18 Lean files (21 C++ targets) - complete as of run43",
-    "Hysteresis.lean: use simp [hysteresisUpdate, hst, hrq, Nat.not_le.mpr hlt] for no-change goals",
-    "Hysteresis.lean: use Classical.byContradiction + Nat.lt_of_not_le for delay_lb proofs",
-    "Hysteresis.lean: simp [hysteresisUpdate, setStateAndUpdate] handles cancel proofs directly",
-    "Bool case split: rcases Bool.eq_false_or_eq_true b with hb | hb, then simp [hb]",
-    "simp [hst, hrq] (full simp not simp only) handles Bool BEq/And computations after field substitution"
+  "correspondence_tests": {
+    "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact for integer-aligned angles; demonstrates wrap_bin latent bug)"
+  },
+  "targets": [
+    {
+      "id": 1,
+      "name": "SquaredError",
+      "file": "lean/FVSquad/MathFunctions.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 2,
+      "name": "Expo",
+      "file": "lean/FVSquad/Expo.lean",
+      "phase": 5,
+      "status": "proved"
+    },
+    {
+      "id": 29,
+      "name": "Crc16Sig",
+      "file": "lean/FVSquad/Crc16Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 8,
+      "sorry": 0
+    },
+    {
+      "id": 35,
+      "name": "Crc32Sig",
+      "file": "lean/FVSquad/Crc32Sig.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 11,
+      "sorry": 0,
+      "notes": "run 75: LSBIT-first CRC-32/ISO-HDLC, fold/split for UAVCAN bootloader"
+    },
+    {
+      "id": 36,
+      "name": "crc64_add_word",
+      "file": null,
+      "phase": 2,
+      "status": "informal_spec",
+      "notes": "run 78: informal spec written: specs/crc64_informal.md"
+    },
+    {
+      "id": 37,
+      "name": "isInRange",
+      "file": "lean/FVSquad/IsInRange.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 13,
+      "sorry": 0,
+      "notes": "run 76"
+    },
+    {
+      "id": 38,
+      "name": "constrainFloatToInt16",
+      "file": "lean/FVSquad/ConstrainToInt16.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 14,
+      "sorry": 0,
+      "notes": "run 78: 14 theorems 0 sorry; range safety, clamping, id, mono, idem, iff chars"
+    },
+    {
+      "id": 39,
+      "name": "isInRange",
+      "file": "lean/FVSquad/IsInRange.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 13,
+      "sorry": 0,
+      "notes": "run 76: closed-interval predicate"
+    },
+    {
+      "id": 40,
+      "name": "constrainFloatToInt16",
+      "file": "lean/FVSquad/ConstrainToInt16.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 14,
+      "sorry": 0,
+      "notes": "run 78: integer model; builds on PX4.Math.constrain; abbrev INT16_MIN/MAX for omega transparency"
+    }
+  ],
+  "run_history": [
+    {
+      "run": 78,
+      "date": "2026-04-28T09:04 UTC",
+      "workflow_run_id": 25043875261,
+      "tasks": [
+        "Task 3: ConstrainToInt16.lean \u2014 14 theorems 0 sorry; range safety, clamping, identity, mono, idem, iff",
+        "Task 1: crc64_add_word informal spec \u2014 CRC-64-WE fold/split modelling approach documented"
+      ],
+      "theorems_proved": 14,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/constrain-crc64-run78-25043875261-956ef28049",
+      "notes": "Merged 9 open PRs (#63-73). abbrev INT16_MIN/MAX transparency key for omega. by_contra unavailable without Mathlib; use by_cases + omega instead. simp only [if_pos h1] for if-then-else case split."
+    },
+    {
+      "run": 77,
+      "date": "2026-04-28T01:08 UTC",
+      "workflow_run_id": 25028204890,
+      "tasks": [
+        "Task 2: constrainFloatToInt16 informal spec \u2014 range safety, clamping, open question: no callers found",
+        "Task 5: ConstrainToInt16.lean \u2014 16 theorems 0 sorry; range safety, clamping, identity, mono, idempotence"
+      ],
+      "theorems_proved": 16,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/constrain-float-int16-run77-25028204890-b09250e526a9",
+      "notes": "All 9 prior open PRs merged cleanly (TARGETS.md conflicts resolved by keeping HEAD). import must come BEFORE docblock in Lean 4. INT16_MIN/MAX need simp-unfold before omega. constrain_mono already exists in MathFunctions.lean."
+    },
+    {
+      "run": 76,
+      "date": "2026-04-27T16:46 UTC",
+      "workflow_run_id": 25007795144,
+      "tasks": [
+        "Task 5: IsInRange.lean \u2014 13 theorems 0 sorry; closed-interval predicate (min<=val&&val<=max)",
+        "Task 10: REPORT.md updated \u2014 383 theorems, 31 files, 0 sorry, 3 bugs found; file inventory audited"
+      ],
+      "theorems_proved": 13,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb"
+    }
+  ],
+  "discoveries": [
+    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 \u2014 docblock goes AFTER imports",
+    "INT16_MIN/INT16_MAX defined as Lean defs need 'simp only [INT16_MIN, INT16_MAX]' before omega can reason about concrete values",
+    "constrain_mono already exists in MathFunctions.lean \u2014 use it directly for derived targets",
+    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
+    "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1; contrast with CRC-16 which is MSBIT-first with <<< left-shift",
+    "FVSquad.lean must explicitly import new files \u2014 auto-discovery does NOT happen; add import FVSquad.ConstrainToInt16",
+    "Rat.le_of_lt WORKS for Rat; axiom declarations cleaner than sorry for unverifiable-without-Mathlib theorems",
+    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
+    "CRC16_OUTPUT_XOR = 0x0000 in crc.h \u2014 crc16_signature is a pure foldl",
+    "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
+    "wrap_bin bug: bin + n < 0 iff bin <= -n-1; for typical n=36, need bin <= -37",
+    "isInRange: uses Bool.and_eq_true + decide_eq_true_eq for iff; omega for all arithmetic; Bool.eq_false_iff for False direction",
+    "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega as substitute for contradiction-based reasoning",
+    "abbrev (not def) for named constants makes them transparent to omega; def constants are opaque",
+    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else in goals after by_cases on the condition"
+  ],
+  "mathlib_status": "blocked_403_cache_proxy",
+  "notes": "Run 78: ConstrainToInt16.lean proved (14 theorems, 0 sorry). crc64_add_word at phase 2 (informal spec). Next: crc64 Lean spec (Task 3), or paper update (Task 11, very stale since run54).",
+  "report_status": {
+    "exists": true,
+    "last_updated_run": 76,
+    "stale_items": [
+      "constrainFloatToInt16 (run77)",
+      "constrainFloatToInt16 (run78)",
+      "crc64 informal spec (run78)"
+    ]
+  },
+  "paper_status": {
+    "exists": true,
+    "last_updated_run": 54,
+    "stale_since": "run49",
+    "stale_items": [
+      "theorem count (now 399)",
+      "many new files since run54"
+    ]
+  },
+  "sorry_count": 0,
+  "lean_files": 32,
+  "lean_file_list": [
+    "AlphaFilter",
+    "Atmosphere",
+    "Basic",
+    "BrakingDist",
+    "CollisionPrevComposition",
+    "CommanderArming",
+    "ConstrainToInt16",
+    "Crc16Fold",
+    "Crc16Sig",
+    "Crc32Sig",
+    "Deadzone",
+    "Expo",
+    "ExpoDeadzone",
+    "GetBinAtAngle",
+    "GetLowerBoundAngle",
+    "Hysteresis",
+    "Interpolate",
+    "InterpolateN",
+    "InterpolateNXY",
+    "IsInRange",
+    "Lerp",
+    "MathFunctions",
+    "MedianFilter",
+    "Negate",
+    "RingBuffer",
+    "SignFromBoolSq",
+    "SlewRate",
+    "SqrtLinear",
+    "SuperExpo",
+    "WelfordMean",
+    "WrapAngle",
+    "WrapBin",
+    "ConstrainToInt16"
   ]
 }
