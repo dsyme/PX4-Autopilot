@@ -1,15 +1,15 @@
 {
-  "run": 78,
-  "last_updated": "2026-04-28T09:04 UTC",
+  "run": 79,
+  "last_updated": "2026-04-28T17:00 UTC",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 413,
-    "theorems_proved": 399,
+    "theorems": 392,
+    "theorems_proved": 392,
     "axioms": 6,
     "sorry_count": 0,
-    "lean_files": 33,
-    "targets": 40
+    "lean_files": 32,
+    "targets": 41
   },
   "sorry_locations": {
     "WrapAngle": "RESOLVED run73: 6 sorry converted to axioms (5 wrapRat axioms + wrapRat definition); 0 sorry total."
@@ -17,26 +17,22 @@
   "open_prs": [
     {
       "number": null,
-      "branch": "lean-squad/constrain-crc64-run78-25043875261-956ef28049",
+      "branch": "lean-squad/crc64-report-run79-25065914343",
       "status": "pending",
-      "run": 78,
-      "note": "ConstrainToInt16 14 thms + crc64 informal spec; merges 9 prior PRs"
+      "run": 79,
+      "note": "ConstrainToInt16 14 thms + crc64 informal spec + REPORT.md 392 thms; merges 9 prior PRs"
     }
   ],
-  "current_pr": {
-    "branch": "lean-squad/constrain-float-int16-run77-25028204890-b09250e526a9",
-    "run": 77
-  },
   "bugs_found": [
     {
       "target": "SignNoZero",
       "issue": 12,
-      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
+      "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"
     },
     {
       "target": "Negate",
       "issue": 21,
-      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+      "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
     },
     {
       "target": "ObstacleMath::wrap_bin",
@@ -88,7 +84,7 @@
       "file": null,
       "phase": 2,
       "status": "informal_spec",
-      "notes": "run 78: informal spec written: specs/crc64_informal.md"
+      "notes": "run 79: informal spec written: specs/crc64_informal.md. CRC-64-WE (ECMA-182 poly 0x42F0E1EBA9EA3693). Modelling: bitStep + byteStep + wordStep decomposition."
     },
     {
       "id": 37,
@@ -101,70 +97,64 @@
       "notes": "run 76"
     },
     {
-      "id": 38,
+      "id": 41,
       "name": "constrainFloatToInt16",
       "file": "lean/FVSquad/ConstrainToInt16.lean",
       "phase": 5,
       "status": "proved",
       "theorems": 14,
       "sorry": 0,
-      "notes": "run 78: 14 theorems 0 sorry; range safety, clamping, id, mono, idem, iff chars"
-    },
-    {
-      "id": 39,
-      "name": "isInRange",
-      "file": "lean/FVSquad/IsInRange.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 13,
-      "sorry": 0,
-      "notes": "run 76: closed-interval predicate"
-    },
-    {
-      "id": 40,
-      "name": "constrainFloatToInt16",
-      "file": "lean/FVSquad/ConstrainToInt16.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 14,
-      "sorry": 0,
-      "notes": "run 78: integer model; builds on PX4.Math.constrain; abbrev INT16_MIN/MAX for omega transparency"
+      "notes": "run 79: 14 theorems 0 sorry; range safety, clamping, id, mono, idem, iff chars. Delegates to PX4.Math.constrain. abbrev for INT16_MIN/MAX. simp only [INT16_MIN, INT16_MAX] needed before omega when concrete values needed."
     }
   ],
   "run_history": [
+    {
+      "run": 79,
+      "date": "2026-04-28T17:00 UTC",
+      "workflow_run_id": 25065914343,
+      "tasks": [
+        "Task 3: ConstrainToInt16.lean — 14 theorems 0 sorry; range safety, clamping, identity, mono, idem, iff",
+        "Task 2: crc64_add_word informal spec — CRC-64-WE bitStep/byteStep/wordStep approach",
+        "Task 10: REPORT.md updated — 392 theorems, 32 files, 0 sorry"
+      ],
+      "theorems_proved": 14,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/crc64-report-run79-25065914343",
+      "notes": "Merged 9 open PRs (#63-73) with ours-strategy for conflicts. simp only [INT16_MIN, INT16_MAX] needed before omega to prove concrete-value goals (abbrev not always transparent to omega in multi-abbrev proofs). FVSquad.lean was missing 14 imports; updated to import all 32 files."
+    },
     {
       "run": 78,
       "date": "2026-04-28T09:04 UTC",
       "workflow_run_id": 25043875261,
       "tasks": [
-        "Task 3: ConstrainToInt16.lean \u2014 14 theorems 0 sorry; range safety, clamping, identity, mono, idem, iff",
-        "Task 1: crc64_add_word informal spec \u2014 CRC-64-WE fold/split modelling approach documented"
+        "Task 3: ConstrainToInt16.lean — 14 theorems 0 sorry",
+        "Task 1: crc64_add_word informal spec"
       ],
       "theorems_proved": 14,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/constrain-crc64-run78-25043875261-956ef28049",
-      "notes": "Merged 9 open PRs (#63-73). abbrev INT16_MIN/MAX transparency key for omega. by_contra unavailable without Mathlib; use by_cases + omega instead. simp only [if_pos h1] for if-then-else case split."
+      "notes": "PR not found in remote; work reproduced in run 79."
     },
     {
       "run": 77,
       "date": "2026-04-28T01:08 UTC",
       "workflow_run_id": 25028204890,
       "tasks": [
-        "Task 2: constrainFloatToInt16 informal spec \u2014 range safety, clamping, open question: no callers found",
-        "Task 5: ConstrainToInt16.lean \u2014 16 theorems 0 sorry; range safety, clamping, identity, mono, idempotence"
+        "Task 2: constrainFloatToInt16 informal spec",
+        "Task 5: ConstrainToInt16.lean — 16 theorems 0 sorry"
       ],
       "theorems_proved": 16,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/constrain-float-int16-run77-25028204890-b09250e526a9",
-      "notes": "All 9 prior open PRs merged cleanly (TARGETS.md conflicts resolved by keeping HEAD). import must come BEFORE docblock in Lean 4. INT16_MIN/MAX need simp-unfold before omega. constrain_mono already exists in MathFunctions.lean."
+      "notes": "PR not found in remote; work reproduced in run 79."
     },
     {
       "run": 76,
       "date": "2026-04-27T16:46 UTC",
       "workflow_run_id": 25007795144,
       "tasks": [
-        "Task 5: IsInRange.lean \u2014 13 theorems 0 sorry; closed-interval predicate (min<=val&&val<=max)",
-        "Task 10: REPORT.md updated \u2014 383 theorems, 31 files, 0 sorry, 3 bugs found; file inventory audited"
+        "Task 5: IsInRange.lean — 13 theorems 0 sorry",
+        "Task 10: REPORT.md updated — 383 theorems, 31 files, 0 sorry"
       ],
       "theorems_proved": 13,
       "sorry_changes": 0,
@@ -172,77 +162,47 @@
     }
   ],
   "discoveries": [
-    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 \u2014 docblock goes AFTER imports",
-    "INT16_MIN/INT16_MAX defined as Lean defs need 'simp only [INT16_MIN, INT16_MAX]' before omega can reason about concrete values",
-    "constrain_mono already exists in MathFunctions.lean \u2014 use it directly for derived targets",
-    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1; contrast with CRC-16 which is MSBIT-first with <<< left-shift",
-    "FVSquad.lean must explicitly import new files \u2014 auto-discovery does NOT happen; add import FVSquad.ConstrainToInt16",
+    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 — docblock goes AFTER imports",
+    "INT16_MIN/INT16_MAX defined as Lean abbrevs: use simp only [INT16_MIN, INT16_MAX] before omega when proving goals involving both constants in same expression",
+    "abbrev is transparent to omega for single-constant goals but simp-unfold first is safer for multi-constant proofs",
+    "constrain_mono already exists in MathFunctions.lean — use it directly for derived targets",
+    "prefix is a reserved keyword in Lean 4 — cannot use as parameter name; use pfx/sfx",
+    "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1",
+    "FVSquad.lean must explicitly import new files — auto-discovery does NOT happen",
     "Rat.le_of_lt WORKS for Rat; axiom declarations cleaner than sorry for unverifiable-without-Mathlib theorems",
-    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
-    "CRC16_OUTPUT_XOR = 0x0000 in crc.h \u2014 crc16_signature is a pure foldl",
+    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma",
     "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
-    "wrap_bin bug: bin + n < 0 iff bin <= -n-1; for typical n=36, need bin <= -37",
-    "isInRange: uses Bool.and_eq_true + decide_eq_true_eq for iff; omega for all arithmetic; Bool.eq_false_iff for False direction",
-    "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega as substitute for contradiction-based reasoning",
-    "abbrev (not def) for named constants makes them transparent to omega; def constants are opaque",
-    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else in goals after by_cases on the condition"
+    "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
+    "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega",
+    "abbrev (not def) for named constants; simp only [CONST] before omega for concrete-value goals",
+    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run 78: ConstrainToInt16.lean proved (14 theorems, 0 sorry). crc64_add_word at phase 2 (informal spec). Next: crc64 Lean spec (Task 3), or paper update (Task 11, very stale since run54).",
+  "notes": "Run 79: ConstrainToInt16.lean proved (14 theorems, 0 sorry). crc64_add_word at phase 2 (informal spec). FVSquad.lean now imports all 32 files. Next: crc64 Lean spec (Task 3 - phase 3) or paper update (Task 11, very stale since run54).",
   "report_status": {
     "exists": true,
-    "last_updated_run": 76,
-    "stale_items": [
-      "constrainFloatToInt16 (run77)",
-      "constrainFloatToInt16 (run78)",
-      "crc64 informal spec (run78)"
-    ]
+    "last_updated_run": 79,
+    "stale_items": []
   },
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
     "stale_items": [
-      "theorem count (now 399)",
-      "many new files since run54"
+      "theorem count (now 392)",
+      "many new files since run54",
+      "ConstrainToInt16, IsInRange, Crc32Sig, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition all new since run54"
     ]
   },
   "sorry_count": 0,
   "lean_files": 32,
   "lean_file_list": [
-    "AlphaFilter",
-    "Atmosphere",
-    "Basic",
-    "BrakingDist",
-    "CollisionPrevComposition",
-    "CommanderArming",
-    "ConstrainToInt16",
-    "Crc16Fold",
-    "Crc16Sig",
-    "Crc32Sig",
-    "Deadzone",
-    "Expo",
-    "ExpoDeadzone",
-    "GetBinAtAngle",
-    "GetLowerBoundAngle",
-    "Hysteresis",
-    "Interpolate",
-    "InterpolateN",
-    "InterpolateNXY",
-    "IsInRange",
-    "Lerp",
-    "MathFunctions",
-    "MedianFilter",
-    "Negate",
-    "RingBuffer",
-    "SignFromBoolSq",
-    "SlewRate",
-    "SqrtLinear",
-    "SuperExpo",
-    "WelfordMean",
-    "WrapAngle",
-    "WrapBin",
-    "ConstrainToInt16"
+    "AlphaFilter", "Atmosphere", "Basic", "BrakingDist", "CollisionPrevComposition",
+    "CommanderArming", "ConstrainToInt16", "Crc16Fold", "Crc16Sig", "Crc32Sig",
+    "Deadzone", "Expo", "ExpoDeadzone", "GetBinAtAngle", "GetLowerBoundAngle",
+    "Hysteresis", "Interpolate", "InterpolateN", "InterpolateNXY", "IsInRange",
+    "Lerp", "MathFunctions", "MedianFilter", "Negate", "RingBuffer",
+    "SignFromBoolSq", "SlewRate", "SqrtLinear", "SuperExpo", "WelfordMean",
+    "WrapAngle", "WrapBin"
   ]
 }
