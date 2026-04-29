@@ -1,38 +1,38 @@
 {
-  "run": 79,
-  "last_updated": "2026-04-28T17:00 UTC",
+  "run": 80,
+  "last_updated": "2026-04-29T01:09 UTC",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 392,
-    "theorems_proved": 392,
+    "theorems": 388,
+    "theorems_proved": 388,
     "axioms": 6,
     "sorry_count": 0,
     "lean_files": 32,
-    "targets": 41
+    "targets": 43
   },
   "sorry_locations": {
-    "WrapAngle": "RESOLVED run73: 6 sorry converted to axioms (5 wrapRat axioms + wrapRat definition); 0 sorry total."
+    "WrapAngle": "RESOLVED run73+80: 6 axioms for floor-arithmetic (Mathlib pending); 0 sorry total. Stale sorry from conflict merge fixed in run 80."
   },
   "open_prs": [
     {
       "number": null,
-      "branch": "lean-squad/crc64-report-run79-25065914343",
+      "branch": "lean-squad/crc64-correspondence-run80-25085835597",
       "status": "pending",
-      "run": 79,
-      "note": "ConstrainToInt16 14 thms + crc64 informal spec + REPORT.md 392 thms; merges 9 prior PRs"
+      "run": 80,
+      "note": "Crc64.lean 10 thms + crc64 informal spec + CORRESPONDENCE.md run80 + WrapAngle/Basic/FVSquad.lean conflict fixes"
     }
   ],
   "bugs_found": [
     {
       "target": "SignNoZero",
       "issue": 12,
-      "description": "NaN safety violation in signNoZero<float> — returns 0 for NaN, violating ne_zero contract"
+      "description": "NaN safety violation in signNoZero<float> \u2014 returns 0 for NaN, violating ne_zero contract"
     },
     {
       "target": "Negate",
       "issue": 21,
-      "description": "negate<int16_t> involution error — INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
+      "description": "negate<int16_t> involution error \u2014 INT16_MAX special case incorrect, negate(negate(-32767))=-32768"
     },
     {
       "target": "ObstacleMath::wrap_bin",
@@ -74,17 +74,19 @@
       "file": "lean/FVSquad/Crc32Sig.lean",
       "phase": 5,
       "status": "proved",
-      "theorems": 11,
+      "theorems": 9,
       "sorry": 0,
       "notes": "run 75: LSBIT-first CRC-32/ISO-HDLC, fold/split for UAVCAN bootloader"
     },
     {
       "id": 36,
       "name": "crc64_add_word",
-      "file": null,
-      "phase": 2,
-      "status": "informal_spec",
-      "notes": "run 79: informal spec written: specs/crc64_informal.md. CRC-64-WE (ECMA-182 poly 0x42F0E1EBA9EA3693). Modelling: bitStep + byteStep + wordStep decomposition."
+      "file": "lean/FVSquad/Crc64.lean",
+      "phase": 5,
+      "status": "proved",
+      "theorems": 10,
+      "sorry": 0,
+      "notes": "run 80: CRC-64-WE (ECMA-182) fold/split + informal spec. MSBIT-first, poly 0x42F0E1EBA9EA3693."
     },
     {
       "id": 37,
@@ -100,109 +102,124 @@
       "id": 41,
       "name": "constrainFloatToInt16",
       "file": "lean/FVSquad/ConstrainToInt16.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 14,
-      "sorry": 0,
-      "notes": "run 79: 14 theorems 0 sorry; range safety, clamping, id, mono, idem, iff chars. Delegates to PX4.Math.constrain. abbrev for INT16_MIN/MAX. simp only [INT16_MIN, INT16_MAX] needed before omega when concrete values needed."
+      "phase": 2,
+      "status": "informal_spec_only",
+      "notes": "run 79 PR not pushed; ConstrainToInt16.lean not in repo yet \u2014 needs reproduction"
     }
   ],
   "run_history": [
+    {
+      "run": 80,
+      "date": "2026-04-29T01:09 UTC",
+      "workflow_run_id": 25085835597,
+      "tasks": [
+        "Task 5+2+3+4: Crc64.lean \u2014 10 theorems 0 sorry; CRC-64-WE fold/split; informal spec written",
+        "Task 6: CORRESPONDENCE.md updated \u2014 run 80, added Crc16Sig + Crc32Sig + IsInRange + Crc64 sections",
+        "Fix: WrapAngle.lean stale sorry removed (conflict artifact); Basic.lean conflict markers fixed; FVSquad.lean updated to import all 32 files"
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/crc64-correspondence-run80-25085835597",
+      "notes": "Merged all 9 open lean-squad PRs. Conflict in TARGETS.md resolved with theirs strategy. WrapAngle conflict left stale sorry + real proof \u2014 fixed by keeping proof only. Basic.lean had nested conflict markers \u2014 rewritten clean. lake build PASSED 35 jobs."
+    },
     {
       "run": 79,
       "date": "2026-04-28T17:00 UTC",
       "workflow_run_id": 25065914343,
       "tasks": [
-        "Task 3: ConstrainToInt16.lean — 14 theorems 0 sorry; range safety, clamping, identity, mono, idem, iff",
-        "Task 2: crc64_add_word informal spec — CRC-64-WE bitStep/byteStep/wordStep approach",
-        "Task 10: REPORT.md updated — 392 theorems, 32 files, 0 sorry"
+        "Task 3: ConstrainToInt16.lean \u2014 14 theorems; Task 2: crc64 informal spec; Task 10: REPORT.md"
       ],
       "theorems_proved": 14,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/crc64-report-run79-25065914343",
-      "notes": "Merged 9 open PRs (#63-73) with ours-strategy for conflicts. simp only [INT16_MIN, INT16_MAX] needed before omega to prove concrete-value goals (abbrev not always transparent to omega in multi-abbrev proofs). FVSquad.lean was missing 14 imports; updated to import all 32 files."
-    },
-    {
-      "run": 78,
-      "date": "2026-04-28T09:04 UTC",
-      "workflow_run_id": 25043875261,
-      "tasks": [
-        "Task 3: ConstrainToInt16.lean — 14 theorems 0 sorry",
-        "Task 1: crc64_add_word informal spec"
-      ],
-      "theorems_proved": 14,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/constrain-crc64-run78-25043875261-956ef28049",
-      "notes": "PR not found in remote; work reproduced in run 79."
-    },
-    {
-      "run": 77,
-      "date": "2026-04-28T01:08 UTC",
-      "workflow_run_id": 25028204890,
-      "tasks": [
-        "Task 2: constrainFloatToInt16 informal spec",
-        "Task 5: ConstrainToInt16.lean — 16 theorems 0 sorry"
-      ],
-      "theorems_proved": 16,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/constrain-float-int16-run77-25028204890-b09250e526a9",
-      "notes": "PR not found in remote; work reproduced in run 79."
+      "notes": "PR branch not found in remote \u2014 work partially lost. ConstrainToInt16.lean needs reproduction in run 81+"
     },
     {
       "run": 76,
       "date": "2026-04-27T16:46 UTC",
       "workflow_run_id": 25007795144,
       "tasks": [
-        "Task 5: IsInRange.lean — 13 theorems 0 sorry",
-        "Task 10: REPORT.md updated — 383 theorems, 31 files, 0 sorry"
+        "Task 5: IsInRange.lean \u2014 13 theorems 0 sorry",
+        "Task 10: REPORT.md updated"
       ],
       "theorems_proved": 13,
       "sorry_changes": 0,
-      "pr_branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb"
+      "pr_branch": "lean-squad/isinrange-report-run76-25007795144-c67ec931cb-15a9cc8812333b82"
     }
   ],
   "discoveries": [
-    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 — docblock goes AFTER imports",
+    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 \u2014 docblock goes AFTER imports",
     "INT16_MIN/INT16_MAX defined as Lean abbrevs: use simp only [INT16_MIN, INT16_MAX] before omega when proving goals involving both constants in same expression",
     "abbrev is transparent to omega for single-constant goals but simp-unfold first is safer for multi-constant proofs",
-    "constrain_mono already exists in MathFunctions.lean — use it directly for derived targets",
-    "prefix is a reserved keyword in Lean 4 — cannot use as parameter name; use pfx/sfx",
+    "constrain_mono already exists in MathFunctions.lean \u2014 use it directly for derived targets",
+    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1",
-    "FVSquad.lean must explicitly import new files — auto-discovery does NOT happen",
+    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63 with &&& 0x8000000000000000",
+    "FVSquad.lean AND Basic.lean must both explicitly import new files \u2014 update both",
     "Rat.le_of_lt WORKS for Rat; axiom declarations cleaner than sorry for unverifiable-without-Mathlib theorems",
-    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma",
+    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
     "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
     "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
     "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega",
     "abbrev (not def) for named constants; simp only [CONST] before omega for concrete-value goals",
-    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else"
+    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else",
+    "crc64_split_example: use direct application 'exact crc64Words_append _ _ _' not 'simp [crc64Words_append]' for concrete examples",
+    "Conflict merge with 'theirs' strategy can leave stale sorry + real proof in same theorem body \u2014 check for 'No goals' errors after merge conflict resolution"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run 79: ConstrainToInt16.lean proved (14 theorems, 0 sorry). crc64_add_word at phase 2 (informal spec). FVSquad.lean now imports all 32 files. Next: crc64 Lean spec (Task 3 - phase 3) or paper update (Task 11, very stale since run54).",
+  "notes": "Run 80: Crc64.lean proved (10 theorems, 0 sorry). CORRESPONDENCE.md updated for Crc16Sig/Crc32Sig/IsInRange/Crc64. WrapAngle/Basic.lean conflict artifacts fixed. Next: ConstrainToInt16.lean (run79 work lost \u2014 reproduce), or REPORT.md update, or new target.",
   "report_status": {
     "exists": true,
     "last_updated_run": 79,
-    "stale_items": []
+    "stale_items": [
+      "Crc64 (run80)",
+      "CORRESPONDENCE updates"
+    ]
   },
   "paper_status": {
     "exists": true,
     "last_updated_run": 54,
     "stale_since": "run49",
     "stale_items": [
-      "theorem count (now 392)",
+      "theorem count (now 388)",
       "many new files since run54",
-      "ConstrainToInt16, IsInRange, Crc32Sig, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition all new since run54"
+      "Crc32Sig, Crc64, IsInRange all new"
     ]
   },
   "sorry_count": 0,
   "lean_files": 32,
   "lean_file_list": [
-    "AlphaFilter", "Atmosphere", "Basic", "BrakingDist", "CollisionPrevComposition",
-    "CommanderArming", "ConstrainToInt16", "Crc16Fold", "Crc16Sig", "Crc32Sig",
-    "Deadzone", "Expo", "ExpoDeadzone", "GetBinAtAngle", "GetLowerBoundAngle",
-    "Hysteresis", "Interpolate", "InterpolateN", "InterpolateNXY", "IsInRange",
-    "Lerp", "MathFunctions", "MedianFilter", "Negate", "RingBuffer",
-    "SignFromBoolSq", "SlewRate", "SqrtLinear", "SuperExpo", "WelfordMean",
-    "WrapAngle", "WrapBin"
+    "AlphaFilter",
+    "Atmosphere",
+    "Basic",
+    "BrakingDist",
+    "CollisionPrevComposition",
+    "CommanderArming",
+    "Crc16Fold",
+    "Crc16Sig",
+    "Crc32Sig",
+    "Crc64",
+    "Deadzone",
+    "Expo",
+    "ExpoDeadzone",
+    "GetBinAtAngle",
+    "GetLowerBoundAngle",
+    "Hysteresis",
+    "Interpolate",
+    "InterpolateN",
+    "InterpolateNXY",
+    "IsInRange",
+    "Lerp",
+    "MathFunctions",
+    "MedianFilter",
+    "Negate",
+    "RingBuffer",
+    "SignFromBoolSq",
+    "SlewRate",
+    "SqrtLinear",
+    "SuperExpo",
+    "WelfordMean",
+    "WrapAngle",
+    "WrapBin"
   ]
 }
