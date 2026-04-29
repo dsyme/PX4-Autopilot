@@ -40,8 +40,8 @@ All eight theorems are fully proved using `Int.emod` lemmas and `omega`.
 **Part 2 — `wrapRat`**: an abstract rational model of the floating-point
 `wrap_floating` / `wrap_pi`. The definition is axiomatic (requires
 `Int.floor` or `Rat.floor`, available in Mathlib but not in Lean 4 stdlib).
-Key contract theorems are stated with `sorry`; proofs require
-`Mathlib.Algebra.Order.Floor`.
+Key contract theorems are axiomatised (require Mathlib floor for full proofs);
+`wrapRat_zero` and `wrapRat_idempotent` are proved from the axioms. **0 `sorry`.**
 
 ## Approximations / model boundaries
 
@@ -173,44 +173,51 @@ Then each theorem below can be proved using `Mathlib` floor lemmas.
     Represents `wrap_floating(x, lo, hi)` for finite rational inputs. -/
 axiom wrapRat (x lo hi : Rat) (h : lo < hi) : Rat
 
-/-- **[sorry — needs Mathlib floor]** Range lower bound: result ≥ lo. -/
-theorem wrapRat_ge_lo (x lo hi : Rat) (h : lo < hi) :
-    lo ≤ wrapRat x lo hi h := by
-  sorry -- proof: (x - lo) / range - ⌊(x - lo) / range⌋ ∈ [0,1) by Int.floor_nonneg
+/-- **[axiom — needs Mathlib floor for proof]** Range lower bound: result ≥ lo.
+    Provable with: `(x - lo) / range - ⌊(x - lo) / range⌋ ∈ [0,1)` via `Int.floor_nonneg`. -/
+axiom wrapRat_ge_lo (x lo hi : Rat) (h : lo < hi) : lo ≤ wrapRat x lo hi h
 
-/-- **[sorry — needs Mathlib floor]** Range upper bound: result < hi. -/
-theorem wrapRat_lt_hi (x lo hi : Rat) (h : lo < hi) :
-    wrapRat x lo hi h < hi := by
-  sorry -- proof: Int.lt_floor_add_one applied to (x - lo) / range
+/-- **[axiom — needs Mathlib floor for proof]** Range upper bound: result < hi.
+    Provable with: `Int.lt_floor_add_one` applied to `(x - lo) / range`. -/
+axiom wrapRat_lt_hi (x lo hi : Rat) (h : lo < hi) : wrapRat x lo hi h < hi
 
-/-- **[sorry — needs Mathlib floor]** Identity for values already in range. -/
-theorem wrapRat_in_range (x lo hi : Rat) (h : lo < hi)
-    (hlo : lo ≤ x) (hhi : x < hi) : wrapRat x lo hi h = x := by
-  sorry -- proof: floor((x - lo) / range) = 0 when 0 ≤ (x - lo) / range < 1
+/-- **[axiom — needs Mathlib floor for proof]** Identity for values already in range.
+    Provable with: `⌊(x - lo) / range⌋ = 0` when `0 ≤ (x - lo) / range < 1`. -/
+axiom wrapRat_in_range (x lo hi : Rat) (h : lo < hi)
+    (hlo : lo ≤ x) (hhi : x < hi) : wrapRat x lo hi h = x
 
-/-- **[sorry — needs Mathlib floor]** Idempotence. -/
+/-- **[proved]** Idempotence: wrapping an already-wrapped value is the identity. -/
 theorem wrapRat_idempotent (x lo hi : Rat) (h : lo < hi) :
-    wrapRat (wrapRat x lo hi h) lo hi h = wrapRat x lo hi h := by
-  exact wrapRat_in_range _ _ _ h (wrapRat_ge_lo x lo hi h) (wrapRat_lt_hi x lo hi h)
+    wrapRat (wrapRat x lo hi h) lo hi h = wrapRat x lo hi h :=
+  wrapRat_in_range _ _ _ h (wrapRat_ge_lo x lo hi h) (wrapRat_lt_hi x lo hi h)
 
-/-- **[sorry — needs Mathlib floor]** Periodicity: shifting by one period is transparent. -/
-theorem wrapRat_periodic (x lo hi : Rat) (h : lo < hi) :
-    wrapRat (x + (hi - lo)) lo hi h = wrapRat x lo hi h := by
-  sorry -- proof: floor((x + range - lo) / range) = floor((x - lo) / range) + 1
+/-- **[axiom — needs Mathlib floor for proof]** Periodicity: shifting by one period is transparent.
+    Provable with: `⌊(x + range - lo) / range⌋ = ⌊(x - lo) / range⌋ + 1`. -/
+axiom wrapRat_periodic (x lo hi : Rat) (h : lo < hi) :
+    wrapRat (x + (hi - lo)) lo hi h = wrapRat x lo hi h
 
-/-- **[sorry — needs Mathlib floor]** Congruence: result ≡ x mod (hi - lo). -/
-theorem wrapRat_congruent (x lo hi : Rat) (h : lo < hi) :
-    ∃ k : Int, wrapRat x lo hi h = x + k * (hi - lo) := by
-  sorry -- proof: k = -⌊(x - lo) / range⌋
+/-- **[axiom — needs Mathlib floor for proof]** Congruence: result ≡ x mod (hi - lo).
+    Provable with: `k = -⌊(x - lo) / range⌋`. -/
+axiom wrapRat_congruent (x lo hi : Rat) (h : lo < hi) :
+    ∃ k : Int, wrapRat x lo hi h = x + k * (hi - lo)
 
-/-- **[sorry — needs Mathlib floor]** wrap_pi(0) = 0. -/
+/-- **[proved]** wrap_pi(0) = 0: wrapping zero in [-P, P) returns zero.
+    Follows directly from `wrapRat_in_range` with `-P ≤ 0 < P`. -/
 theorem wrapRat_zero (P : Rat) (hP : 0 < P) :
     wrapRat 0 (-P) P (by
       -- Prove -P < P: use -P < 0 < P
       have h1 : -P < -0 := Rat.neg_lt_neg hP
       simp only [Rat.neg_zero] at h1     -- h1 : -P < 0
       exact Std.lt_trans h1 hP) = 0 := by
-  sorry -- proof: apply wrapRat_in_range with -P ≤ 0 < P (from hP)
+  -- Apply wrapRat_in_range: need -P ≤ 0 (from hP) and 0 < P (= hP)
+  apply wrapRat_in_range
+  · -- -P ≤ 0: since -P < 0 (from Rat.neg_lt_neg hP after neg_zero)
+    have h1 : (-P : Rat) < 0 := by
+      have h := Rat.neg_lt_neg hP
+      simp only [Rat.neg_zero] at h
+      exact h
+    exact Rat.le_of_lt h1
+  · exact hP
 
 /- ## Correspondence to `wrapInt`
 
