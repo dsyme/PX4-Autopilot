@@ -69,6 +69,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 | 36 | `crc64_add_word` fold/split (CRC-64-WE) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC-64-WE (poly `0x42F0E1EBA9EA3693`); processes 4 bytes per call (32-bit word); fold/split mirrors crc32; `UInt64` model; high value for flight-data integrity |
 | 37 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 1 | ⬜ Research | — | Pure boolean `(min ≤ val) && (val ≤ max)`; trivial spec but used in guards throughout PX4; good to prove conjunction/monotonicity invariants |
 | 38 | `math::constrainFloatToInt16` | `src/lib/mathlib/math/Limits.hpp:85` | 1 | ⬜ Research | — | `constrain(float, INT16_MIN, INT16_MAX)` cast to `int16_t`; conversion-overflow class; range-safety proof; depends on target 1 |
+| 39 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 5 | ✅ Proved | `lean/FVSquad/IsInRange.lean` | Generic closed-interval predicate; 13 theorems, 0 sorry (run 76) |
 
 ## Non-Lean Targets (other tools recommended)
 
