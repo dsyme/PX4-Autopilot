@@ -1,14 +1,14 @@
 {
-  "run": 80,
-  "last_updated": "2026-04-29T01:09 UTC",
+  "run": 81,
+  "last_updated": "2026-04-29T09:30:00Z",
   "lean_version": "leanprover/lean4:v4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 388,
+    "theorems": 390,
     "theorems_proved": 388,
     "axioms": 6,
     "sorry_count": 0,
-    "lean_files": 32,
+    "lean_files": 33,
     "targets": 43
   },
   "sorry_locations": {
@@ -16,11 +16,10 @@
   },
   "open_prs": [
     {
-      "number": null,
-      "branch": "lean-squad/crc64-correspondence-run80-25085835597",
-      "status": "pending",
-      "run": 80,
-      "note": "Crc64.lean 10 thms + crc64 informal spec + CORRESPONDENCE.md run80 + WrapAngle/Basic/FVSquad.lean conflict fixes"
+      "number": "TBD",
+      "branch": "lean-squad/correspondence-proof-run81-25099906929",
+      "run": 81,
+      "title": "feat(fv): Tasks 5+6 \u2014 ConstrainToInt16 (13 thms) + Crc64 (8 thms) + CORRESPONDENCE.md run 81"
     }
   ],
   "bugs_found": [
@@ -105,6 +104,24 @@
       "phase": 2,
       "status": "informal_spec_only",
       "notes": "run 79 PR not pushed; ConstrainToInt16.lean not in repo yet \u2014 needs reproduction"
+    },
+    {
+      "name": "ConstrainToInt16",
+      "file": "src/lib/mathlib/math/Limits.hpp",
+      "lean_file": "formal-verification/lean/FVSquad/ConstrainToInt16.lean",
+      "phase": 5,
+      "theorems": 13,
+      "sorry": 0,
+      "notes": "constrainFloatToInt16: range safety, identity, clamping, monotonicity, idempotence. Key: simp only [INT16_MIN, INT16_MAX] at * before omega."
+    },
+    {
+      "name": "Crc64",
+      "file": "src/lib/crc/crc.c",
+      "lean_file": "formal-verification/lean/FVSquad/Crc64.lean",
+      "phase": 5,
+      "theorems": 8,
+      "sorry": 0,
+      "notes": "crc64_add_word CRC-64-WE ECMA-182, poly 0x42F0E1EBA9EA3693 MSBIT-first. Fold/split streaming theorem via List.foldl_append."
     }
   ],
   "run_history": [
@@ -164,7 +181,15 @@
     "abbrev (not def) for named constants; simp only [CONST] before omega for concrete-value goals",
     "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else",
     "crc64_split_example: use direct application 'exact crc64Words_append _ _ _' not 'simp [crc64Words_append]' for concrete examples",
-    "Conflict merge with 'theirs' strategy can leave stale sorry + real proof in same theorem body \u2014 check for 'No goals' errors after merge conflict resolution"
+    "Conflict merge with 'theirs' strategy can leave stale sorry + real proof in same theorem body \u2014 check for 'No goals' errors after merge conflict resolution",
+    {
+      "run": 81,
+      "finding": "abbrev INT16_MIN/MAX with omega: must use 'simp only [INT16_MIN, INT16_MAX] at *' (not just 'at goal') to expand constants in BOTH hypotheses AND goal before omega can use them"
+    },
+    {
+      "run": 81,
+      "finding": "crc64Words_append fold/split theorem proves chunked CRC-64 == single-pass via List.foldl_append; no Mathlib needed"
+    }
   ],
   "mathlib_status": "blocked_403_cache_proxy",
   "notes": "Run 80: Crc64.lean proved (10 theorems, 0 sorry). CORRESPONDENCE.md updated for Crc16Sig/Crc32Sig/IsInRange/Crc64. WrapAngle/Basic.lean conflict artifacts fixed. Next: ConstrainToInt16.lean (run79 work lost \u2014 reproduce), or REPORT.md update, or new target.",
@@ -221,5 +246,6 @@
     "WelfordMean",
     "WrapAngle",
     "WrapBin"
-  ]
+  ],
+  "workflow_run_id": "25099906929"
 }
