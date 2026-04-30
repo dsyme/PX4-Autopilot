@@ -1121,3 +1121,189 @@ lemma makes later proofs about interpolated setpoints much easier.
 | 6 | `wrapRat` theorems (WrapAngle.lean) | 🔄 Phase 3 | 6 sorrys need Mathlib floor |
 | 7 | `Atmosphere` sorrys | 🔄 Phase 3 | 3 sorrys need Mathlib mul_lt_mul_of_neg_left |
 | 8 | `SqrtLinear` sqrt branch sorrys | 🔄 Phase 3 | 3 sorrys need Mathlib Real.sqrt |
+
+---
+
+## New Research Targets (run 83 — 2026-04-30)
+
+### Survey Methodology
+
+Run 83 surveyed the following areas not yet covered by formal verification:
+- `src/lib/mathlib/math/Limits.hpp` (remaining functions: `radians`, `degrees`, `min`, `max`)
+- `src/lib/motion_planning/VelocitySmoothing.cpp` (jerk-limited trajectory timing functions)
+- `src/drivers/rc/crsf_rc/Crc8.cpp` (CRSF RC protocol CRC-8)
+- `src/lib/mathlib/math/SearchMin.hpp` (`abs_t`, `goldensection`)
+
+Critique feedback from run 82 noted that the correspondence coverage for `ConstrainToInt16`
+and `Crc64` was incomplete (section-level documentation missing); those gaps were addressed
+in the Task 6 correspondence update this run.
+
+---
+
+### Target 40: `math::radians` / `math::degrees` (Unit Conversion Round-Trip)
+
+**File**: `src/lib/mathlib/math/Limits.hpp` (lines 97–105)
+
+```cpp
+template<typename T>
+constexpr T radians(T degrees)
+{
+    return degrees * (static_cast<T>(MATH_PI) / static_cast<T>(180));
+}
+
+template<typename T>
+constexpr T degrees(T radians)
+{
+    return radians * (static_cast<T>(180) / static_cast<T>(MATH_PI));
+}
+```
+
+**Benefit**: These conversion functions are used pervasively throughout PX4 (EKF, navigation,
+attitude control). A round-trip bug — `radians(degrees(x)) ≠ x` or `degrees(radians(x)) ≠ x`
+— or a sign error would silently corrupt all angular computations. Formally verifying the
+algebraic round-trip and linearity properties rules out whole classes of conversion bugs.
+
+**Specification size**: ~25 Lean lines for both functions.
+
+**Proof tractability**: VERY EASY — the key identity is `degrees(radians(x)) = x *
+(180/π * π/180) = x`, which is a pure `ring` or `field_simp` call once π is abstracted.
+In Lean, parameterise both functions by `p : Rat` (representing π) and prove:
+
+- `radians p (degrees p x) = x` (for all `p ≠ 0`)
+- `degrees p (radians p x) = x`
+- `radians p (a + b) = radians p a + radians p b` (linearity)
+- `a ≤ b → radians p a ≤ radians p b` (monotone for `p > 0`)
+
+**Approximations needed**: `float` → `Rat`; `π` → opaque parameter `p : Rat` with
+`p ≠ 0` (positivity) precondition. The algebraic round-trip holds regardless of the
+exact value of `p`, so no numerical approximation of π is needed.
+
+**Approach**: `def radiansR (p : Rat) (d : Rat) := d * (p / 180)` and `def degreesR (p : Rat)
+(r : Rat) := r * (180 / p)`. Prove round-trip by `field_simp; ring`. Prove linearity by
+`ring`. Monotone by `mul_le_mul_of_nonneg_right` (or `omega`/`linarith` after clearing denom).
+
+**Bug-finding potential**: MEDIUM — bugs would be catches if a developer accidentally swapped
+`radians` and `degrees`, negated the factor, or used the wrong constant. The algebraic proof
+rules out systematic errors in the conversion formulas.
+
+---
+
+### Target 41: `VelocitySmoothing::computeT3` (Jerk-Limited Deceleration Phase Duration)
+
+**File**: `src/lib/motion_planning/VelocitySmoothing.cpp` (line 157)
+
+```cpp
+float VelocitySmoothing::computeT3(float T1, float a0, float j_max) const
+{
+    float T3 = a0 / j_max + T1;
+    return math::max(T3, 0.f);
+}
+```
+
+**Benefit**: `computeT3` computes the duration of the deceleration ramp in jerk-limited
+trajectory planning. If `T3` is wrong, the drone overshoots or undershoots the target
+position/velocity. Key safety properties: T3 is always non-negative (no negative time
+durations), T3 is monotone in T1 (more acceleration ramp → more deceleration ramp), and
+T3 = 0 when `a0 ≤ 0` and `T1 = 0` (flat portion if already decelerating).
+
+**Specification size**: ~30 Lean lines.
+
+**Proof tractability**: EASY — `computeT3` is a one-liner. Model as:
+
+```lean
+def computeT3 (T1 a0 j_max : Rat) : Rat := max (a0 / j_max + T1) 0
+```
+
+Key properties:
+- `computeT3_nonneg`: `computeT3 T1 a0 j_max ≥ 0` (proved by `max_def`, `le_max_right`)
+- `computeT3_mono_T1`: `T1 ≤ T1' → computeT3 T1 a0 j_max ≤ computeT3 T1' a0 j_max`
+- `computeT3_zero_when_nonpos`: `T1 = 0 → a0 ≤ 0 → computeT3 T1 a0 j_max = 0`
+- `computeT3_sum`: When result > 0, `computeT3 T1 a0 j_max = a0/j_max + T1`
+- `computeT3_complement`: `computeT3 T1 a0 j_max + computeT3 (-T1) (-a0) j_max ≥ 0`
+
+**Approximations needed**: `float` → `Rat`; `j_max ≠ 0` required (divide-by-zero guard,
+asserted as precondition). `math::max` → `max`.
+
+**Approach**: `simp [computeT3, max_def]` with `linarith` for numeric bounds. All proofs
+close with `linarith` or `omega` after unfolding `max`.
+
+**Bug-finding potential**: LOW for this specific function (it's simple) but MEDIUM when
+composed with `computeT1`: the combination `T1 + T3 ≤ T_total` is a key trajectory
+scheduling invariant that could be formally verified as a composition theorem.
+
+---
+
+### Target 42: `CRC-8 for CRSF RC Protocol` (Streaming Fold-Split)
+
+**File**: `src/drivers/rc/crsf_rc/Crc8.cpp`
+
+```c
+static uint8_t crc8_lut[256];
+
+void Crc8Init(const uint8_t poly) {
+    for (int idx = 0; idx < 256; ++idx) {
+        uint8_t crc = idx;
+        for (int shift = 0; shift < 8; ++shift) {
+            crc = (crc << 1) ^ ((crc & 0x80) ? poly : 0);
+        }
+        crc8_lut[idx] = crc & 0xff;
+    }
+}
+
+uint8_t Crc8Calc(const uint8_t *data, uint8_t size) {
+    uint8_t crc = 0;
+    while (size--) {
+        crc = crc8_lut[crc ^ *data++];
+    }
+    return crc;
+}
+```
+
+**Benefit**: CRSF is the high-speed RC link protocol for DJI/Crossfire receivers. `Crc8Calc`
+is called on every CRSF frame to verify integrity. A bug in the CRC check — accepting
+corrupted frames — could allow malformed RC input to reach the flight controller. Verifying
+the fold-split property of the CRC-8 computation confirms that frame concatenation and
+splitting do not corrupt the integrity check.
+
+**Specification size**: ~60 Lean lines.
+
+**Proof tractability**: MEDIUM — the streaming fold-split theorem follows the same pattern as
+`Crc16Fold.lean` and `Crc64.lean`. The key difference is the table-driven approach: instead
+of modelling the bit-level LFSR, we model `Crc8Calc` as `List.foldl (fun acc b → lut[acc ^^ b])
+0` where `lut : UInt8 → UInt8` is a function. The fold-split theorem is:
+
+```lean
+theorem crc8_append (lut : UInt8 → UInt8) (init : UInt8) (xs ys : List UInt8) :
+    crc8 lut init (xs ++ ys) = crc8 lut (crc8 lut init xs) ys
+```
+
+This is proved by `simp [crc8, List.foldl_append]` — a one-line proof, identical to the
+`Crc16Fold` proof structure.
+
+**Approximations needed**: The LUT is modelled as an opaque function `lut : UInt8 → UInt8`
+(any table will do — the fold-split property holds for any table). The table initialisation
+from the polynomial is a separate concern.
+
+**Approach**: Define `crc8 (lut : UInt8 → UInt8) (init : UInt8) (bs : List UInt8) : UInt8 :=
+bs.foldl (fun acc b => lut (acc ^^^ b)) init`. Prove the fold-split theorem by
+`simp [crc8, List.foldl_append]`. This is structurally identical to `crc16_append` in
+`Crc16Fold.lean`. Full file should take ~45 minutes.
+
+**Bug-finding potential**: LOW for this specific property (fold-split is hard to get wrong),
+but MEDIUM overall because the CRC-8 is the integrity check for RC commands. If the
+polynomial or init value were wrong, `Crc8Calc` would accept corrupted frames — a route to
+unsafe RC inputs reaching the flight controller.
+
+---
+
+## Updated Priority Order (run 83)
+
+| Priority | Target | Phase | Rationale |
+|----------|--------|-------|-----------|
+| 1 | `math::radians`/`degrees` round-trip (target 40) | ⬜ Research | Very easy algebraic identities; high coverage for angular conversion used everywhere |
+| 2 | `VelocitySmoothing::computeT3` (target 41) | ⬜ Research | Easy; non-negativity and monotonicity of trajectory timing |
+| 3 | `CRC-8 CRSF` fold-split (target 42) | ⬜ Research | Medium; same structure as Crc16Fold; completes CRC family (8/16/32/64-bit) |
+| 4 | `wrapRat` Mathlib sorry closure | 🔄 Phase 3 | 6 axioms; needs Mathlib `Int.floor` |
+| 5 | `Atmosphere` sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `mul_lt_mul_of_neg_left` |
+| 6 | `SqrtLinear` sqrt branch sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `Real.sqrt` |
+| 7 | `VelocitySmoothing::computeT2` simple overload | ⬜ Research | `max(T123 - T1 - T3, 0)`; composition with T1+T3 invariant |

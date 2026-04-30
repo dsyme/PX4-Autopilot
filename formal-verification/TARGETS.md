@@ -68,10 +68,17 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 36 | `crc64_add_word` fold/split (CRC-64-WE) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC-64-WE (poly `0x42F0E1EBA9EA3693`); processes 4 bytes per call (32-bit word); fold/split mirrors crc32; `UInt64` model; high value for flight-data integrity |
-| 37 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 1 | ⬜ Research | — | Pure boolean `(min ≤ val) && (val ≤ max)`; trivial spec but used in guards throughout PX4; good to prove conjunction/monotonicity invariants |
-| 38 | `math::constrainFloatToInt16` | `src/lib/mathlib/math/Limits.hpp:85` | 1 | ⬜ Research | — | `constrain(float, INT16_MIN, INT16_MAX)` cast to `int16_t`; conversion-overflow class; range-safety proof; depends on target 1 |
-| 39 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 5 | ✅ Proved | `lean/FVSquad/IsInRange.lean` | Generic closed-interval predicate; 13 theorems, 0 sorry (run 76) |
+| 36 | `crc64_add_word` fold/split (CRC-64-WE) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc64.lean` | 8 theorems 0 sorry (run 80); fold/split streaming theorem via `List.foldl_append` |
+| 37 | `math::isInRange` | `src/lib/mathlib/math/Limits.hpp:91` | 5 | ✅ Proved | `lean/FVSquad/IsInRange.lean` | 13 theorems 0 sorry (run 76); correspondence section added run 83 |
+| 38 | `math::constrainFloatToInt16` | `src/lib/mathlib/math/Limits.hpp:85` | 5 | ✅ Proved | `lean/FVSquad/ConstrainToInt16.lean` | 13 theorems 0 sorry (run 82); correspondence section added run 83 |
+
+## New Research Targets (Phase 1 — identified in run 83)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 40 | `math::radians` / `math::degrees` | `src/lib/mathlib/math/Limits.hpp:97` | 1 | ⬜ Research | — | Algebraic round-trip `degrees(radians(x)) = x`; linearity; monotone; abstract π parameter; very tractable |
+| 41 | `VelocitySmoothing::computeT3` | `src/lib/motion_planning/VelocitySmoothing.cpp:157` | 1 | ⬜ Research | — | `max(a0/j_max + T1, 0)`; non-negativity, monotone in T1; trajectory timing safety |
+| 42 | `CRC-8 CRSF RC fold-split` | `src/drivers/rc/crsf_rc/Crc8.cpp` | 1 | ⬜ Research | — | Table-driven CRC-8; streaming fold-split; same proof structure as Crc16Fold; completes CRC family (8/16/32/64-bit) |
 
 ## Non-Lean Targets (other tools recommended)
 
