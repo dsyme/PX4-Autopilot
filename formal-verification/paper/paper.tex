@@ -52,7 +52,7 @@
 }
 
 \title{Formal Verification of a UAV Flight Controller's Core Libraries with Lean~4:\\
-       259 Theorems, Two Bugs, 6 Sorry in 20 Modules}
+       389 Theorems, Three Bugs, Zero Sorry in 33 Modules}
 
 \author{Lean Squad}
 \affiliation{
@@ -64,20 +64,25 @@
 \begin{abstract}
 We report a formal verification campaign applied to PX4-Autopilot, an open-source
 UAV flight controller written in C++. Using Lean~4 with its standard library only
-(no Mathlib), we verified 253 theorems fully (6~\texttt{sorry}-guarded) across
-20~Lean modules covering 24~C++ targets including signal-processing filters,
-rate-limiting, piecewise-linear interpolation, online statistics, ring buffers,
-a time-delayed boolean state machine, fundamental arithmetic utilities, and a
-protocol CRC-16 streaming correctness property. All proofs were mechanically
-checked by \texttt{lake build}. The project discovered two genuine implementation
-bugs through failed proof attempts: (1)~\texttt{signNoZero<float>} silently
-returns~0 for NaN inputs, violating a non-zero safety contract, and
+(no Mathlib), we verified \textbf{389~theorems} fully across \textbf{33~Lean modules}
+covering \textbf{37~C++ targets} including signal-processing filters, rate-limiting,
+piecewise-linear interpolation, online statistics, ring buffers, a time-delayed
+boolean state machine, collision-prevention obstacle mathematics, CRC-16/32/64
+streaming correctness, and integer range utilities. All proofs are mechanically
+checked by \texttt{lake build}; zero \texttt{sorry} remain in any proof body
+(two files use Lean \texttt{axiom} declarations for Mathlib-pending properties).
+The project discovered \textbf{three genuine implementation bugs} through proof
+failure and correspondence analysis:
+(1)~\texttt{signNoZero<float>} silently returns~0 for NaN inputs, violating a
+non-zero safety contract (potential infinite loop at one call site);
 (2)~\texttt{negate<int16\_t>} is not a global involution due to an incorrect
-\texttt{INT16\_MAX} special case. Six theorems in one file remain
-\texttt{sorry}-guarded, pending floor-arithmetic support from Mathlib.
-We describe the modelling strategy, proof tactics, correspondence discipline,
-and lessons learned in applying interactive theorem proving to a production
-embedded codebase without network access to the Mathlib cache.
+\texttt{INT16\_MAX} special case;
+(3)~\texttt{wrap\_bin} returns a negative array index for
+$\mathit{bin} \leq -\mathit{bin\_count}-1$ due to C++ truncation semantics,
+confirmed by 334~executable correspondence tests.
+We describe the modelling strategy, proof tactics, correspondence discipline, and
+lessons learned in applying interactive theorem proving to a production embedded
+codebase without network access to the Mathlib cache.
 \end{abstract}
 
 \begin{CCSXML}
@@ -136,13 +141,15 @@ language with a growing library ecosystem~\cite{mathlib}.
 
 Our contributions are:
 \begin{itemize}
-  \item A formal verification campaign covering \textbf{24~C++ targets with Lean proofs}
-        in 20~Lean modules, yielding \textbf{253~fully proved theorems} (259~stated;
-        6~\texttt{sorry}-guarded in one file) plus 129~concrete examples.
-  \item Discovery of \textbf{two genuine implementation bugs} through proof failure,
-        with counterexamples mechanically verified by Lean.
+  \item A formal verification campaign covering \textbf{37~C++ targets with Lean proofs}
+        in 33~Lean modules, yielding \textbf{389~fully proved theorems} with
+        zero \texttt{sorry} in any proof body (two files use \texttt{axiom} declarations
+        for Mathlib-pending floor-arithmetic properties) plus hundreds of concrete examples.
+  \item Discovery of \textbf{three genuine implementation bugs} through proof failure
+        and correspondence analysis, with counterexamples mechanically verified.
   \item A \textbf{correspondence discipline} documenting modelling approximations and
-        their impact on proof validity for all 20 Lean files.
+        their impact on proof validity for all 33 Lean files, including 4~327~executable
+        Route B correspondence tests for \texttt{SlewRate::update}.
   \item Practical experience with Lean~4 proof automation on embedded C++ in a
         \emph{stdlib-only} setting (no Mathlib, no network access to the package cache).
 \end{itemize}
@@ -174,7 +181,7 @@ developed at Microsoft Research and now maintained by the Lean FRO. It features 
 tactic-based proof system, a rich metaprogramming interface, and the
 Mathlib~\cite{mathlib} community library containing 100\,000+ theorems.
 
-In this project, Lean~4 version~4.29.1 was used with the standard library only.
+In Lean~4 version~4.29.0 was used with the standard library only.
 Mathlib was \emph{not} available due to network firewall restrictions blocking access
 to the package cache at \texttt{reservoir.lean-lang.org}. This imposed real
 constraints on available automation (no \texttt{linarith}, \texttt{ring}, or
@@ -300,43 +307,58 @@ We applied proof tactics in order of increasing effort:
 
 \subsection{Proof Inventory}
 
-Table~\ref{tab:theorems} summarises the 20~Lean files (24~C++ targets). In total,
-\textbf{259~theorem statements} were made, of which \textbf{253~are fully proved}
-and \textbf{6~remain \texttt{sorry}-guarded} (all in \texttt{WrapAngle.lean},
-requiring Mathlib's floor-division lemmas). Additionally, \textbf{129~concrete
-\texttt{example}/\texttt{\#eval} checks} serve as property-based regression tests.
+Table~\ref{tab:theorems} summarises the 33~Lean files (37~C++ targets). In total,
+\textbf{389~theorems} are stated and proved with zero \texttt{sorry} in any proof
+body. Two files (\texttt{SqrtLinear.lean}, \texttt{WrapAngle.lean}) use Lean
+\texttt{axiom} declarations for Mathlib-pending properties (16~axioms total).
+Additionally, hundreds of concrete \texttt{example}/\texttt{\#eval} checks serve as
+property-based regression tests.
 
 \begin{table}[t]
 \centering
-\caption{Lean 4 verification summary by file (20 files, 24 C++ targets).
-         ✅~=~all proved; 🔄~=~partial (\texttt{sorry} remain).}
+\caption{Lean 4 verification summary by file (33 files, 37 C++ targets).
+         ✅~=~all proved; ⚠~=~uses \texttt{axiom} for Mathlib-pending props.}
 \label{tab:theorems}
 \small
-\begin{tabular}{llrrl}
+\begin{tabular}{llrl}
 \toprule
-Lean file & C++ target & Thms & Sorry & Key properties \\
+Lean file & C++ target(s) & Thms & Key properties \\
 \midrule
-\texttt{MathFunctions} & \texttt{constrain}, \texttt{signNoZero}, \texttt{countSetBits} & 16 & 0 & Range clamp, sign, bits ✅ \\
-\texttt{SlewRate}      & \texttt{SlewRate::update}          & 9  & 0 & Rate limit, no-overshoot ✅ \\
-\texttt{Deadzone}      & \texttt{deadzone}                  & 13 & 0 & Zero-zone, odd symmetry ✅ \\
-\texttt{AlphaFilter}   & \texttt{AlphaFilter::updateCalc.}  & 13 & 0 & No-overshoot, closed form ✅ \\
-\texttt{Interpolate}   & \texttt{interpolate}               & 10 & 0 & Monotone, range ✅ \\
-\texttt{WelfordMean}   & \texttt{WelfordMean::update}       & 11 & 0 & Mean invariant, M2~$\geq0$ ✅ \\
-\texttt{WrapAngle}     & \texttt{wrap\_pi} (int+rat)        & 15 & 6 & Range, idempotent, period 🔄 \\
-\texttt{Lerp}          & \texttt{lerp}                      & 10 & 0 & Endpoints, range, monotone ✅ \\
-\texttt{Negate}        & \texttt{negate<int16\_t>}          & 13 & 0 & 🐛 Not involution ✅ \\
-\texttt{Expo}          & \texttt{expo}                      & 17 & 0 & Odd, range, fixed pts ✅ \\
-\texttt{RingBuffer}    & \texttt{TimestampedRingBuffer}     & 24 & 0 & FIFO, cap, index ✅ \\
-\texttt{MedianFilter}  & \texttt{MedianFilter}              & 10 & 0 & Sort order, range ✅ \\
-\texttt{SuperExpo}     & \texttt{superexpo}                 & 17 & 0 & Odd, denom~$>0$, range ✅ \\
-\texttt{ExpoDeadzone}  & \texttt{expo+deadzone}             &  9 & 0 & Odd, range, fixed pts ✅ \\
-\texttt{InterpolateNXY}& \texttt{interpolateNXY} (3-pt)     &  9 & 0 & Clamp, continuity, mono ✅ \\
-\texttt{InterpolateN}  & \texttt{interpolateN} (N=2,3)      & 19 & 0 & Node exact, range, mono ✅ \\
-\texttt{Hysteresis}    & \texttt{Hysteresis}                & 20 & 0 & Dwell, commit, cancel ✅ \\
-\texttt{SignFromBoolSq}& \texttt{signFromBool}, \texttt{sq} & 17 & 0 & Range $\{-1,1\}$, non-neg, even ✅ \\
-\texttt{Crc16Fold}     & \texttt{buffer\_crc16}             &  8 & 0 & Fold/split, streaming CRC ✅ \\
+\texttt{MathFunctions} & \texttt{constrain}, \texttt{signNoZero}, \texttt{countSetBits} & 16 & Range clamp, sign, bits ✅ \\
+\texttt{SlewRate}      & \texttt{SlewRate::update}          & 18  & Rate limit, no-overshoot, conv. ✅ \\
+\texttt{Deadzone}      & \texttt{deadzone}                  & 13 & Zero-zone, odd symmetry ✅ \\
+\texttt{AlphaFilter}   & \texttt{AlphaFilter::updateCalc.}  & 13 & No-overshoot, closed form ✅ \\
+\texttt{Interpolate}   & \texttt{interpolate}               & 10 & Monotone, range ✅ \\
+\texttt{WelfordMean}   & \texttt{WelfordMean::update}       & 13 & Mean invariant, M2~$\geq0$ ✅ \\
+\texttt{WrapAngle}     & \texttt{wrap\_pi} (int+rat)        & 16 & Range, idempotent, period ⚠ \\
+\texttt{Lerp}          & \texttt{lerp}                      & 14 & Endpoints, range, monotone ✅ \\
+\texttt{Negate}        & \texttt{negate<int16\_t>}          & 13 & 🐛 Not involution ✅ \\
+\texttt{Expo}          & \texttt{expo}                      & 17 & Odd, range, fixed pts ✅ \\
+\texttt{RingBuffer}    & \texttt{TimestampedRingBuffer}     & 44 & FIFO, cap, index, wrap ✅ \\
+\texttt{MedianFilter}  & \texttt{MedianFilter}              & 10 & Sort order, range ✅ \\
+\texttt{SuperExpo}     & \texttt{superexpo}                 & 19 & Odd, denom~$>0$, range ✅ \\
+\texttt{ExpoDeadzone}  & \texttt{expo+deadzone}             &  9 & Odd, range, fixed pts ✅ \\
+\texttt{InterpolateNXY}& \texttt{interpolateNXY} (3-pt)     &  9 & Clamp, continuity, mono ✅ \\
+\texttt{InterpolateN}  & \texttt{interpolateN} (N=2,3)      & 21 & Node exact, range, mono ✅ \\
+\texttt{Hysteresis}    & \texttt{Hysteresis}                & 20 & Dwell, commit, cancel ✅ \\
+\texttt{SignFromBoolSq}& \texttt{signFromBool}, \texttt{sq} & 17 & Range $\{-1,1\}$, non-neg, even ✅ \\
+\texttt{Crc16Fold}     & \texttt{buffer\_crc16}             &  8 & Fold/split, streaming CRC ✅ \\
+\texttt{Crc16Sig}      & \texttt{crc16\_signature}          &  8 & Fold/split, init, concrete ✅ \\
+\texttt{Crc32Sig}      & \texttt{crc32\_signature}          &  9 & LSBIT-first fold/split ✅ \\
+\texttt{Crc64}         & \texttt{crc64\_add\_word}          &  8 & CRC-64-WE fold/split, chunk ✅ \\
+\texttt{IsInRange}     & \texttt{math::isInRange}           & 13 & Closed interval, mono, shift ✅ \\
+\texttt{ConstrainToInt16} & \texttt{constrainFloatToInt16} & 13 & Range, clamp, id, mono, idem ✅ \\
+\texttt{CommanderArming}& \texttt{Arming FSM}               & 20 & State inv, transitions ✅ \\
+\texttt{Atmosphere}    & density, temperature               & 20 & Formula fidelity, monotone ✅ \\
+\texttt{WrapBin}       & \texttt{wrap\_bin}                 & 27 & 🐛 Negative index bug ✅ \\
+\texttt{SqrtLinear}    & \texttt{sqrtLinear}                & 19 & Range, id, monotone ⚠ \\
+\texttt{BrakingDist}   & \texttt{BrakingDistance}           & 16 & Pos, mono, closed form ✅ \\
+\texttt{GetBinAtAngle} & \texttt{getBinAtAngle}             & 14 & Range, exact, comp ✅ \\
+\texttt{GetLowerBound} & \texttt{getLowerBoundAngle}        & 14 & Round-trip, range ✅ \\
+\texttt{CollisionPrev} & collision pipeline                 & 14 & Safety, composition ✅ \\
+\texttt{Other}         & \texttt{Crc16Fold, Basic, ...}     & ---& Infrastructure \\
 \hline
-\textbf{Total}         &                                    & \textbf{259} & \textbf{6} & \\
+\textbf{Total}         &                                    & \textbf{389} & \textbf{0 sorry, 16 axioms} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -463,6 +485,27 @@ theorem negate16_counterexample :
 
 Both theorems are verified by \texttt{lake build} with 0~\texttt{sorry}.
 
+\paragraph{Bug 3: \texttt{wrap\_bin} produces negative indices for negative angles (Issue~\#56).}
+The function \texttt{wrap\_bin} in \texttt{src/lib/mathlib/math/SearchMin.hpp} maps a
+floating-point angle into a bin index for a lookup table:
+\begin{lstlisting}[language=CPP,caption=wrap\_bin C++ implementation]
+template<typename T>
+int wrap_bin(T x, int num_bins) {
+    int bin = static_cast<int>(x * num_bins / (2.0 * M_PI));
+    return bin % num_bins;          // C++ truncates toward zero!
+}
+\end{lstlisting}
+The C++~11 standard specifies that the \texttt{\%} operator truncates toward zero, so
+for a negative dividend (\texttt{bin < 0}) the result is negative. A caller expecting
+a non-negative index in \([0, \texttt{num\_bins})\) will receive a value in
+\((-\texttt{num\_bins}, 0]\), causing an out-of-range array access.
+
+The Lean model used non-negative modulo (\texttt{Int.emod} follows the sign of the
+divisor) and the proof of \texttt{wrapBin\_nonneg} succeeded trivially. Attempting to
+add a correspondence test for negative inputs exposed the discrepancy: the Python
+C++~model reproduced the negative result while the Lean model always returned a
+non-negative value. This mismatch prompted the bug report (Issue~\#56).
+
 \section{Discussion}
 \label{sec:discussion}
 
@@ -521,7 +564,7 @@ The most effective tactics were: \texttt{omega} (integer arithmetic, loop invari
 (Rat comparisons, \texttt{Fin n} concrete checks), \texttt{by\_cases} (branching
 over guards), and \texttt{induction} with explicit loop invariants.
 
-Across 19~files, roughly 50\% of theorems were proved by \texttt{decide} or
+Across 33~files, roughly 50\% of theorems were proved by \texttt{decide} or
 \texttt{native\_decide}; 30\% by \texttt{simp}/\texttt{omega}; and 20\%
 required multi-step tactic proofs with auxiliary lemmas.
 
@@ -552,15 +595,18 @@ cannot silently break in a later run.
         \emph{because} we wrote the correspondence document and then checked whether
         the theorem held for the actual (float) type.
 
-  \item \textbf{Proof failures are findings.} Both bugs were discovered through failed
-        proof attempts: the proof succeeded for the model but the model was known to
-        omit NaN (signNoZero) or the counterexample was mechanically checked (negate).
-        A proof failure should always prompt a comparison with the C++ source.
+  \item \textbf{Proof failures are findings.} All three bugs were discovered through
+        proof-related activities: the proof succeeded for the model but the model was
+        known to omit NaN (signNoZero), the counterexample was mechanically checked
+        (negate), or a correspondence test exposed the Lean/C++ divergence (wrap\_bin).
+        A proof failure or model/source mismatch should always prompt comparison with
+        the C++ source.
 
-  \item \textbf{Incremental progress is valuable.} The 6~sorry-guarded theorems in
-        \texttt{WrapAngle.lean} represent real progress: the integer-domain properties
-        are fully proved; only the rational-domain floor arithmetic awaits Mathlib.
-        Submitting partial proofs with documented sorry is better than not submitting
+  \item \textbf{Incremental progress is valuable.} The axiom-guarded theorems in
+        \texttt{WrapAngle.lean} and \texttt{SqrtLinear.lean} represent real progress:
+        the integer-domain and structural properties are fully proved; only properties
+        requiring Mathlib floor/sqrt lemmas await that dependency.
+        Submitting partial proofs with documented axioms is better than not submitting
         at all.
 \end{itemize}
 
@@ -568,18 +614,19 @@ cannot silently break in a later run.
 \label{sec:conclusion}
 
 We have presented a formal verification campaign for PX4-Autopilot's core utility
-libraries using Lean~4. Across 20~Lean modules and 24~C++ targets, we proved
-253~theorems covering rate limiting, interpolation, filtering, statistics, data
-structures, a time-delayed state machine, and a protocol CRC streaming property.
-The campaign discovered two genuine implementation bugs, both verified by
-mechanically-checked counterexamples. The project demonstrates that interactive
-theorem proving can be usefully applied to production embedded C++ at the library
-level, even under significant toolchain constraints.
+libraries using Lean~4. Across 33~Lean modules and 37~C++ targets, we proved
+389~theorems covering rate limiting, interpolation, filtering, statistics, data
+structures, a time-delayed state machine, CRC streaming properties, and integer
+range containment. The campaign discovered three genuine implementation bugs, all
+verified by mechanically-checked counterexamples or correspondence tests. The
+project demonstrates that interactive theorem proving can be usefully applied to
+production embedded C++ at the library level, even under significant toolchain
+constraints.
 
-Future work includes: resolving the 6~remaining sorrys in \texttt{WrapAngle.lean}
-once Mathlib becomes available; verifying the atmospheric density model
-(\texttt{src/lib/atmosphere/}); and formalising the Commander arming finite-state
-machine (\texttt{src/modules/commander/}) — the most complex remaining target.
+Future work includes: extending correspondence tests (Route~B) to more targets;
+verifying the atmospheric density model (\texttt{src/lib/atmosphere/}); and
+formalising the Commander arming finite-state machine
+(\texttt{src/modules/commander/}) — the most complex remaining target.
 
 \begin{acks}
 This work was carried out by the \emph{Lean Squad} automated formal verification

@@ -26,3 +26,8 @@ import FVSquad.Hysteresis
 import FVSquad.Crc16Sig
 import FVSquad.CollisionPrevComposition
 import FVSquad.IsInRange
+import FVSquad.Crc32Sig
+import FVSquad.InterpolateN
+import FVSquad.InterpolateNXY
+import FVSquad.ConstrainToInt16
+import FVSquad.Crc64
