@@ -76,9 +76,16 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 40 | `math::radians` / `math::degrees` | `src/lib/mathlib/math/Limits.hpp:97` | 1 | ⬜ Research | — | Algebraic round-trip `degrees(radians(x)) = x`; linearity; monotone; abstract π parameter; very tractable |
+| 40 | `math::radians` / `math::degrees` | `src/lib/mathlib/math/Limits.hpp:97` | 2 | ✅ Informal Spec | — | Algebraic round-trip `degrees(radians(x)) = x`; linearity; monotone; abstract π parameter; informal spec in `specs/radians_degrees_informal.md` (run85) |
 | 41 | `VelocitySmoothing::computeT3` | `src/lib/motion_planning/VelocitySmoothing.cpp:157` | 1 | ⬜ Research | — | `max(a0/j_max + T1, 0)`; non-negativity, monotone in T1; trajectory timing safety |
 | 42 | `CRC-8 CRSF RC fold-split` | `src/drivers/rc/crsf_rc/Crc8.cpp` | 5 | ✅ Proved | `lean/FVSquad/Crc8.lean` | Table-driven CRC-8/DVB-S2 (poly 0xD5); fold-split theorem + 8 theorems + concrete examples; 0 sorry; run84 |
+
+## New Research Targets (Phase 1 — identified in run 85)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 43 | `VelocitySmoothing::computeT2` (simple overload) | `src/lib/motion_planning/VelocitySmoothing.cpp:151` | 1 | ⬜ Research | — | `max(T123 - T1 - T3, 0)`; non-negativity, T1+T2+T3 ≤ T123 invariant; trivially tractable |
+| 44 | `math::min3` / `math::max3` (3-argument min/max) | `src/lib/mathlib/math/Limits.hpp:42` | 1 | ⬜ Research | — | `min(min(a,b),c)`; result ≤ each argument; commutativity/associativity of min-chain; relate to 2-arg `math::constrain` |
 
 ## Non-Lean Targets (other tools recommended)
 

@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-04-17 16:31 UTC
-- **Commit**: `9c64c6d5f7`
+- **Date**: 2026-04-30 16:45 UTC
+- **Commit**: `056a219d63`
 
 ## Overview
 
@@ -1307,3 +1307,118 @@ unsafe RC inputs reaching the flight controller.
 | 5 | `Atmosphere` sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `mul_lt_mul_of_neg_left` |
 | 6 | `SqrtLinear` sqrt branch sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `Real.sqrt` |
 | 7 | `VelocitySmoothing::computeT2` simple overload | ⬜ Research | `max(T123 - T1 - T3, 0)`; composition with T1+T3 invariant |
+
+---
+
+## New Research Targets (run 85 — 2026-04-30)
+
+### Survey Methodology
+
+Run 85 completed the informal spec for target 40 (`math::radians`/`math::degrees`) and
+surveyed the following additional areas for new formal verification targets:
+
+- `src/lib/mathlib/math/Limits.hpp` (3-argument `min`/`max` variants, not yet targeted)
+- `src/lib/motion_planning/VelocitySmoothing.cpp` (second `computeT2` overload)
+
+Critique feedback from prior runs noted target 40 as highest priority; that informal spec
+has now been written. Two new targets (43 and 44) are added here.
+
+---
+
+### Target 43: `VelocitySmoothing::computeT2` (Simple Overload)
+
+**File**: `src/lib/motion_planning/VelocitySmoothing.cpp` (line 151)
+
+```cpp
+float VelocitySmoothing::computeT2(float T123, float T1, float T3) const
+{
+    float T2 = T123 - T1 - T3;
+    return math::max(T2, 0.f);
+}
+```
+
+**Benefit**: `T1 + T2 + T3 = T123` is a fundamental duration invariant of the
+jerk-limited trajectory planner — the three segment times must sum to the total time.
+Formally proving:
+1. `computeT2 ≥ 0` — no negative phase durations
+2. `T1 + computeT2(T123, T1, T3) + T3 ≤ T123` — duration budget not exceeded
+3. If `T1 + T3 ≤ T123` then `T1 + computeT2 + T3 = T123` (exact equality when feasible)
+
+captures the core safety invariant that the trajectory generator never schedules a
+negative time segment.
+
+**Specification size**: ~8 theorems; approximately 50 Lean lines.
+
+**Proof tractability**: VERY EASY. All proofs close with `linarith` or `omega` on
+`Rat` model. The `max` call needs a single `cases` split.
+
+**Approximations needed**: Model with `Rat` arithmetic. The `0.f` lower bound is exact.
+The `math::max` call is modelled as `Rat.max`. No floating-point rounding concerns for
+this property.
+
+**Approach**: `def computeT2 (T123 T1 T3 : ℚ) : ℚ := max (T123 - T1 - T3) 0`. Then:
+- `computeT2_nonneg : ∀ T123 T1 T3, 0 ≤ computeT2 T123 T1 T3` by `simp [computeT2]; linarith`
+- `computeT2_le_T123 : ∀ T123 T1 T3, T1 + computeT2 T123 T1 T3 + T3 ≤ T123` by cases + linarith
+- Exact equality variant when `T1 + T3 ≤ T123`
+
+---
+
+### Target 44: `math::min3` / `math::max3` (3-Argument Min/Max)
+
+**File**: `src/lib/mathlib/math/Limits.hpp` (lines 30–55)
+
+```cpp
+template<typename _Tp>
+constexpr _Tp min(_Tp a, _Tp b, _Tp c)
+{
+    return min(min(a, b), c);
+}
+
+template<typename _Tp>
+constexpr _Tp max(_Tp a, _Tp b, _Tp c)
+{
+    return max(max(a, b), c);
+}
+```
+
+**Benefit**: The 3-argument `min`/`max` are used throughout PX4's trajectory planner
+and velocity smoothing code (e.g. to pick the smallest of three candidate durations or
+speeds). Formally verifying:
+1. `min3(a,b,c) ≤ a`, `min3(a,b,c) ≤ b`, `min3(a,b,c) ≤ c` — result never exceeds any argument
+2. `min3(a,b,c) = a ∨ min3(a,b,c) = b ∨ min3(a,b,c) = c` — result is always one of the inputs
+3. Relationship to `constrain`: `min3(a,b,c) ≤ constrain(x, min3(a,b,c), max3(a,b,c))`
+4. Symmetry properties: `min3(a,b,c) = min3(b,a,c) = min3(a,c,b)` etc.
+
+rules out implementation errors such as selecting the wrong branch or argument.
+
+**Specification size**: ~10 theorems; approximately 60 Lean lines.
+
+**Proof tractability**: VERY EASY. Results from the definition of `min(min(a,b),c)`;
+all proofs close with `simp [min3_def, min2_def]; linarith` or `omega`.
+
+**Approximations needed**: Model over `ℚ` (exact arithmetic). The template `_Tp`
+is instantiated to `ℚ`. No overflow, no floating-point rounding.
+
+**Approach**: Define:
+```lean
+def min2 (a b : ℚ) : ℚ := if a ≤ b then a else b
+def min3 (a b c : ℚ) : ℚ := min2 (min2 a b) c
+def max2 (a b : ℚ) : ℚ := if a ≤ b then b else a
+def max3 (a b c : ℚ) : ℚ := max2 (max2 a b) c
+```
+Then prove the bound, selection, and symmetry theorems. `min2` / `max2` are close to
+Lean's built-in `min`/`max`, so some proofs reduce to `Lean.min_def`/`Lean.max_def`.
+
+---
+
+## Updated Priority Order (run 85)
+
+| Priority | Target | Phase | Rationale |
+|----------|--------|-------|-----------|
+| 1 | `math::radians`/`degrees` round-trip (target 40) | ✅ Informal Spec | Informal spec done (run85); next: Lean spec (Task 3) |
+| 2 | `VelocitySmoothing::computeT3` (target 41) | ⬜ Research | Very easy; non-negativity and monotonicity of trajectory timing |
+| 3 | `VelocitySmoothing::computeT2` simple overload (target 43) | ⬜ Research | Trivial; duration budget invariant T1+T2+T3 ≤ T123 |
+| 4 | `math::min3` / `math::max3` (target 44) | ⬜ Research | Very easy; selection and bound properties; relates to constrain |
+| 5 | `wrapRat` Mathlib sorry closure | 🔄 Phase 3 | 6 axioms; needs Mathlib `Int.floor` |
+| 6 | `Atmosphere` sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `mul_lt_mul_of_neg_left` |
+| 7 | `SqrtLinear` sqrt branch sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `Real.sqrt` |
