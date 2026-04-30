@@ -31,3 +31,4 @@ import FVSquad.InterpolateN
 import FVSquad.InterpolateNXY
 import FVSquad.ConstrainToInt16
 import FVSquad.Crc64
+import FVSquad.Crc8

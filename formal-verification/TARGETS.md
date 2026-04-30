@@ -78,7 +78,7 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 |---|------|------|-------|--------|-----------|-------|
 | 40 | `math::radians` / `math::degrees` | `src/lib/mathlib/math/Limits.hpp:97` | 1 | ⬜ Research | — | Algebraic round-trip `degrees(radians(x)) = x`; linearity; monotone; abstract π parameter; very tractable |
 | 41 | `VelocitySmoothing::computeT3` | `src/lib/motion_planning/VelocitySmoothing.cpp:157` | 1 | ⬜ Research | — | `max(a0/j_max + T1, 0)`; non-negativity, monotone in T1; trajectory timing safety |
-| 42 | `CRC-8 CRSF RC fold-split` | `src/drivers/rc/crsf_rc/Crc8.cpp` | 1 | ⬜ Research | — | Table-driven CRC-8; streaming fold-split; same proof structure as Crc16Fold; completes CRC family (8/16/32/64-bit) |
+| 42 | `CRC-8 CRSF RC fold-split` | `src/drivers/rc/crsf_rc/Crc8.cpp` | 5 | ✅ Proved | `lean/FVSquad/Crc8.lean` | Table-driven CRC-8/DVB-S2 (poly 0xD5); fold-split theorem + 8 theorems + concrete examples; 0 sorry; run84 |
 
 ## Non-Lean Targets (other tools recommended)
 

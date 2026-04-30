@@ -33,3 +33,4 @@ import FVSquad.Crc16Fold
 import FVSquad.CommanderArming
 import FVSquad.Atmosphere
 import FVSquad.WrapBin
+import FVSquad.Crc8
