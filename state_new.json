@@ -1,6 +1,6 @@
 {
-  "run": 85,
-  "last_updated": "2026-04-30",
+  "run": 86,
+  "last_updated": "2026-05-01T01:14:00Z",
   "lean_version": "4.29.0",
   "lake_build_status": "passed",
   "totals": {
@@ -21,12 +21,7 @@
     "RadiansDegrees": "Not yet Lean spec; informal spec only (run85)."
   },
   "open_prs": [
-    {
-      "number": "TBD",
-      "branch": "lean-squad/tasks-1-2-run85-25177669543",
-      "run": 85,
-      "title": "feat(fv): Tasks 1+2 run85 \u2014 radians/degrees informal spec; new research targets computeT2 and min3/max3"
-    }
+    "run86 PR (lean-squad/tasks-5-7-run86): RadiansDegrees.lean + CRITIQUE.md update"
   ],
   "bugs_found": 3,
   "correspondence_tests": {
@@ -102,9 +97,12 @@
       "id": 40,
       "name": "radians/degrees",
       "file": "src/lib/mathlib/math/Limits.hpp:97",
-      "phase": 2,
+      "phase": 5,
       "status": "informal_spec",
-      "notes": "run85: informal spec written in specs/radians_degrees_informal.md"
+      "notes": "Run86: 28 theorems, 0 sorry. Round-trip (radiansQ_degreesQ_radiansQ + degreesQ_radiansQ_degreesQ), mono, injective, linear, concrete values.",
+      "lean_file": "formal-verification/lean/FVSquad/RadiansDegrees.lean",
+      "theorem_count": 28,
+      "sorry_count": 0
     },
     {
       "id": 41,
@@ -200,5 +198,8 @@
       "run82 additions (SlewRate tests, ConstrainToInt16, Crc64)",
       "run84 additions (Crc8)"
     ]
-  }
+  },
+  "lean_files": 35,
+  "theorem_count": 430,
+  "sorry_count": 0
 }
