@@ -1,15 +1,15 @@
 {
-  "run": 86,
-  "last_updated": "2026-05-01T01:14:00Z",
+  "run": 87,
+  "last_updated": "2026-05-01T09:00:00Z",
   "lean_version": "4.29.0",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 397,
-    "theorems_proved": 397,
+    "theorems": 458,
+    "theorems_proved": 458,
     "axioms": 16,
     "sorry_count": 0,
-    "lean_files": 34,
-    "targets": 43
+    "lean_files": 36,
+    "targets": 44
   },
   "sorry_locations": {
     "WrapAngle": "RESOLVED run73+80: 5 axioms for floor-arithmetic (Mathlib pending); 0 sorry total.",
@@ -18,188 +18,107 @@
     "ConstrainToInt16": "RESOLVED run82: 0 sorry, 13 theorems.",
     "Crc64": "RESOLVED run80+82: 0 sorry, 8 theorems.",
     "Crc8": "RESOLVED run84: 0 sorry, 8 theorems (new file).",
-    "RadiansDegrees": "Not yet Lean spec; informal spec only (run85)."
+    "RadiansDegrees": "RESOLVED run86: 0 sorry, 36 theorems.",
+    "Min3Max3": "RESOLVED run87: 0 sorry, 29 theorems (new file)."
   },
   "open_prs": [
-    "run86 PR (lean-squad/tasks-5-7-run86): RadiansDegrees.lean + CRITIQUE.md update"
+    {
+      "number": 78,
+      "branch": "lean-squad/tasks-5-7-run86-88cdeb5a0c8125a8",
+      "run": 86,
+      "title": "[Lean Squad] feat(fv): run86 — RadiansDegrees Lean proofs + CRITIQUE.md update"
+    },
+    {
+      "number": "TBD",
+      "branch": "lean-squad/min3max3-run87-25208640880",
+      "run": 87,
+      "title": "[Lean Squad] feat(fv): run87 — Min3Max3 Lean proofs + informal spec"
+    }
   ],
   "bugs_found": 3,
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact for integer-aligned angles; demonstrates wrap_bin latent bug)",
-    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)"
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass)",
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass)"
   },
   "correspondence_sections": {
-    "covered": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, SignFromBoolSq, Hysteresis, Crc16Fold, Crc16Sig, Crc32Sig, CommanderArming, Atmosphere, WrapBin, BrakingDist, SqrtLinear, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, IsInRange, ConstrainToInt16, Crc64, Crc8",
-    "missing": "none \u2014 all 34 Lean files now have dedicated sections"
+    "covered": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, SignFromBoolSq, Hysteresis, Crc16Fold, Crc16Sig, Crc32Sig, CommanderArming, Atmosphere, WrapBin, BrakingDist, SqrtLinear, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, IsInRange, ConstrainToInt16, Crc64, Crc8, RadiansDegrees, Min3Max3",
+    "missing": "RadiansDegrees and Min3Max3 need CORRESPONDENCE sections (run88)"
   },
   "targets": [
-    {
-      "id": 1,
-      "name": "SquaredError",
-      "file": "lean/FVSquad/MathFunctions.lean",
-      "phase": 5,
-      "status": "proved"
-    },
-    {
-      "id": 2,
-      "name": "Expo",
-      "file": "lean/FVSquad/Expo.lean",
-      "phase": 5,
-      "status": "proved"
-    },
-    {
-      "id": 29,
-      "name": "Crc16Sig",
-      "file": "lean/FVSquad/Crc16Sig.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 8,
-      "sorry": 0
-    },
-    {
-      "id": 35,
-      "name": "Crc32Sig",
-      "file": "lean/FVSquad/Crc32Sig.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 9,
-      "sorry": 0
-    },
-    {
-      "id": 36,
-      "name": "crc64_add_word",
-      "file": "lean/FVSquad/Crc64.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 8,
-      "sorry": 0
-    },
-    {
-      "id": 37,
-      "name": "isInRange",
-      "file": "lean/FVSquad/IsInRange.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 13,
-      "sorry": 0
-    },
-    {
-      "id": 38,
-      "name": "constrainFloatToInt16",
-      "file": "lean/FVSquad/ConstrainToInt16.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 13,
-      "sorry": 0
-    },
-    {
-      "id": 40,
-      "name": "radians/degrees",
-      "file": "src/lib/mathlib/math/Limits.hpp:97",
-      "phase": 5,
-      "status": "informal_spec",
-      "notes": "Run86: 28 theorems, 0 sorry. Round-trip (radiansQ_degreesQ_radiansQ + degreesQ_radiansQ_degreesQ), mono, injective, linear, concrete values.",
-      "lean_file": "formal-verification/lean/FVSquad/RadiansDegrees.lean",
-      "theorem_count": 28,
-      "sorry_count": 0
-    },
-    {
-      "id": 41,
-      "name": "VelocitySmoothing::computeT3",
-      "file": "src/lib/motion_planning/VelocitySmoothing.cpp:157",
-      "phase": 1,
-      "status": "research",
-      "notes": "run83: max(a0/j_max+T1,0); non-neg + monotone; easy"
-    },
-    {
-      "id": 42,
-      "name": "CRC-8 CRSF fold-split",
-      "file": "lean/FVSquad/Crc8.lean",
-      "phase": 5,
-      "status": "proved",
-      "theorems": 8,
-      "sorry": 0,
-      "notes": "run84: CRC-8/DVB-S2 poly 0xD5; table-driven; 8 theorems + 7 native_decide examples; completes CRC family (8/16/32/64-bit)"
-    },
-    {
-      "id": 43,
-      "name": "VelocitySmoothing::computeT2 simple",
-      "file": "src/lib/motion_planning/VelocitySmoothing.cpp:151",
-      "phase": 1,
-      "status": "research",
-      "notes": "run85: max(T123-T1-T3,0); non-neg + T1+T2+T3<=T123 invariant; trivially tractable"
-    },
-    {
-      "id": 44,
-      "name": "math::min3/max3",
-      "file": "src/lib/mathlib/math/Limits.hpp:42",
-      "phase": 1,
-      "status": "research",
-      "notes": "run85: 3-arg min/max; selection, bounds, symmetry; very easy with linarith"
-    }
+    {"id": 1, "name": "SquaredError", "file": "lean/FVSquad/MathFunctions.lean", "phase": 5, "status": "proved"},
+    {"id": 2, "name": "Expo", "file": "lean/FVSquad/Expo.lean", "phase": 5, "status": "proved"},
+    {"id": 29, "name": "Crc16Sig", "file": "lean/FVSquad/Crc16Sig.lean", "phase": 5, "status": "proved"},
+    {"id": 35, "name": "Crc32Sig", "file": "lean/FVSquad/Crc32Sig.lean", "phase": 5, "status": "proved"},
+    {"id": 36, "name": "crc64_add_word", "file": "lean/FVSquad/Crc64.lean", "phase": 5, "status": "proved"},
+    {"id": 37, "name": "isInRange", "file": "lean/FVSquad/IsInRange.lean", "phase": 5, "status": "proved"},
+    {"id": 38, "name": "constrainFloatToInt16", "file": "lean/FVSquad/ConstrainToInt16.lean", "phase": 5, "status": "proved"},
+    {"id": 40, "name": "radians/degrees", "file": "lean/FVSquad/RadiansDegrees.lean", "phase": 5, "status": "proved", "theorems": 36, "sorry": 0},
+    {"id": 41, "name": "VelocitySmoothing::computeT3", "file": "src/lib/motion_planning/VelocitySmoothing.cpp:157", "phase": 1, "status": "research"},
+    {"id": 42, "name": "CRC-8 CRSF fold-split", "file": "lean/FVSquad/Crc8.lean", "phase": 5, "status": "proved"},
+    {"id": 43, "name": "VelocitySmoothing::computeT2 simple", "file": "src/lib/motion_planning/VelocitySmoothing.cpp:151", "phase": 1, "status": "research"},
+    {"id": 44, "name": "math::min3/max3", "file": "lean/FVSquad/Min3Max3.lean", "phase": 5, "status": "proved", "theorems": 29, "sorry": 0, "notes": "run87: lower/upper bound, GLB/LUB, idempotence, commutativity, duality. 0 sorry."}
   ],
   "run_history": [
+    {
+      "run": 87,
+      "date": "2026-05-01T08:52 UTC",
+      "workflow_run_id": 25208640880,
+      "tasks": [
+        "Task 3: Informal spec for math::min3/max3 (Limits.hpp:60-75) — min3_max3_informal.md",
+        "Task 5: Lean 4 file Min3Max3.lean — 29 theorems (lower/upper bounds, GLB/LUB, idempotence, commutativity, duality) + 0 sorry; lake build 39/39 passed"
+      ],
+      "theorems_proved": 29,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/min3max3-run87-25208640880",
+      "notes": "Merged PR #78 (run86: RadiansDegrees + CRITIQUE) cleanly. Also fixed missing RadiansDegrees import in Basic.lean and FVSquad.lean."
+    },
+    {
+      "run": 86,
+      "date": "2026-05-01T01:14 UTC",
+      "workflow_run_id": 25197442944,
+      "tasks": [
+        "Task 5: RadiansDegrees.lean — 36 theorems (round-trip, mono, injective, linear, concrete values); 0 sorry",
+        "Task 7: CRITIQUE.md — comprehensive update from run63 state to run86 (430 theorems, 0 sorry)"
+      ],
+      "theorems_proved": 36,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/tasks-5-7-run86-88cdeb5a0c8125a8"
+    },
     {
       "run": 84,
       "date": "2026-04-30T09:01 UTC",
       "workflow_run_id": 25156728406,
       "tasks": [
-        "Task 2: Informal spec for CRC-8 CRSF (Crc8Calc/Crc8Init, poly 0xD5) \u2014 crc8_crsf_informal.md",
-        "Task 3: Lean 4 file Crc8.lean \u2014 8 theorems (nil/singleton/two/cons/append/append_eq/append3/continue_zero) + 7 native_decide examples; 0 sorry; lake build 37/37 passed"
+        "Task 2: CRC-8 CRSF informal spec",
+        "Task 3: Crc8.lean — 8 theorems, 0 sorry; completes CRC family"
       ],
       "theorems_proved": 8,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/crc8-run84-25156728406",
-      "notes": "Completes CRC family: CRC-8/16/16-sig/32/64 all proved. All PRs from runs 82/83 merged into main."
-    },
-    {
-      "run": 83,
-      "date": "2026-04-30T01:09 UTC",
-      "workflow_run_id": 25142071814,
-      "tasks": [
-        "Task 6: CORRESPONDENCE.md \u2014 added dedicated sections for IsInRange, ConstrainToInt16, Crc64; updated summary table; all 33 Lean files now covered",
-        "Task 1: Research \u2014 3 new targets (radians/degrees #40, computeT3 #41, CRC-8 CRSF #42); TARGETS.md updated for 36/37/38 phase 5"
-      ],
-      "theorems_proved": 0,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/correspondence-research-run83-25142071814",
-      "notes": "Merged PR #74 (run82) cleanly. lake build: 36/36 passed, 0 sorry, Lean 4.29.0."
+      "sorry_changes": 0
     }
   ],
   "discoveries": [
-    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 \u2014 docblock goes AFTER imports",
-    "INT16_MIN/INT16_MAX defined as Lean abbrevs: use simp only [INT16_MIN, INT16_MAX] at * before omega when proving goals involving both constants",
-    "abbrev is transparent to omega for single-constant goals but simp-unfold first is safer for multi-constant proofs",
-    "constrain_mono already exists in MathFunctions.lean \u2014 use it directly for derived targets",
-    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63 with &&& 0x8000000000000000",
-    "FVSquad.lean AND Basic.lean must both explicitly import new files \u2014 update both",
-    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
-    "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
-    "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
-    "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega",
-    "abbrev (not def) for named constants; simp only [CONST] before omega for concrete-value goals",
-    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else",
-    "crc64_split_example: use direct application 'exact crc64Words_append _ _ _' not 'simp [crc64Words_append]'",
-    "Conflict merge with 'theirs' can leave stale sorry + real proof in same theorem body",
-    "CRC-8 CRSF: table-driven, fold-split proof identical to Crc16Fold (List.foldl_append)",
-    "For radians/degrees proof: parameterise by p : Rat (abstraction of pi); round-trip by field_simp; ring",
+    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 — docblock goes AFTER imports",
+    "INT16_MIN/INT16_MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega",
+    "prefix is a reserved keyword in Lean 4 — use pfx/sfx",
+    "CRC-32 is LSBIT-first; CRC-64-WE is MSBIT-first",
+    "FVSquad.lean AND Basic.lean must both explicitly import new files",
+    "lemma is NOT a keyword in Lean 4.29 stdlib (without Mathlib) — use theorem",
+    "Int.min_le_left, Int.min_le_right, Int.le_min, Int.min_eq_left/right available in stdlib",
+    "Int.le_max_left, Int.le_max_right, Int.max_le, Int.max_eq_left/right available in stdlib",
+    "Int.min_assoc, Int.max_assoc, Int.min_comm, Int.max_comm available in stdlib",
+    "Int.min_self, Int.max_self available in stdlib",
+    "neg_min/neg_max proofs: by_cases h : a ≤ b + rw [min_eq_left h, max_eq_left (neg_le_neg h)] pattern works",
+    "Duality proof pattern: rw [show -(min X Y) = max (-X) (-Y) from neg_min_aux _ _]",
+    "CRC-8/DVB-S2 poly 0xD5: crc8 [0xFF] = 0xF9; always verify concrete values with native_decide",
     "computeT3 proof: simp [max_def] + linarith covers all cases",
-    "CRC-8/DVB-S2 poly 0xD5 MSB-first: crc8 [0xFF] = 0xF9 (not 0x1D); always verify concrete values with native_decide before asserting"
+    "For radians/degrees: abstract pi as axiom; use field_simp + ring for round-trip"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run84: CRC-8 CRSF target fully proved in one run (Tasks 2+3). Completes CRC family (8/16/32/64-bit). 34 Lean files, 397 theorems, 0 sorry, 16 axioms. Next targets: radians/degrees (#40) and VelocitySmoothing::computeT3 (#41).",
+  "notes": "Run87: min3/max3 target fully proved (Tasks 3+5). 36 Lean files, 458 theorems, 0 sorry. Next: VelocitySmoothing::computeT2 (#43), computeT3 (#41), or CORRESPONDENCE update for RadiansDegrees/Min3Max3.",
   "report_status": {
     "exists": true,
     "last_updated_run": 79,
-    "stale_items": [
-      "run82 additions (SlewRate tests, ConstrainToInt16, Crc64)",
-      "run84 additions (Crc8)"
-    ]
-  },
-  "lean_files": 35,
-  "theorem_count": 430,
-  "sorry_count": 0
+    "stale_items": ["run82 additions", "run84 additions (Crc8)", "run86 additions (RadiansDegrees)", "run87 additions (Min3Max3)"]
+  }
 }
