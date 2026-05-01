@@ -32,3 +32,5 @@ import FVSquad.InterpolateNXY
 import FVSquad.ConstrainToInt16
 import FVSquad.Crc64
 import FVSquad.Crc8
+import FVSquad.RadiansDegrees
+import FVSquad.Min3Max3
