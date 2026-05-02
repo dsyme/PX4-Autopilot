@@ -1,11 +1,11 @@
 {
-  "run": 89,
+  "run": 90,
   "last_updated": "2026-05-02",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 533,
-    "theorems_proved": 533,
+    "theorems": 541,
+    "theorems_proved": 541,
     "axioms": 16,
     "sorry_count": 0,
     "lean_files": 37,
@@ -27,9 +27,9 @@
     },
     {
       "number": "TBD",
-      "branch": "lean-squad/tasks-5-7-run89-25239838205",
-      "run": 89,
-      "title": "feat(fv): run89 \u2014 AlphaFilter multi-step convergence proofs + CRITIQUE.md update"
+      "branch": "lean-squad/correspondence-proofs-run90-25248122183",
+      "run": 90,
+      "title": "feat(fv): run90 \u2014 CORRESPONDENCE.md for Min3Max3/RadiansDegrees/VelocitySmoothing + 8 new VelocitySmoothing proofs"
     }
   ],
   "bugs_found": 3,
@@ -40,7 +40,7 @@
   },
   "correspondence_sections": {
     "covered": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, SignFromBoolSq, Hysteresis, Crc16Fold, Crc16Sig, Crc32Sig, CommanderArming, Atmosphere, WrapBin, BrakingDist, SqrtLinear, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, IsInRange, ConstrainToInt16, Crc64, Crc8, RadiansDegrees, Min3Max3, VelocitySmoothing",
-    "missing": "none \u2014 all 33 Lean files now have dedicated sections"
+    "missing": "none \u2014 all 36 Lean files now have dedicated sections (Basic is barrel-only)"
   },
   "targets": [
     {
@@ -108,29 +108,42 @@
     {
       "id": 40,
       "name": "radians/degrees",
-      "file": "src/lib/mathlib/math/Limits.hpp:97",
-      "phase": 1,
-      "status": "research",
-      "notes": "run83: round-trip algebraic identity; abstract pi parameter; very easy"
+      "file": "lean/FVSquad/RadiansDegrees.lean",
+      "phase": 5,
+      "status": "proved",
+      "notes": "run87: 43 theorems, 0 sorry"
     },
     {
       "id": 41,
       "name": "VelocitySmoothing::computeT3",
-      "file": "src/lib/motion_planning/VelocitySmoothing.cpp:157",
+      "file": "lean/FVSquad/VelocitySmoothing.lean",
       "phase": 5,
-      "status": "research",
-      "notes": "run83: max(a0/j_max+T1,0); non-neg + monotone; easy"
+      "status": "proved",
+      "notes": "run88+90: 25 theorems, 0 sorry"
     },
     {
       "id": 42,
       "name": "CRC-8 CRSF fold-split",
-      "file": "src/drivers/rc/crsf_rc/Crc8.cpp",
-      "phase": 1,
-      "status": "research",
-      "notes": "run83: table-driven CRC-8; same structure as Crc16Fold; completes CRC family"
+      "file": "lean/FVSquad/Crc8.lean",
+      "phase": 5,
+      "status": "proved",
+      "notes": "run82: 8 theorems, 0 sorry"
     }
   ],
   "run_history": [
+    {
+      "run": 90,
+      "date": "2026-05-02T08:43 UTC",
+      "workflow_run_id": 25248122183,
+      "tasks": [
+        "Task 6: CORRESPONDENCE.md \u2014 added sections for Min3Max3 (31 thms), RadiansDegrees (43 thms), VelocitySmoothing (25 thms); all 36 files now covered",
+        "Task 5: VelocitySmoothing.lean \u2014 8 new theorems: jMax monotonicity, strict T123 monotonicity, cross-function schedule composition (total_T_partition, T2_decreases_as_T3_grows)"
+      ],
+      "theorems_proved": 8,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/correspondence-proofs-run90-25248122183",
+      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1. VelocitySmoothing: 17->25 theorems."
+    },
     {
       "run": 83,
       "date": "2026-04-30T01:09 UTC",
@@ -194,7 +207,7 @@
     "computeT3 proof: simp [max_def] + linarith covers all cases"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Lean 4.29.1: Rat.le_refl has fully implicit args (use without explicit args). Rat.add_sub_cancel: a+b-b=a. ring/linarith not available in stdlib. Run89: added 5 AlphaFilter multi-step convergence theorems (error_formula, no_overshoot_up/down, mono_n_up/down). Min3Max3 (31 thms, run87) and VelocitySmoothing (17 thms, run88) already in main.",
+  "notes": "Lean 4.29.1: run90 VelocitySmoothing +8 thms; CORRESPONDENCE.md all 36 files covered. Run 89: AlphaFilter +5 multi-step convergence thms. Min3Max3 (31 thms), VelocitySmoothing (25 thms), RadiansDegrees (43 thms) all 0 sorry.",
   "report_status": {
     "exists": true,
     "last_updated_run": 79,
