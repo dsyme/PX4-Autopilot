@@ -265,22 +265,117 @@ theorem alphaIterate_formula (state alpha target : Rat) (n : Nat) :
     congr 1
     rw [Rat.pow_succ, Rat.mul_assoc, Rat.mul_comm ((1 - alpha) ^ n) (1 - alpha)]
 
+/-! ## Multi-step no-overshoot and monotone convergence -/
+
+/-- Error formula: the deviation from target after `n` steps equals the initial
+    deviation scaled by `(1-alpha)^n`.
+
+    Corollary of `alphaIterate_formula`. -/
+theorem alphaIterate_error_formula (state alpha target : Rat) (n : Nat) :
+    alphaIterate state alpha target n - target = (state - target) * (1 - alpha) ^ n := by
+  induction n generalizing state with
+  | zero =>
+    simp only [alphaIterate]
+    rw [Rat.pow_zero, Rat.mul_one]
+  | succ n ih =>
+    simp only [alphaIterate]
+    rw [ih (alphaUpdate state alpha target), alphaUpdate_sub_target, Rat.mul_assoc]
+    congr 1
+    rw [Rat.pow_succ, Rat.mul_comm ((1 - alpha) ^ n) (1 - alpha)]
+
+/-- **Multi-step no-overshoot (upward, state starts above target)**:
+    if `target ≤ state` and `0 ≤ alpha ≤ 1`,
+    then after any number of steps the filter value stays in `[target, state]`.
+
+    The filter moves *downward* toward `target`. Uses
+    `alphaUpdate_no_overshoot_down` (applies when `sample ≤ state`). -/
+theorem alphaIterate_no_overshoot_up (state alpha target : Rat) (n : Nat)
+    (hst : target ≤ state) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    target ≤ alphaIterate state alpha target n ∧
+    alphaIterate state alpha target n ≤ state := by
+  induction n generalizing state with
+  | zero =>
+    simp only [alphaIterate]
+    exact ⟨hst, Rat.le_refl⟩
+  | succ n ih =>
+    simp only [alphaIterate]
+    obtain ⟨h_lo, h_hi⟩ := alphaUpdate_no_overshoot_down state alpha target hst ha0 ha1
+    obtain ⟨ih_lo, ih_hi⟩ := ih (alphaUpdate state alpha target) h_lo
+    exact ⟨ih_lo, Rat.le_trans ih_hi h_hi⟩
+
+/-- **Multi-step no-overshoot (downward, state starts below target)**:
+    if `state ≤ target` and `0 ≤ alpha ≤ 1`,
+    then after any number of steps the filter value stays in `[state, target]`.
+
+    The filter moves *upward* toward `target`. Uses
+    `alphaUpdate_no_overshoot_up` (applies when `state ≤ sample`). -/
+theorem alphaIterate_no_overshoot_down (state alpha target : Rat) (n : Nat)
+    (hst : state ≤ target) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    state ≤ alphaIterate state alpha target n ∧
+    alphaIterate state alpha target n ≤ target := by
+  induction n generalizing state with
+  | zero =>
+    simp only [alphaIterate]
+    exact ⟨Rat.le_refl, hst⟩
+  | succ n ih =>
+    simp only [alphaIterate]
+    obtain ⟨h_lo, h_hi⟩ := alphaUpdate_no_overshoot_up state alpha target hst ha0 ha1
+    obtain ⟨ih_lo, ih_hi⟩ := ih (alphaUpdate state alpha target) h_hi
+    exact ⟨Rat.le_trans h_lo ih_lo, ih_hi⟩
+
+/-- **Monotone convergence (from above)**: if `target ≤ state` and `0 ≤ alpha ≤ 1`,
+    each additional iteration brings the filter no farther from `target`.
+
+    Formally: `alphaIterate (n+1) ≤ alphaIterate n` — the sequence is non-increasing. -/
+theorem alphaIterate_mono_n_up (state alpha target : Rat) (n : Nat)
+    (hst : target ≤ state) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    alphaIterate state alpha target (n + 1) ≤ alphaIterate state alpha target n := by
+  induction n generalizing state with
+  | zero =>
+    simp only [alphaIterate]
+    exact (alphaUpdate_no_overshoot_down state alpha target hst ha0 ha1).2
+  | succ n ih =>
+    simp only [alphaIterate]
+    have h_lo := (alphaUpdate_no_overshoot_down state alpha target hst ha0 ha1).1
+    exact ih (alphaUpdate state alpha target) h_lo
+
+/-- **Monotone convergence (from below)**: if `state ≤ target` and `0 ≤ alpha ≤ 1`,
+    each additional iteration brings the filter no farther from `target`.
+
+    Formally: `alphaIterate n ≤ alphaIterate (n+1)` — the sequence is non-decreasing. -/
+theorem alphaIterate_mono_n_down (state alpha target : Rat) (n : Nat)
+    (hst : state ≤ target) (ha0 : 0 ≤ alpha) (ha1 : alpha ≤ 1) :
+    alphaIterate state alpha target n ≤ alphaIterate state alpha target (n + 1) := by
+  induction n generalizing state with
+  | zero =>
+    simp only [alphaIterate]
+    exact (alphaUpdate_no_overshoot_up state alpha target hst ha0 ha1).1
+  | succ n ih =>
+    simp only [alphaIterate]
+    have h_hi := (alphaUpdate_no_overshoot_up state alpha target hst ha0 ha1).2
+    exact ih (alphaUpdate state alpha target) h_hi
+
 /-! ## Summary of proved properties
 
-  | Theorem                        | Statement                                                  | Status    |
-  |--------------------------------|------------------------------------------------------------|-----------|
-  | `alphaUpdate_fixed`            | `update s a s = s` (sample = state → no change)           | ✅ Proved |
-  | `alphaUpdate_alpha_zero`       | `update s 0 x = s` (alpha=0: frozen)                      | ✅ Proved |
-  | `alphaUpdate_alpha_one`        | `update s 1 x = x` (alpha=1: immediate)                   | ✅ Proved |
-  | `alphaUpdate_le_sample`        | `s ≤ x, 0 ≤ a ≤ 1 → update ≤ x`  (upper bound, ↑ case)   | ✅ Proved |
-  | `alphaUpdate_ge_state`         | `s ≤ x, 0 ≤ a → s ≤ update`       (lower bound, ↑ case)   | ✅ Proved |
-  | `alphaUpdate_no_overshoot_up`  | `s ≤ x → s ≤ update ≤ x`          (no overshoot ↑)        | ✅ Proved |
-  | `alphaUpdate_le_state`         | `x ≤ s, 0 ≤ a → update ≤ s`       (upper bound, ↓ case)   | ✅ Proved |
-  | `alphaUpdate_ge_sample`        | `x ≤ s, 0 ≤ a ≤ 1 → x ≤ update`  (lower bound, ↓ case)   | ✅ Proved |
-  | `alphaUpdate_no_overshoot_down`| `x ≤ s → x ≤ update ≤ s`          (no overshoot ↓)        | ✅ Proved |
-  | `alphaUpdate_mono_sample`      | `s1 ≤ s2 → update(s1) ≤ update(s2)` (monotone in sample)  | ✅ Proved |
-  | `alphaUpdate_mono_state`       | `s1 ≤ s2 → update_s1 ≤ update_s2` (monotone in state)     | ✅ Proved |
-  | `alphaIterate_formula`         | `state_n = target + (s-target)*(1-a)^n`                    | ✅ Proved |
+  | Theorem                          | Statement                                                          | Status    |
+  |----------------------------------|--------------------------------------------------------------------|-----------|
+  | `alphaUpdate_fixed`              | `update s a s = s` (sample = state → no change)                   | ✅ Proved |
+  | `alphaUpdate_alpha_zero`         | `update s 0 x = s` (alpha=0: frozen)                              | ✅ Proved |
+  | `alphaUpdate_alpha_one`          | `update s 1 x = x` (alpha=1: immediate)                           | ✅ Proved |
+  | `alphaUpdate_le_sample`          | `s ≤ x, 0 ≤ a ≤ 1 → update ≤ x`  (upper bound, ↑ case)           | ✅ Proved |
+  | `alphaUpdate_ge_state`           | `s ≤ x, 0 ≤ a → s ≤ update`       (lower bound, ↑ case)           | ✅ Proved |
+  | `alphaUpdate_no_overshoot_up`    | `s ≤ x → s ≤ update ≤ x`          (no overshoot ↑, 1 step)        | ✅ Proved |
+  | `alphaUpdate_le_state`           | `x ≤ s, 0 ≤ a → update ≤ s`       (upper bound, ↓ case)           | ✅ Proved |
+  | `alphaUpdate_ge_sample`          | `x ≤ s, 0 ≤ a ≤ 1 → x ≤ update`  (lower bound, ↓ case)           | ✅ Proved |
+  | `alphaUpdate_no_overshoot_down`  | `x ≤ s → x ≤ update ≤ s`          (no overshoot ↓, 1 step)        | ✅ Proved |
+  | `alphaUpdate_mono_sample`        | `s1 ≤ s2 → update(s1) ≤ update(s2)` (monotone in sample)          | ✅ Proved |
+  | `alphaUpdate_mono_state`         | `s1 ≤ s2 → update_s1 ≤ update_s2` (monotone in state)             | ✅ Proved |
+  | `alphaIterate_formula`           | `state_n = target + (s-target)*(1-a)^n`                            | ✅ Proved |
+  | `alphaIterate_error_formula`     | `state_n - target = (s-target)*(1-a)^n`                            | ✅ Proved |
+  | `alphaIterate_no_overshoot_up`   | `target ≤ s, 0 ≤ a ≤ 1 → ∀n, target ≤ state_n ≤ s` (n-step ↑)    | ✅ Proved |
+  | `alphaIterate_no_overshoot_down` | `s ≤ target, 0 ≤ a ≤ 1 → ∀n, s ≤ state_n ≤ target` (n-step ↓)    | ✅ Proved |
+  | `alphaIterate_mono_n_up`         | `target ≤ s → state_{n+1} ≤ state_n` (monotone toward target ↑)   | ✅ Proved |
+  | `alphaIterate_mono_n_down`       | `s ≤ target → state_n ≤ state_{n+1}` (monotone toward target ↓)   | ✅ Proved |
 -/
 
 end PX4.AlphaFilter

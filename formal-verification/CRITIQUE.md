@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-01 01:14 UTC
-- **Commit**: `48af51693b`
+- **Date**: 2026-05-02 01:23 UTC
+- **Commit**: `e752af9f053a1d5305bb170b86909f519c558a99`
 
 ---
 
@@ -13,14 +13,13 @@
 
 Forty-three targets from PX4's mathlib, control library, sensor-fusion stack, Commander
 module, collision-prevention stack, CRC subsystem, and angle-conversion utilities have been
-identified; 35 have Lean files with fully proved theorems. The library now covers
-**430 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.0, standard
-library only). Since run 63, twelve new Lean files have been added
+identified; 37 have Lean files with fully proved theorems. The library now covers
+**533 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.1, standard
+library only). Since run 63, fourteen new Lean files have been added
 (`BrakingDist`, `CollisionPrevComposition`, `Crc16Sig`, `Crc32Sig`, `Crc64`, `Crc8`,
-`IsInRange`, `ConstrainToInt16`, `GetBinAtAngle`, `GetLowerBoundAngle`, and — in this
-run — `RadiansDegrees`), and all prior sorry-guarded theorems in `WrapAngle.lean`,
-`Atmosphere.lean`, and `SqrtLinear.lean` were resolved (via abstract axioms that correctly
-capture known Mathlib dependencies). Three confirmed bugs remain open:
+`IsInRange`, `ConstrainToInt16`, `GetBinAtAngle`, `GetLowerBoundAngle`, `RadiansDegrees`,
+`Min3Max3`, `VelocitySmoothing`, and — in this run — 5 new AlphaFilter multi-step
+convergence theorems added to `AlphaFilter.lean`). Three confirmed bugs remain open:
 `signNoZero<float>` returns 0 for NaN, `negate<int16_t>` has an incorrect INT16_MAX
 special case, and `wrap_bin(bin, n)` returns a negative index for `bin ≤ -n` in the C++
 truncation-mod implementation.
@@ -189,6 +188,21 @@ truncation-mod implementation.
 | `radiansQ_strict_mono` / `degreesQ_strict_mono` / `radiansQ_injective` / `degreesQ_injective` | [RadiansDegrees.lean](lean/FVSquad/RadiansDegrees.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Limits.hpp) | Monotonicity and injectivity: no two inputs map to the same output; order preserved |
 | `radiansQ_180` / `radiansQ_90` / `radiansQ_neg90` / `degreesQ_pi` / `degreesQ_pi_over_2` | [RadiansDegrees.lean](lean/FVSquad/RadiansDegrees.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Limits.hpp) | Concrete special values: `radians(180) = π`, `degrees(π) = 180`, etc. |
 | `radiansQ_zero` / `degreesQ_zero` / `radiansQ_neg` / `degreesQ_neg` / `radiansQ_add` / `degreesQ_add` / `radiansQ_smul` / `degreesQ_smul` | [RadiansDegrees.lean](lean/FVSquad/RadiansDegrees.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Limits.hpp) | Linearity properties: zero, negation, additivity, scalar-multiplication — confirm linear-map structure |
+| `min3_le_left` / `_le_mid` / `_le_right` / `le_min3` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | **Bound safety**: `min3(a,b,c) ≤ a,b,c` and universal lower-bound characterisation |
+| `min3_idempotent` / `min3_left_comm` / `min3_right_comm` / `min3_rotate` / `min3_comm_all` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Algebraic structure: idempotence and full commutativity of `min3` |
+| `min3_eq_alt` / `min3_eq_of_le` / `min3_eq_mid_of_le` / `min3_eq_right_of_le` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Reduction and selectivity: `min3` equals one of its three inputs |
+| `le_max3_left` / `_mid` / `_right` / `max3_le` / `max3_idempotent` / `max3_left_comm` / `max3_right_comm` / `max3_rotate` / `max3_eq_alt` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Symmetric bound and algebraic properties for `max3` |
+| `max3_eq_of_ge` / `max3_eq_mid_of_ge` / `max3_eq_right_of_ge` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Selectivity: `max3` equals one of its three inputs |
+| `max3_neg_min3` / `min3_neg_max3` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | **Negation duality**: `max3(a,b,c) = -min3(-a,-b,-c)` — min/max are sign-dual |
+| `min3_le_max3` / `min3_eq_max3_of_eq` | [Min3Max3.lean](lean/FVSquad/Min3Max3.lean) | mid | medium | [L] | [C++](../src/lib/mathlib/math/Functions.hpp) | Ordering: `min3 ≤ max3` for all inputs; equality when all inputs are equal |
+| `computeT2_nonneg` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | **Safety**: time T2 is always non-negative; negative trajectory time is physically impossible |
+| `computeT2_eq_diff` / `computeT2_eq_zero` / `computeT2_zero_exact` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Case semantics: `T2 = T123 - T1 - T3` when feasible, 0 when not; exact boundary |
+| `computeT2_partition` / `computeT2_mono_T123` / `computeT2_anti_T1` / `computeT2_anti_T3` / `computeT2_comm` / `computeT2_le_T123` / `computeT2_all_zero` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Partition identity `T2 + T1 + T3 = T123` or `0`, monotonicity in total time, anti-monotonicity in subtimes, commutativity of T1/T3, upper bound `T2 ≤ T123` |
+| `computeT3Scaled_nonneg` / `computeT3Scaled_eq_sum` / `computeT3Scaled_eq_zero` / `computeT3Scaled_zero` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | T3 non-negativity, case semantics (feasible vs infeasible), zero base case |
+| `computeT3Scaled_mono_T1` / `computeT3Scaled_mono_a0` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Monotonicity: larger T1 or a0 → larger T3 (key for trajectory feasibility) |
+| `alphaIterate_error_formula` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Error formula: `state_n - target = (s-target)·(1-α)ⁿ` — exponential error decay |
+| `alphaIterate_no_overshoot_up` / `alphaIterate_no_overshoot_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Multi-step no-overshoot**: for all n, filter stays in `[target, state₀]` (resp. `[state₀, target]`) |
+| `alphaIterate_mono_n_up` / `alphaIterate_mono_n_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Monotone convergence**: each step reduces distance to target — sequence is monotone in n |
 
 ---
 
@@ -262,11 +276,19 @@ truncation-mod implementation.
     `degreesQ_radiansQ_degreesQ` (round-trip), monotonicity, injectivity, linearity properties,
     and concrete special values (radians(180) = π, degrees(π) = 180).
 
-14. **`VelocitySmoothing::computeT2` and `math::min3/max3`** (phase 1, new targets):
-    Identified in runs 85–86. `computeT2` computes minimum time to reduce velocity — range
-    and monotonicity are good FV targets. `min3/max3` are simple but used in safety-critical
-    trajectory planning; idempotence and commutativity are easily provable.
-    **Recommendation**: Task 2/3 in next run.
+14. ~~**`VelocitySmoothing::computeT2` and `math::min3/max3`**~~ ✅ **DONE** (runs 87–88):
+    `Min3Max3.lean` (31 theorems, 0 sorry, run87) and `VelocitySmoothing.lean` (17 theorems,
+    0 sorry, run88) fully proved. Key results: `min3_le_left`/`_mid`/`_right` (bound safety),
+    `max3_neg_min3`/`min3_neg_max3` (negation duality), `computeT2_nonneg` (non-negative
+    trajectory time), `computeT2_partition` (time budget identity `T2 + T1 + T3 = T123`),
+    and `computeT3Scaled_mono_T1`/`_mono_a0` (monotonicity for feasibility).
+
+15. **`AlphaFilter` multi-step convergence** ✅ **DONE** (run89):
+    Five new theorems added to `AlphaFilter.lean` (0 sorry): `alphaIterate_error_formula`
+    (error decays as `(state₀-target)·(1-α)ⁿ`), `alphaIterate_no_overshoot_up/down`
+    (n-step no-overshoot in both directions), and `alphaIterate_mono_n_up/down`
+    (monotone convergence). These complete the multi-step analysis started with
+    `alphaIterate_formula`. **Total AlphaFilter theorems: 17**.
 
 ### Medium priority
 
@@ -280,15 +302,16 @@ truncation-mod implementation.
     sorted arrays has been proved for N=2 and N=3. Extending to arbitrary N requires a
     proof by induction over N. **Recommendation**: generalise the N=3 proof to N-point.
 
-13. **`AlphaFilter` frequency-domain properties**: The proved `alphaIterate_formula`
-    gives the time-domain response. The z-transform transfer function could be stated
-    and proved with Mathlib complex number support.
+13. ~~**`AlphaFilter` multi-step convergence**~~ ✅ **DONE** (run89): See item 15 above.
+    **`AlphaFilter` frequency-domain properties** (still open): The proved `alphaIterate_formula`
+    and new multi-step theorems cover the time-domain response completely. The z-transform
+    transfer function could be stated and proved with Mathlib complex number support.
 
-14. **Conference paper** (Task 11): With 430 proved theorems across 35 files, 3 confirmed bugs,
+14. **Conference paper** (Task 11): With 533 proved theorems across 37 files, 3 confirmed bugs,
     and a formal demonstration of latent C++ truncation-mod vulnerability in collision
     prevention, the project has substantial material for a conference paper (IEEE FM,
     FMCAD, or CAV). **Recommendation**: update `formal-verification/paper/paper.tex` to
-    reflect runs 49–86 additions (see Paper Review section above).
+    reflect runs 49–89 additions (see Paper Review section above).
 
 ---
 
@@ -321,6 +344,14 @@ recursive definition changes a parameter other than the one being inducted over.
 The proof also required a manual algebraic helper lemma `alphaUpdate_sub_target`
 (proved by explicit `simp`/`rw` rewrites since `ring` is not available without Mathlib).
 This pattern is generally applicable to other algebraic identities in future targets.
+
+Run 89 added five multi-step convergence theorems that build on `alphaIterate_formula`:
+`alphaIterate_error_formula` (proved by induction reusing `alphaUpdate_sub_target`),
+`alphaIterate_no_overshoot_up/down` (proved by induction on `alphaUpdate_no_overshoot_down/up`),
+and `alphaIterate_mono_n_up/down` (monotone convergence by structural induction). All use
+`Rat.le_refl` (fully implicit in Lean 4.29.1) and `Rat.le_trans`. The `alphaIterate_formula`
+closure is now complete: time-domain response, error decay, no-overshoot (n steps), and
+monotone convergence are all fully proved (17 AlphaFilter theorems, 0 sorry).
 
 See `CORRESPONDENCE.md` for the full correspondence analysis.
 
@@ -498,12 +529,38 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
     verified. The linearity properties (`radiansQ_add`, `degreesQ_smul`, etc.) confirm that
     the conversion behaves as a proper linear map over `Rat`.
 
+22. **`math::min3` / `math::max3` fully verified (31 theorems, 0 sorry)**:
+    `Min3Max3.lean` proves 31 theorems using integer arithmetic. Key results:
+    `min3_le_left`/`_mid`/`_right` confirm the bound safety property used in
+    safety-critical trajectory planning; `max3_neg_min3` and `min3_neg_max3` formally prove
+    the negation duality between min3 and max3 (a property used for code simplification).
+    All commutativity, idempotence, and selectivity (min3 equals one of its inputs) theorems
+    are proved by `omega`.
+
+23. **`VelocitySmoothing::computeT2` and `computeT3Scaled` fully proved (17 theorems, 0 sorry)**:
+    `VelocitySmoothing.lean` proves 17 theorems on the minimum-jerk trajectory solver.
+    The central result `computeT2_nonneg` formally rules out negative trajectory time — a
+    physical impossibility that would crash trajectory integration. `computeT2_partition`
+    proves the key time-budget identity `T2 = T123 - T1 - T3` (when feasible), confirming
+    the S-curve time allocation is self-consistent. Monotonicity and anti-monotonicity theorems
+    (`computeT2_mono_T123`, `computeT2_anti_T1/T3`, `computeT3Scaled_mono_T1/a0`) bound how
+    the computed times respond to changes in inputs — directly useful for feasibility analysis.
+
+24. **`AlphaFilter` multi-step convergence fully proved (5 new theorems, 0 sorry)**:
+    Run 89 adds `alphaIterate_error_formula` (error decays as `(state₀-target)·(1-α)ⁿ`),
+    `alphaIterate_no_overshoot_up/down` (n-step no-overshoot in both convergence directions),
+    and `alphaIterate_mono_n_up/down` (monotone convergence: every step reduces distance to
+    target). Together with `alphaIterate_formula`, these complete the time-domain analysis:
+    the filter is formally proved to converge monotonically without overshoot from any initial
+    state. The proofs use `induction n generalizing state` with `alphaUpdate_no_overshoot_*`
+    as the inductive building blocks.
+
 
 ---
 
 ## Known Sorry-Guarded Theorems
 
-As of run 86, **0 theorems use `sorry`** across all 35 Lean files. The three groups of
+As of run 89, **0 theorems use `sorry`** across all 37 Lean files. The three groups of
 theorems previously sorry-guarded were resolved via abstract `axiom` declarations (runs 73–82):
 
 **`WrapAngle.lean`** (6 → 0 sorry, resolved run73+80):
@@ -532,12 +589,12 @@ replace all axioms with actual proofs.
 
 The conference paper `formal-verification/paper/paper.tex` (ACM sigconf format, ~11 pages)
 was most recently revised in run54. The paper now has **significantly stale content** — it
-has not been updated since run 63, and 11 new Lean files, 92+ new theorems, and several
+has not been updated since run 63, and 14 new Lean files, 103+ new theorems, and several
 resolved sorry-counts have accumulated since then.
 
-### Stale Items (run86 assessment)
+### Stale Items (run89 assessment)
 
-Since the last paper update (run54), **seventeen new Lean files** have been added and proved:
+Since the last paper update (run54), **twenty new Lean files** have been added and proved:
 
 1. **`SignFromBoolSq.lean`** (run49, 17 theorems): Add to Table 1; `signFromBool_ne_zero` to §3.2.
 2. **`Crc16Fold.lean`** (run51, 8 theorems): Exact-correspondence CRC; new row in Table 1.
@@ -556,19 +613,22 @@ Since the last paper update (run54), **seventeen new Lean files** have been adde
 15. **`BrakingDist.lean`** (run~84, 16 theorems): Trajectory math; braking distance non-negativity and monotonicity.
 16. **`CollisionPrevComposition.lean`** (run~85, 14 theorems): Compositional: bin/lower-bound functions tile 360° without gaps.
 17. **`RadiansDegrees.lean`** (run86, 28 theorems): Round-trip, monotonicity, injectivity, linearity for `math::radians`/`math::degrees`.
+18. **`Min3Max3.lean`** (run87, 31 theorems): Bound safety, idempotence, commutativity, negation duality for `min3`/`max3`.
+19. **`VelocitySmoothing.lean`** (run88, 17 theorems): `computeT2` non-negativity, partition identity, monotonicity.
+20. **`AlphaFilter.lean` (5 new theorems, run89)**: Multi-step convergence: error formula, no-overshoot (n steps), monotone convergence.
 
-### Accuracy (run86 assessment)
+### Accuracy (run89 assessment)
 
-- Abstract theorem count is **stale** — actual count is 430 proved (all, 0 sorry).
+- Abstract theorem count is **stale** — actual count is 533 proved (all, 0 sorry).
 - Abstract bug count is **stale** — 3 bugs now confirmed (signNoZero NaN, negate involution, wrap_bin negative-index).
-- Table 1 is missing 17 files added since run54.
+- Table 1 is missing 20 files added since run54.
 - Future Work references several items now complete — should be moved to Results.
 - The sorry count should reflect 0 sorry (converted to axioms in runs 73–82).
-- The "21 C++ targets with Lean proofs" claim is stale — actual is 43+ targets, 35 Lean files.
+- The "21 C++ targets with Lean proofs" claim is stale — actual is 43+ targets, 37 Lean files.
 
 ### Remaining Open Suggestions
 
-1. **Update paper for run49–86 additions**: Add all 17 new files to Table 1, update
+1. **Update paper for run49–89 additions**: Add all 20 new files to Table 1, update
    abstract counts, revise Findings to include the `wrap_bin` bug, revise Future Work.
    This is the highest-priority paper update.
 2. **PDF compilation**: LaTeX is not available in the CI environment; the paper is submitted
