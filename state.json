@@ -1,5 +1,5 @@
 {
-  "run": 90,
+  "run": 91,
   "last_updated": "2026-05-02",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
@@ -119,7 +119,7 @@
       "file": "lean/FVSquad/VelocitySmoothing.lean",
       "phase": 5,
       "status": "proved",
-      "notes": "run88+90: 25 theorems, 0 sorry"
+      "notes": "run88+90: 25 theorems, 0 sorry (run91: CRITIQUE+CORRESPONDENCE updated)"
     },
     {
       "id": 42,
@@ -131,6 +131,19 @@
     }
   ],
   "run_history": [
+    {
+      "run": 91,
+      "date": "2026-05-02T16:28 UTC",
+      "workflow_run_id": 25256419451,
+      "tasks": [
+        "Task 7: CRITIQUE.md \u2014 new finding #25 (T2_decreases_as_T3_grows cross-function), VelocitySmoothing 17->25 thms, gap #16 (updateDurations), stale counts 533->541",
+        "Task 6: CORRESPONDENCE.md \u2014 Last Updated + VelocitySmoothing 17->25 in intro"
+      ],
+      "theorems_proved": 0,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/critique-correspondence-run91-25256419451",
+      "notes": "Documentation-only PR. No Lean files modified."
+    },
     {
       "run": 90,
       "date": "2026-05-02T08:43 UTC",
@@ -207,7 +220,7 @@
     "computeT3 proof: simp [max_def] + linarith covers all cases"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Lean 4.29.1: run90 VelocitySmoothing +8 thms; CORRESPONDENCE.md all 36 files covered. Run 89: AlphaFilter +5 multi-step convergence thms. Min3Max3 (31 thms), VelocitySmoothing (25 thms), RadiansDegrees (43 thms) all 0 sorry.",
+  "notes": "Run91: CRITIQUE+CORRESPONDENCE updated. VelocitySmoothing=25 thms. New gap #16 (updateDurations). Next: Task 11 (paper update, very stale since run54) or Task 5 (VelocitySmoothing::updateDurations).",
   "report_status": {
     "exists": true,
     "last_updated_run": 79,
