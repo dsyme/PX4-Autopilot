@@ -1,35 +1,37 @@
 {
-  "run": 91,
-  "last_updated": "2026-05-02",
+  "run": 92,
+  "last_updated": "2026-05-03",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 541,
-    "theorems_proved": 541,
+    "theorems": 544,
+    "theorems_proved": 544,
     "axioms": 16,
     "sorry_count": 0,
     "lean_files": 37,
     "targets": 43
   },
   "sorry_locations": {
-    "WrapAngle": "RESOLVED run73+80: 5 axioms for floor-arithmetic (Mathlib pending); 0 sorry total.",
-    "Atmosphere": "RESOLVED run73: 3 axioms for temperature-monotonicity; 0 sorry.",
-    "SqrtLinear": "RESOLVED run66: 3 axioms for sqrt branch; 0 sorry.",
-    "ConstrainToInt16": "RESOLVED run82: 0 sorry, 13 theorems.",
-    "Crc64": "RESOLVED run80+82: 0 sorry, 8 theorems."
+    "all_resolved": "All 5 sorry sources resolved as of run80+82. 0 sorry total."
   },
   "open_prs": [
     {
-      "number": 74,
-      "branch": "lean-squad/tasks-8-11-run82-25121782146-ffe3d772eefa5755",
-      "run": 82,
-      "title": "feat(fv): Tasks 8+11 run82 - conflicts with main, skip until reconciliation"
+      "number": 82,
+      "branch": "lean-squad/correspondence-proofs-run90-25248122183-8d2dcae4fa960830",
+      "run": 90,
+      "title": "feat(fv): run90 \u2014 CORRESPONDENCE.md coverage + 8 new VelocitySmoothing proofs"
+    },
+    {
+      "number": 83,
+      "branch": "lean-squad/critique-correspondence-run91-25256419451-cbbe8d5b1002558b",
+      "run": 91,
+      "title": "feat(fv): run91 \u2014 CRITIQUE.md + CORRESPONDENCE.md refresh (conflicts with run90)"
     },
     {
       "number": "TBD",
-      "branch": "lean-squad/correspondence-proofs-run90-25248122183",
-      "run": 90,
-      "title": "feat(fv): run90 \u2014 CORRESPONDENCE.md for Min3Max3/RadiansDegrees/VelocitySmoothing + 8 new VelocitySmoothing proofs"
+      "branch": "lean-squad/velocity-smoothing-run92-25266373719",
+      "run": 92,
+      "title": "feat(fv): run92 \u2014 VelocitySmoothing +3 theorems + CORRESPONDENCE.md update"
     }
   ],
   "bugs_found": 3,
@@ -119,7 +121,8 @@
       "file": "lean/FVSquad/VelocitySmoothing.lean",
       "phase": 5,
       "status": "proved",
-      "notes": "run88+90: 25 theorems, 0 sorry (run91: CRITIQUE+CORRESPONDENCE updated)"
+      "notes": "run88-92: computeT2/computeT3Scaled; 28 theorems 0 sorry. New run92: T2_decreases_as_a0_grows, T2_decreases_as_jMax_grows, total_T_mono_T1.",
+      "theorems": 28
     },
     {
       "id": 42,
@@ -131,6 +134,19 @@
     }
   ],
   "run_history": [
+    {
+      "run": 92,
+      "date": "2026-05-03T01:12 UTC",
+      "workflow_run_id": 25266373719,
+      "tasks": [
+        "Task 5: VelocitySmoothing.lean \u2014 +3 theorems: T2_decreases_as_a0_grows, T2_decreases_as_jMax_grows, total_T_mono_T1 (25\u219228)",
+        "Task 6: CORRESPONDENCE.md \u2014 Last Updated + run92 notes + VelocitySmoothing 25\u219228 in section + summary table"
+      ],
+      "theorems_proved": 3,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/velocity-smoothing-run92-25266373719",
+      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1. VelocitySmoothing: 25->28 theorems. PR#83 (run91) skipped due to conflict with run90."
+    },
     {
       "run": 91,
       "date": "2026-05-02T16:28 UTC",
@@ -183,44 +199,27 @@
       "sorry_changes": 0,
       "pr_branch": "lean-squad/tasks-8-11-run82-25121782146-ffe3d772eefa5755",
       "notes": "PR #74 open."
-    },
-    {
-      "run": 80,
-      "date": "2026-04-29T01:09 UTC",
-      "workflow_run_id": 25085835597,
-      "tasks": [
-        "Task 5+2+3+4: Crc64.lean \u2014 10 theorems 0 sorry; CRC-64-WE fold/split; informal spec written",
-        "Task 6: CORRESPONDENCE.md updated \u2014 run 80",
-        "Fix: WrapAngle.lean stale sorry removed; Basic.lean conflict markers fixed"
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/crc64-correspondence-run80-25085835597"
     }
   ],
   "discoveries": [
-    "import must come BEFORE module docblock (/-! ... -/) in Lean 4 \u2014 docblock goes AFTER imports",
-    "INT16_MIN/INT16_MAX defined as Lean abbrevs: use simp only [INT16_MIN, INT16_MAX] at * before omega when proving goals involving both constants",
-    "abbrev is transparent to omega for single-constant goals but simp-unfold first is safer for multi-constant proofs",
-    "constrain_mono already exists in MathFunctions.lean \u2014 use it directly for derived targets",
-    "prefix is a reserved keyword in Lean 4 \u2014 cannot use as parameter name; use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift, check LSB with &&& 1",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63 with &&& 0x8000000000000000",
-    "FVSquad.lean AND Basic.lean must both explicitly import new files \u2014 update both",
+    "import must come BEFORE module docblock in Lean 4",
+    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-constant goals",
+    "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
+    "constrain_mono already exists in MathFunctions.lean",
+    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
+    "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
+    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
+    "FVSquad.lean AND Basic.lean must both import new files",
     "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
-    "Route B tests: Python % is Euclidean (same as Lean Int.emod for n > 0)",
     "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
-    "by_contra is unavailable without Mathlib in Lean 4.29; use by_cases + omega",
-    "abbrev (not def) for named constants; simp only [CONST] before omega for concrete-value goals",
-    "simp only [if_pos h1, if_neg h2] works for case-splitting on if-then-else",
-    "crc64_split_example: use direct application 'exact crc64Words_append _ _ _' not 'simp [crc64Words_append]'",
-    "Conflict merge with 'theirs' can leave stale sorry + real proof in same theorem body",
-    "CRC-8 CRSF: table-driven, fold-split proof identical to Crc16Fold (List.foldl_append)",
-    "For radians/degrees proof: parameterise by p : Rat (abstraction of pi); round-trip by field_simp; ring",
-    "computeT3 proof: simp [max_def] + linarith covers all cases"
+    "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
+    "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
+    "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
+    "computeT3 proof: simp [max_def] + linarith covers all cases",
+    "AlphaFilter induction: use induction n generalizing state for state-updating recursion"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run91: CRITIQUE+CORRESPONDENCE updated. VelocitySmoothing=25 thms. New gap #16 (updateDurations). Next: Task 11 (paper update, very stale since run54) or Task 5 (VelocitySmoothing::updateDurations).",
+  "notes": "Run92: VelocitySmoothing 25->28 (T2_decreases_as_a0_grows, T2_decreases_as_jMax_grows, total_T_mono_T1). Next: Task 11 (paper is very stale since run54, 544 theorems now), or Task 7 (CRITIQUE.md update for run92 additions).",
   "report_status": {
     "exists": true,
     "last_updated_run": 79,
