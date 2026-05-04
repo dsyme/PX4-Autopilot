@@ -1,18 +1,18 @@
 {
-  "run": 94,
-  "last_updated": "2026-05-03",
+  "run": 95,
+  "last_updated": "2026-05-04",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 549,
-    "theorems_proved": 549,
-    "axioms": 16,
+    "theorems": 488,
+    "theorems_proved": 488,
+    "axioms": 10,
     "sorry_count": 0,
     "lean_files": 37,
     "targets": 43
   },
   "sorry_locations": {
-    "all_resolved": "All sorry resolved. 0 sorry total."
+    "all_resolved": "All sorry resolved. 0 sorry total. 10 axioms for irrational arithmetic."
   },
   "open_prs": [
     {
@@ -20,73 +20,71 @@
       "branch": "lean-squad/correspondence-proofs-run90-25248122183-8d2dcae4fa960830",
       "run": 90,
       "title": "feat(fv): run90 — CORRESPONDENCE.md coverage + 8 new VelocitySmoothing proofs",
-      "note": "Content incorporated into run94 branch"
+      "note": "Content incorporated into run95 branch"
     },
     {
       "number": 83,
       "branch": "lean-squad/critique-correspondence-run91-25256419451-cbbe8d5b1002558b",
       "run": 91,
       "title": "feat(fv): run91 — CRITIQUE.md + CORRESPONDENCE.md refresh",
-      "note": "Content incorporated into run94 branch"
+      "note": "Conflict with run90 — skip"
     },
     {
       "number": 84,
       "branch": "lean-squad/velocity-smoothing-run92-25266373719-4e10da85f6fd3bb2",
       "run": 92,
       "title": "feat(fv): run92 — VelocitySmoothing +3 theorems + CORRESPONDENCE.md update",
-      "note": "Content incorporated into run94 branch"
+      "note": "Conflict with run90 — skip"
     },
     {
       "number": "TBD",
-      "branch": "lean-squad/tasks-9-5-run94-25284503143",
-      "run": 94,
-      "title": "feat(fv): run94 — VelocitySmoothing +5 theorems (§§12-14) + CI correspondence-tests job"
+      "branch": "lean-squad/tasks-8-10-run95-25296180966-alpha-filter-report",
+      "run": 95,
+      "title": "feat(fv): run95 — AlphaFilter Route B tests (268/268) + REPORT.md refresh (488 theorems)"
     }
   ],
   "bugs_found": 3,
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
     "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
-    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)"
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
+    "alpha_filter": "tests/alpha_filter/ (268/268 pass; run95: 200 grid + 16 edge + 2 multi-step + 20 no-overshoot + 30 boundary)"
   },
   "correspondence_sections": {
     "covered": "MathFunctions, AlphaFilter, SlewRate, Deadzone, Interpolate, WelfordMean, Lerp, Negate, WrapAngle, Expo, RingBuffer, MedianFilter, SuperExpo, ExpoDeadzone, InterpolateNXY, InterpolateN, SignFromBoolSq, Hysteresis, Crc16Fold, Crc16Sig, Crc32Sig, CommanderArming, Atmosphere, WrapBin, BrakingDist, SqrtLinear, GetBinAtAngle, GetLowerBoundAngle, CollisionPrevComposition, IsInRange, ConstrainToInt16, Crc64, Crc8, RadiansDegrees, Min3Max3, VelocitySmoothing",
     "missing": "none — all 36 Lean files now have dedicated sections (Basic is barrel-only)"
   },
-  "targets": [
-    {"id": 41, "name": "VelocitySmoothing::computeT2/computeT3", "file": "lean/FVSquad/VelocitySmoothing.lean", "phase": 5, "status": "proved", "theorems": 33, "sorry": 0, "notes": "run88-94: 33 theorems. §§1-11 from runs 88-92. §§12-14 from run94: total_T_ge_T123, total_T_ge_T1_T3, total_T_mono_a0, total_T_mono_jMax, computeT2_zero_iff."}
-  ],
   "ci": {
-    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (Route B Python harnesses). Triggers on lean/** and tests/**. 'correspondence-tests' added run94.",
-    "status": "healthy — updated run94",
-    "correspondence_test_job": "Added run94: runs atmosphere (26 cases) and slew_rate (4327 cases) on every PR/push"
+    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (Route B Python harnesses: atmosphere, slew_rate, alpha_filter). Triggers on lean/** and tests/**.",
+    "status": "healthy — updated run95",
+    "correspondence_test_job": "Added run95: runs atmosphere (26), slew_rate (4327), alpha_filter (268) on every PR/push"
   },
   "run_history": [
+    {
+      "run": 95,
+      "date": "2026-05-04T01:10 UTC",
+      "workflow_run_id": 25296180966,
+      "tasks": [
+        "Task 8 (Route B): AlphaFilter correspondence tests — 268/268 pass (200 grid + 16 edge + 2 multi-step + 20 no-overshoot + 30 boundary)",
+        "Task 10: REPORT.md refresh — 383→488 theorems, added Layer 10 (Min3Max3+VelocitySmoothing), updated Layers 1/7/8, file inventory, timeline, toolchain",
+        "Task 9 (inline): lean-ci.yml — added correspondence-tests job (atmosphere + slew_rate + alpha_filter)"
+      ],
+      "theorems_proved": 0,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/tasks-8-10-run95-25296180966-alpha-filter-report",
+      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1. PRs #82 merged, #83/#84 conflicted. REPORT was stale since run79, now current. AlphaFilter tests added to CI."
+    },
     {
       "run": 94,
       "date": "2026-05-03T16:28 UTC",
       "workflow_run_id": 25284503143,
       "tasks": [
-        "Task 5: VelocitySmoothing.lean — +5 theorems §§12-14: total_T_ge_T123, total_T_ge_T1_T3, total_T_mono_a0, total_T_mono_jMax, computeT2_zero_iff (28->33 theorems)",
-        "Task 9: lean-ci.yml — added correspondence-tests job (atmosphere + slew_rate Route B harnesses)"
+        "Task 5: VelocitySmoothing.lean — +5 theorems §§12-14: total_T_ge_T123, total_T_ge_T1_T3, total_T_mono_a0, total_T_mono_jMax, computeT2_zero_iff (28->33 theorems)"
       ],
       "theorems_proved": 5,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/tasks-9-5-run94-25284503143",
-      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1. PRs #82/#83/#84 incorporated. CI now has 2 jobs. computeT2_zero_iff required by_cases instead of by_contra (no Mathlib); mpr direction needed Int.max_eq_right rather than computeT2_eq_zero (which requires strict <, not <=)."
-    },
-    {
-      "run": 92,
-      "date": "2026-05-03T01:12 UTC",
-      "workflow_run_id": 25266373719,
-      "tasks": [
-        "Task 5: VelocitySmoothing.lean — +3 theorems: T2_decreases_as_a0_grows, T2_decreases_as_jMax_grows, total_T_mono_T1 (25->28)",
-        "Task 6: CORRESPONDENCE.md — Last Updated + run92 notes + VelocitySmoothing 25->28 in section + summary table"
-      ],
-      "theorems_proved": 3,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/velocity-smoothing-run92-25266373719",
-      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1. VelocitySmoothing: 25->28 theorems. PR#83 (run91) skipped due to conflict with run90."
+      "notes": "lake build: 40/40 passed, 0 sorry, Lean 4.29.1."
     }
   ],
   "discoveries": [
@@ -105,21 +103,14 @@
     "computeT3 proof: simp [max_def] + linarith covers all cases",
     "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
     "computeT2_eq_zero requires strict < (T123 < T1+T3); for <= use Int.max_eq_right (by omega) directly",
-    "by_cases hc : T123 <= T1+T3 pattern needed for computeT2_zero_iff mp direction (by_contra unavailable)"
+    "by_cases hc : T123 <= T1+T3 pattern needed for computeT2_zero_iff mp direction (by_contra unavailable)",
+    "AlphaFilter Route B: Fraction.limit_denominator(10**9) converts float to rational for test comparison"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run94: VelocitySmoothing 28->33 (5 new theorems in §§12-14). CI now has correspondence-tests job. Next runs: Task 11 (paper very stale since run54, now 549 theorems), or Task 7 (CRITIQUE update for run94 additions), or Task 2+3+4+5 for VelocitySmoothing::updateDurations (gap #16).",
+  "notes": "Run95: AlphaFilter Route B tests (268/268 pass). REPORT.md refreshed. CI now has 3 Route B test suites. Next runs: Task 11 (paper very stale since run54, now 488 theorems), Task 7 (CRITIQUE update for runs 80-95 additions), Task 5 for VelocitySmoothing::updateDurations pure model, or new targets.",
   "report_status": {
     "exists": true,
-    "last_updated_run": 79,
-    "stale_items": [
-      "run82 additions (SlewRate tests, ConstrainToInt16, Crc64)",
-      "run84 additions (Crc8)",
-      "run86 additions (RadiansDegrees 43 thms)",
-      "run87 additions (Min3Max3 31 thms)",
-      "run88-94 additions (VelocitySmoothing 33 thms)",
-      "run89 additions (AlphaFilter 5 convergence thms)",
-      "run94 additions (5 new, CI update)"
-    ]
+    "last_updated_run": 95,
+    "stale_items": []
   }
 }
