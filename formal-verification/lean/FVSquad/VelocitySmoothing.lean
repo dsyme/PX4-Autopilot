@@ -242,4 +242,97 @@ theorem computeT3Scaled_mono_a0 (T1 a0 a0' jMax : Int) (h : a0 ≤ a0') :
     · exfalso; omega
     · rw [Int.max_eq_left (by omega)]; omega
 
+-- ============================================================
+-- § 7  `computeT3Scaled` — monotonicity in jMax
+-- ============================================================
+
+/-- `computeT3Scaled` is monotone in `jMax` when `T1 ≥ 0`:
+    higher jerk limit → larger scaled phase 3 duration (more room to decelerate). -/
+theorem computeT3Scaled_mono_jMax (T1 a0 jMax jMax' : Int)
+    (hT1 : 0 ≤ T1) (h : jMax ≤ jMax') :
+    computeT3Scaled T1 a0 jMax ≤ computeT3Scaled T1 a0 jMax' := by
+  unfold computeT3Scaled
+  have hmul : jMax * T1 ≤ jMax' * T1 := Int.mul_le_mul_of_nonneg_right h hT1
+  by_cases h1 : a0 + jMax * T1 ≤ 0
+  · rw [Int.max_eq_right h1]; exact Int.le_max_right _ _
+  · rw [Int.max_eq_left (by omega)]
+    by_cases h2 : a0 + jMax' * T1 ≤ 0
+    · exfalso; omega
+    · rw [Int.max_eq_left (by omega)]; omega
+
+/-- When `T1 = 0`, `computeT3Scaled` does not depend on `jMax`. -/
+theorem computeT3Scaled_T1_zero (a0 jMax : Int) :
+    computeT3Scaled 0 a0 jMax = max a0 0 := by
+  unfold computeT3Scaled; simp
+
+-- ============================================================
+-- § 8  Strict monotonicity of `computeT2`
+-- ============================================================
+
+/-- `computeT2` is *strictly* monotone in `T123` when the clamp is inactive:
+    if `T1 + T3 ≤ T123 < T123'`, then `computeT2 T123 T1 T3 < computeT2 T123' T1 T3`. -/
+theorem computeT2_strict_mono_T123 (T123 T123' T1 T3 : Int)
+    (hfit : T1 + T3 ≤ T123) (hlt : T123 < T123') :
+    computeT2 T123 T1 T3 < computeT2 T123' T1 T3 := by
+  rw [computeT2_eq_diff T123 T1 T3 hfit]
+  by_cases h2 : T1 + T3 ≤ T123'
+  · rw [computeT2_eq_diff T123' T1 T3 h2]; omega
+  · exfalso; omega
+
+/-- `computeT2` is constant in `T123` when the clamp is active:
+    if `T123 < T1 + T3` and `T123' < T1 + T3`, both outputs are 0. -/
+theorem computeT2_const_when_clamped (T123 T123' T1 T3 : Int)
+    (h1 : T123 < T1 + T3) (h2 : T123' < T1 + T3) :
+    computeT2 T123 T1 T3 = computeT2 T123' T1 T3 := by
+  rw [computeT2_eq_zero T123 T1 T3 h1, computeT2_eq_zero T123' T1 T3 h2]
+
+-- ============================================================
+-- § 9  Cross-function: `computeT2` composed with `computeT3Scaled`
+-- ============================================================
+
+/-- The combined total `T1 + computeT2 + computeT3Scaled` is always non-negative
+    when `T1 ≥ 0`. -/
+theorem total_T_nonneg (T123 T1 a0 jMax : Int) (hT1 : 0 ≤ T1) :
+    0 ≤ T1 + computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) +
+        computeT3Scaled T1 a0 jMax := by
+  have h2 : 0 ≤ computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) :=
+    computeT2_nonneg T123 T1 (computeT3Scaled T1 a0 jMax)
+  have h3 : 0 ≤ computeT3Scaled T1 a0 jMax := computeT3Scaled_nonneg T1 a0 jMax
+  omega
+
+/-- When T123 is large enough to accommodate T1 and computeT3Scaled, the total schedule
+    equals T123: `T1 + computeT2 T123 T1 T3Scaled + T3Scaled = T123`. -/
+theorem total_T_eq_T123 (T123 T1 a0 jMax : Int)
+    (hfit : T1 + computeT3Scaled T1 a0 jMax ≤ T123) :
+    T1 + computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) +
+        computeT3Scaled T1 a0 jMax = T123 := by
+  rw [computeT2_eq_diff T123 T1 (computeT3Scaled T1 a0 jMax) hfit]; omega
+
+/-- The partition identity for the full schedule using `computeT3Scaled`:
+    `T1 + T2 + T3Scaled = max T123 (T1 + T3Scaled)`. -/
+theorem total_T_partition (T123 T1 a0 jMax : Int) :
+    T1 + computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) +
+        computeT3Scaled T1 a0 jMax =
+    max T123 (T1 + computeT3Scaled T1 a0 jMax) := by
+  have h := computeT2_partition T123 T1 (computeT3Scaled T1 a0 jMax)
+  omega
+
+/-- When `jMax > 0` and T1 increases, the T3 phase grows (by `computeT3Scaled_mono_T1`)
+    and the T1 phase grows, so the coasting T2 phase shrinks in both directions. -/
+theorem T2_decreases_as_T3_grows (T123 T1 T1' a0 jMax : Int)
+    (hjMax : 0 < jMax) (hle : T1 ≤ T1') :
+    computeT2 T123 T1' (computeT3Scaled T1' a0 jMax) ≤
+    computeT2 T123 T1  (computeT3Scaled T1  a0 jMax) := by
+  have hT3mono : computeT3Scaled T1 a0 jMax ≤ computeT3Scaled T1' a0 jMax :=
+    computeT3Scaled_mono_T1 T1 T1' a0 jMax hjMax hle
+  -- Step 1: increasing T1 (with fixed T3 = T3') shrinks T2.
+  have step1 : computeT2 T123 T1' (computeT3Scaled T1' a0 jMax) ≤
+               computeT2 T123 T1  (computeT3Scaled T1' a0 jMax) :=
+    computeT2_anti_T1 T123 T1 T1' (computeT3Scaled T1' a0 jMax) hle
+  -- Step 2: increasing T3 (from T1's T3 to T1's T3) shrinks T2.
+  have step2 : computeT2 T123 T1 (computeT3Scaled T1' a0 jMax) ≤
+               computeT2 T123 T1  (computeT3Scaled T1 a0 jMax) :=
+    computeT2_anti_T3 T123 T1 (computeT3Scaled T1 a0 jMax) (computeT3Scaled T1' a0 jMax) hT3mono
+  exact Int.le_trans step1 step2
+
 end PX4.VelocitySmoothing
