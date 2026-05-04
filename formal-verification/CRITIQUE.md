@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-02 01:23 UTC
-- **Commit**: `e752af9f053a1d5305bb170b86909f519c558a99`
+- **Date**: 2026-05-02 08:43 UTC
+- **Commit**: `72303932499305ddf1ce544af5ee5bc5f6370911`
 
 ---
 
@@ -14,15 +14,18 @@
 Forty-three targets from PX4's mathlib, control library, sensor-fusion stack, Commander
 module, collision-prevention stack, CRC subsystem, and angle-conversion utilities have been
 identified; 37 have Lean files with fully proved theorems. The library now covers
-**533 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.1, standard
+**541 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.1, standard
 library only). Since run 63, fourteen new Lean files have been added
 (`BrakingDist`, `CollisionPrevComposition`, `Crc16Sig`, `Crc32Sig`, `Crc64`, `Crc8`,
 `IsInRange`, `ConstrainToInt16`, `GetBinAtAngle`, `GetLowerBoundAngle`, `RadiansDegrees`,
-`Min3Max3`, `VelocitySmoothing`, and — in this run — 5 new AlphaFilter multi-step
-convergence theorems added to `AlphaFilter.lean`). Three confirmed bugs remain open:
-`signNoZero<float>` returns 0 for NaN, `negate<int16_t>` has an incorrect INT16_MAX
-special case, and `wrap_bin(bin, n)` returns a negative index for `bin ≤ -n` in the C++
-truncation-mod implementation.
+`Min3Max3`, `VelocitySmoothing`, and — in run 89 — 5 new AlphaFilter multi-step
+convergence theorems). Run 90 added 8 new VelocitySmoothing theorems covering jMax
+monotonicity (`computeT3Scaled_mono_jMax`), strict T123 monotonicity, cross-function
+schedule composition (`total_T_partition`, `T2_decreases_as_T3_grows`), and completed
+CORRESPONDENCE.md coverage for Min3Max3, RadiansDegrees, and VelocitySmoothing.
+Three confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN,
+`negate<int16_t>` has an incorrect INT16_MAX special case, and `wrap_bin(bin, n)`
+returns a negative index for `bin ≤ -n` in the C++ truncation-mod implementation.
 
 ---
 
@@ -200,6 +203,9 @@ truncation-mod implementation.
 | `computeT2_partition` / `computeT2_mono_T123` / `computeT2_anti_T1` / `computeT2_anti_T3` / `computeT2_comm` / `computeT2_le_T123` / `computeT2_all_zero` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Partition identity `T2 + T1 + T3 = T123` or `0`, monotonicity in total time, anti-monotonicity in subtimes, commutativity of T1/T3, upper bound `T2 ≤ T123` |
 | `computeT3Scaled_nonneg` / `computeT3Scaled_eq_sum` / `computeT3Scaled_eq_zero` / `computeT3Scaled_zero` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | T3 non-negativity, case semantics (feasible vs infeasible), zero base case |
 | `computeT3Scaled_mono_T1` / `computeT3Scaled_mono_a0` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Monotonicity: larger T1 or a0 → larger T3 (key for trajectory feasibility) |
+| `computeT3Scaled_mono_jMax` / `computeT3Scaled_T1_zero` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | `jMax` monotonicity when `T1 ≥ 0`; `T1=0` makes T3 jMax-independent |
+| `computeT2_strict_mono_T123` / `computeT2_const_when_clamped` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | Strict monotonicity when clamp inactive; constant (=0) when both clamped |
+| `total_T_nonneg` / `total_T_eq_T123` / `total_T_partition` / `T2_decreases_as_T3_grows` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | **Cross-function**: schedule total ≥ 0; equals T123 when feasible; partition identity `T1+T2+T3 = max T123 (T1+T3)`; anti-correlation: larger T1 drives smaller T2 |
 | `alphaIterate_error_formula` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Error formula: `state_n - target = (s-target)·(1-α)ⁿ` — exponential error decay |
 | `alphaIterate_no_overshoot_up` / `alphaIterate_no_overshoot_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Multi-step no-overshoot**: for all n, filter stays in `[target, state₀]` (resp. `[state₀, target]`) |
 | `alphaIterate_mono_n_up` / `alphaIterate_mono_n_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Monotone convergence**: each step reduces distance to target — sequence is monotone in n |
