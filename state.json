@@ -1,11 +1,11 @@
 {
-  "run": 97,
-  "last_updated": "2026-05-04",
+  "run": 98,
+  "last_updated": "2026-05-05",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 492,
-    "theorems_proved": 492,
+    "theorems": 497,
+    "theorems_proved": 497,
     "axioms": 10,
     "sorry_count": 0,
     "lean_files": 37,
@@ -19,7 +19,8 @@
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
     "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
-    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)"
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
+    "hysteresis": "tests/hysteresis/ (259/259 pass)"
   },
   "ci": {
     "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
@@ -27,6 +28,19 @@
     "correspondence_test_job": "run97: atmosphere (26), slew_rate (4327) = 4353 total on every PR/push"
   },
   "run_history": [
+    {
+      "run": 98,
+      "date": "2026-05-05T01:03 UTC",
+      "workflow_run_id": 25352213774,
+      "tasks": [
+        "Task 5 (Proof Assistance): VelocitySmoothing.lean +5 theorems (28→33): total_T_ge_T123, total_T_ge_T1_T3, computeT2_zero_iff, total_T_mono_a0, total_T_mono_jMax",
+        "Task 6 (Correspondence Review): CORRESPONDENCE.md — run98 notes, 5 new theorem rows, summary table updated"
+      ],
+      "theorems_proved": 5,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/velocity-smoothing-correspondence-run98-25352213774",
+      "notes": "28→33 theorems in VelocitySmoothing. Full param monotonicity cover (T1/a0/jMax). computeT2_zero_iff closes iff characterisation."
+    },
     {
       "run": 97,
       "date": "2026-05-04T16:50 UTC",
@@ -51,7 +65,7 @@
       "theorems_proved": 8,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/velocity-smoothing-hysteresis-run96-25310368866-4373d7f980-d6e57ee7ecf8ff34",
-      "notes": "PR branch is stale (before run92 merge) - content was merged in earlier PRs. Run96 theorems landed via PR#84."
+      "notes": "PR branch is stale (before run92 merge). Run96 content NOT yet in main — theorems partially re-added in run98."
     },
     {
       "run": 92,
@@ -67,7 +81,7 @@
   ],
   "discoveries": [
     "import must come BEFORE module docblock in Lean 4",
-    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-constant goals",
+    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
     "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
     "prefix is reserved in Lean 4 — use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
@@ -81,14 +95,15 @@
     "computeT3 proof: simp [max_def] + linarith covers all cases",
     "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
     "computeT2_zero_iff backward direction: unfold computeT2; exact Int.max_eq_right (by omega)",
-    "Int.max_le_max_left does NOT exist in Lean 4.29 stdlib; use by_cases h + Int.max_eq_left/Int.max_eq_right pattern",
-    "total_T_mono_T1: case-split on T1+T3scaled <= T123; use Int.max_eq_left/right after establishing hsum via omega"
+    "total_T_ge_T123: rw [total_T_partition] then exact Int.le_max_left _ _",
+    "total_T_ge_T1_T3: rw [total_T_partition] then exact Int.le_max_right _ _",
+    "linarith cannot combine equalities with max; use rw to substitute the equality first"
   ],
   "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run97: CI correspondence-tests job added (atmosphere + slew_rate). REPORT.md refreshed to 492 theorems. Next: Task 7 (CRITIQUE refresh for runs 87-97), new FV targets (e.g. MotorMixer, PID controller), or VelocitySmoothing::updateDurations pure model.",
+  "notes": "Run98: VelocitySmoothing 28→33 theorems (+total_T_ge_T123, total_T_ge_T1_T3, computeT2_zero_iff, total_T_mono_a0, total_T_mono_jMax). CORRESPONDENCE.md updated. Next: Task 7 (CRITIQUE refresh for runs 87-98), new FV targets (e.g. MotorMixer, PID controller), or VelocitySmoothing::updateDurations pure model.",
   "report_status": {
     "exists": true,
     "last_updated_run": 97,
-    "stale_items": []
+    "stale_items": ["run98 additions (VelocitySmoothing +5 theorems)"]
   }
 }
