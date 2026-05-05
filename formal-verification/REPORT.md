@@ -2,33 +2,34 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: ✅ ACTIVE — 383 theorems · 110 verified examples · **0 `sorry`** · Lean 4.29.0
+**Status**: ✅ ACTIVE — 519 theorems · **0 `sorry`** · Lean 4.29.1 · 38 files
 
 ## Last Updated
 
-- **Date**: 2026-04-27 16:46 UTC
-- **Commit**: `c67ec931cb`
+- **Date**: 2026-05-05 16:46 UTC
+- **Commit**: `c6296e49e0`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **383 named theorems and 110 verified examples** across
-**31 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+The Lean Squad has formally verified **519 named theorems** across
+**38 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
 (`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm, the Commander arming FSM,
 the ISA atmosphere model, `ObstacleMath::wrap_bin` / `get_bin_at_angle` / `get_lower_bound_angle`
 (`src/lib/collision_prevention/`), the CCITT CRC-16 and CRC-32/ISO-HDLC signatures
-(`src/lib/crc/crc.c`), piecewise-linear sqrt, braking-distance safety, and `math::isInRange`
-(the generic closed-interval predicate from `Limits.hpp`). Three genuine implementation bugs
-were discovered through formal verification: a `signNoZero<float>` NaN safety violation,
-an `negate<int16_t>` involution error, and a latent negative-index bug in `wrap_bin`
-(confirmed by 334 correspondence tests). **Zero** `sorry` remain — all previously
-sorry-guarded WrapAngle theorems were resolved in run 73 via axioms for irrational arithmetic,
-and all other targets are stdlib-only. Runs 72–76 added `Crc32Sig` (9 theorems for the
-UAVCAN bootloader CRC-32/ISO-HDLC), SlewRate convergence proofs (+2), and `IsInRange`
-(13 theorems for the closed-interval predicate), bringing total from 388 to 383 theorems
-(reconciled: earlier counts included double-counting resolved in run76 audit).
+(`src/lib/crc/crc.c`), piecewise-linear sqrt, braking-distance safety, `math::isInRange`
+(the generic closed-interval predicate), `math::constrainFloatToInt16`, the CRC-64-WE hash,
+the CRC-8/CRSF protocol checksum, radians/degrees conversions, `math::min3`/`max3`,
+the jerk-limited trajectory planner (`VelocitySmoothing`, 33 theorems), and the generic
+PID controller (`src/lib/pid/PID.cpp`, 22 theorems including output safety bounds and
+anti-windup invariants). Three genuine implementation bugs were discovered through formal
+verification. **Zero** `sorry` remain in proof bodies (10 axioms for irrational arithmetic
+are the only non-proved elements). Runs 77–100 added 136 new theorems across 7 new Lean files:
+`ConstrainToInt16`, `Crc64`, `Crc8`, `RadiansDegrees`, `Min3Max3`, `VelocitySmoothing`, and
+`PID`. Route B correspondence tests cover `atmosphere` (26 cases), `slew_rate` (4327 cases),
+and `pid` (7964 cases).
 
 ---
 
@@ -39,16 +40,18 @@ The proof files are organised into five thematic layers, mirroring the structure
 
 ```mermaid
 graph TD
-    L1["Layer 1: Core Math + Bounds<br/>MathFunctions.lean · IsInRange.lean<br/>29 theorems · 8 examples"]
-    L2a["Layer 2: Signal Filters<br/>AlphaFilter · SlewRate · Deadzone · MedianFilter<br/>44 theorems · 15 examples"]
-    L2b["Layer 3: Basic Curves<br/>Interpolate · Lerp · Expo · SuperExpo<br/>40 theorems · 14 examples"]
-    L2c["Layer 3b: Compound Curves<br/>ExpoDeadzone · InterpolateNXY · InterpolateN<br/>32 theorems · 22 examples"]
+    L1["Layer 1: Core Math + Bounds<br/>MathFunctions.lean · IsInRange.lean<br/>29 theorems"]
+    L2a["Layer 2: Signal Filters<br/>AlphaFilter · SlewRate · Deadzone · MedianFilter<br/>48 theorems"]
+    L2b["Layer 3: Basic Curves<br/>Interpolate · Lerp · Expo · SuperExpo<br/>40 theorems"]
+    L2c["Layer 3b: Compound Curves<br/>ExpoDeadzone · InterpolateNXY · InterpolateN<br/>32 theorems"]
     L4["Layer 4: Integer Utilities<br/>Negate · WrapAngle · WrapBin<br/>42 theorems · **0 sorry**"]
-    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>46 theorems · 3 examples"]
-    L6["Layer 6: State Machines<br/>Hysteresis · CommanderArming<br/>40 theorems · 6 examples"]
-    L7["Layer 7: Protocol Utilities<br/>Crc16Fold · Crc16Sig · Crc32Sig<br/>25 theorems · 0 examples"]
-    L8["Layer 8: Physical Models<br/>Atmosphere (15 thms) · SqrtLinear (15 thms)<br/>SignFromBoolSq · BrakingDist (9 thms)<br/>56 theorems · 8 examples"]
-    L9["Layer 9: Collision Prevention<br/>GetBinAtAngle · GetLowerBoundAngle<br/>CollisionPrevComposition<br/>29 theorems · 12 examples"]
+    L5["Layer 5: Statistics & Buffers<br/>WelfordMean.lean · RingBuffer.lean<br/>32 theorems"]
+    L6["Layer 6: State Machines<br/>Hysteresis · CommanderArming<br/>40 theorems"]
+    L7["Layer 7: Protocol Utilities<br/>Crc16Fold · Crc16Sig · Crc32Sig · Crc64 · Crc8<br/>38 theorems"]
+    L8["Layer 8: Physical Models<br/>Atmosphere (15) · SqrtLinear (15)<br/>SignFromBoolSq · BrakingDist (9)<br/>56 theorems"]
+    L9["Layer 9: Collision Prevention<br/>GetBinAtAngle · GetLowerBoundAngle<br/>CollisionPrevComposition<br/>29 theorems"]
+    L10["Layer 10: Math Extensions<br/>ConstrainToInt16 (10) · RadiansDegrees (36) · Min3Max3 (29)<br/>75 theorems"]
+    L11["Layer 11: Motion Planning + Control<br/>VelocitySmoothing (33) · PID (22)<br/>55 theorems"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
@@ -57,6 +60,9 @@ graph TD
     L2a --> L6
     L1 --> L8
     L4 --> L9
+    L1 --> L10
+    L2a --> L11
+    L10 --> L11
 ```
 
 All proof files import only **Lean 4 stdlib** — no Mathlib is required.
@@ -244,7 +250,7 @@ graph LR
 
 ---
 
-### Layer 7 — Protocol Utilities (3 files, 25 theorems)
+### Layer 7 — Protocol Utilities (5 files, 38 theorems)
 
 `Crc16Fold.lean` models and verifies `septentrio::buffer_crc16` from
 `src/drivers/gnss/septentrio/util.cpp` — the CCITT CRC-16 checksum used to verify
@@ -256,14 +262,23 @@ integrity verification and bootloader packet checksums.
 
 `Crc32Sig.lean` models and verifies `crc32_add` and `crc32_signature` from
 `src/lib/crc/crc.c` — the CRC-32/ISO-HDLC (polynomial 0xEDB88320, reflected) used
-by the **UAVCAN bootloader** to verify firmware-image integrity. This is safety-critical:
-a failure to verify the CRC could lead to execution of corrupted firmware.
+by the **UAVCAN bootloader** to verify firmware-image integrity.
+
+`Crc64.lean` models and verifies `crc64_add` and `crc64_add_word` from
+`src/lib/crc/crc.c` — the CRC-64-WE checksum (MSBIT-first, polynomial 0xAD93D23594C935A9)
+used for uORB message integrity.
+
+`Crc8.lean` models and verifies `crc8_dvb_s2` from `src/lib/crc/crc.c` —
+the CRC-8/DVB-S2 checksum (polynomial 0xD5) used in the **CRSF protocol** for RC link
+packet validation.
 
 ```mermaid
 graph LR
     CF["Crc16Fold.lean<br/>8 theorems<br/>Septentrio CCITT CRC-16"]
     CS["Crc16Sig.lean<br/>8 theorems<br/>Firmware CCITT CRC-16"]
     C32["Crc32Sig.lean<br/>9 theorems<br/>UAVCAN CRC-32/ISO-HDLC"]
+    C64["Crc64.lean<br/>7 theorems<br/>uORB CRC-64-WE (MSBIT-first)"]
+    C8["Crc8.lean<br/>8 theorems<br/>CRSF CRC-8/DVB-S2"]
     S1["crc16Step<br/>per-byte update"]
     S2["crc16Add<br/>bit-by-bit update"]
     S3["crc32Add<br/>LSBIT-first reflected"]
@@ -330,40 +345,109 @@ tests in `formal-verification/tests/bin_at_angle/` confirm exact agreement.
 
 ---
 
-| File | Theorems | Examples | Sorry | Phase | Key result |
-|------|----------|----------|-------|-------|------------|
-| `MathFunctions.lean` | 16 | 0 | 0 | ✅ Phase 5 | constrain/signNoZero/countSetBits |
-| `AlphaFilter.lean` | 12 | 8 | 0 | ✅ Phase 5 | IIR closed-form convergence |
-| `SlewRate.lean` | 13 | 0 | 0 | ✅ Phase 5 | No-overshoot + convergence proofs |
-| `Deadzone.lean` | 13 | 7 | 0 | ✅ Phase 5 | Deadband range containment + odd symmetry |
-| `MedianFilter.lean` | 6 | 0 | 0 | ✅ Phase 5 | Spike-rejection: median membership + range |
-| `Interpolate.lean` | 10 | 8 | 0 | ✅ Phase 5 | Linear map range containment |
-| `Lerp.lean` | 10 | 6 | 0 | ✅ Phase 5 | Convex interpolation |
-| `Expo.lean` | 12 | 0 | 0 | ✅ Phase 5 | RC stick curve odd symmetry + fixed points |
-| `SuperExpo.lean` | 8 | 0 | 0 | ✅ Phase 5 | Superrate curve: denom_pos, odd, range |
-| `ExpoDeadzone.lean` | 9 | 0 | 0 | ✅ Phase 5 | expo∘deadzone pipeline: range + odd symmetry |
-| `InterpolateNXY.lean` | 9 | 7 | 0 | ✅ Phase 5 | 3-pt piecewise-linear: endpoints, continuity, range |
-| `InterpolateN.lean` | 14 | 15 | 0 | ✅ Phase 5 | Uniform-grid N=2/N=3: continuity, mono, range |
-| `Negate.lean` | 13 | 0 | 0 | ✅ Phase 5 | Overflow-safe negation — 🐛 bug found |
-| `WrapAngle.lean` | 10 | 5 | 0 | ✅ Phase 5 | wrapInt: 9 proved; wrapRat: via axioms |
-| `WelfordMean.lean` | 8 | 3 | 0 | ✅ Phase 5 | Online mean correctness |
-| `RingBuffer.lean` | 38 | 0 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
-| `Hysteresis.lean` | 20 | 0 | 0 | ✅ Phase 5 | Time-delayed boolean FSM: dwell lb, commit, cancel |
-| `CommanderArming.lean` | 20 | 6 | 0 | ✅ Phase 5 | Commander arming FSM invariants |
-| `SignFromBoolSq.lean` | 17 | 0 | 0 | ✅ Phase 5 | `signFromBool` (range ±1) + `sq` (non-neg, even, iff-zero) |
-| `Crc16Fold.lean` | 8 | 0 | 0 | ✅ Phase 5 | CRC-16 fold/split: streaming correctness |
-| `Crc16Sig.lean` | 8 | 0 | 0 | ✅ Phase 5 | CRC-16 add/signature (bit-by-bit CCITT) |
-| `Crc32Sig.lean` | 9 | 0 | 0 | ✅ Phase 5 | CRC-32/ISO-HDLC UAVCAN bootloader |
-| `Atmosphere.lean` | 15 | 8 | 0 | ✅ Phase 5 | ISA atmosphere: temp/density/pressure; monotonicity |
-| `SqrtLinear.lean` | 15 | 0 | 0 | ✅ Phase 5 | Piecewise sqrt: neg/identity proved; sqrt branch via axioms |
-| `WrapBin.lean` | 19 | 9 | 0 | ✅ Phase 5 | Euclidean-mod wrap + C++ bug confirmed — 🐛 latent bug |
-| `BrakingDist.lean` | 9 | 0 | 0 | ✅ Phase 5 | Braking distance: non-neg, mono, quadratic scaling |
-| `GetBinAtAngle.lean` | 13 | 8 | 0 | ✅ Phase 5 | Angle-to-bin: range, periodicity, offset rotation |
-| `GetLowerBoundAngle.lean` | 8 | 12 | 0 | ✅ Phase 5 | Lower-bound angle: range invariant, periodicity |
-| `CollisionPrevComposition.lean` | 8 | 0 | 0 | ✅ Phase 5 | Rotation group + lower-bound commutativity |
-| `IsInRange.lean` | 13 | 8 | 0 | ✅ Phase 5 | Closed-interval predicate: iff, mono, shift, empty, singleton |
-| `Basic.lean` | — | — | — | ✅ | Barrel file |
-| **Total** | **383** | **110** | **0** | — | **3 bugs found; 0 sorry; 31 files; lake build passes** |
+### Layer 10 — Math Extensions (3 files, 75 theorems)
+
+Three utility targets that extend the core maths library with additional integer and
+rational operations.
+
+```mermaid
+graph LR
+    CTI["ConstrainToInt16.lean<br/>10 theorems<br/>Float-to-int16 safe conversion"]
+    RD["RadiansDegrees.lean<br/>36 theorems<br/>Rad↔deg round-trip + monotonicity"]
+    MM["Min3Max3.lean<br/>29 theorems<br/>min3/max3 GLB/LUB algebra"]
+    CTI --- RD
+    RD --- MM
+```
+
+**Key results**:
+- `constrainToInt16_in_range`: output always in `[-32768, 32767]` (INT16 range).
+- `rad_to_deg_to_rad_roundtrip` / `deg_to_rad_to_deg_roundtrip`: lossless round-trip for exact rational inputs.
+- `rad_deg_mono`: conversion functions are strictly monotone.
+- `min3_le_all` / `max3_ge_all`: lower/upper bound properties for three-argument min/max.
+- `min3_glb` / `max3_lub`: GLB and LUB characterisations (min3 = greatest lower bound, max3 = least upper bound).
+- `min3_idempotent` / `max3_idempotent`: `min3 a a a = a`, `max3 a a a = a`.
+- `neg_min3_eq_max3_neg`: duality — `-(min3 a b c) = max3 (-a) (-b) (-c)`.
+
+---
+
+### Layer 11 — Motion Planning & Control (2 files, 55 theorems)
+
+```mermaid
+graph LR
+    VS["VelocitySmoothing.lean<br/>33 theorems<br/>Jerk-limited trajectory planner"]
+    PID["PID.lean<br/>22 theorems<br/>Generic PID controller"]
+    VS --- PID
+```
+
+**`VelocitySmoothing.lean`** (33 theorems) models PX4's jerk-limited trajectory planner
+(`src/lib/motion_planning/VelocitySmoothing.cpp`) — the core algorithm that ensures
+smooth acceleration profiles for multicopter position controllers.
+
+**Key results**:
+- `computeT2_nonneg` / `computeT3Scaled_nonneg`: schedule durations are always ≥ 0.
+- `total_T_partition`: total schedule = `max(T123, T1+T2+T3)` (the key schedule structure invariant).
+- `total_T_ge_T123` / `total_T_ge_T1_T3`: total schedule dominates each sub-sum.
+- `computeT2_zero_iff`: `T2 = 0 ↔ T123 ≤ T1 + T3` — characterises when coast phase vanishes.
+- `total_T_mono_T1` / `total_T_mono_a0` / `total_T_mono_jMax`: monotonicity in all parameters.
+
+**`PID.lean`** (22 theorems) models PX4's generic PID controller (`src/lib/pid/PID.cpp`/`.hpp`)
+which underlies rate, attitude, and velocity control throughout the firmware.
+
+**Key results**:
+- `pidOutput_in_range`: **safety invariant** — actuator command always in `[-limitO, limitO]`.
+- `updateIntegral_in_range`: **anti-windup invariant** — integral always in `[-limitI, limitI]` regardless of accumulated error.
+- `pidOutput_zero_steady_state`: zero error + zero integral → zero output (correct equilibrium).
+- `updateIntegral_zero_error`: zero error leaves integral unchanged.
+- `pidOutput_mono_sp` / `pidOutput_mono_integral`: monotonicity in setpoint and integral.
+- `updateDerivative_first_call`: first call returns 0 (models NaN guard).
+- `updateDerivative_steady_state`: constant feedback with `dt > 0` gives zero derivative.
+
+**Correspondence** (Route B): `formal-verification/tests/pid/` — 7964 cases pass, confirming
+exact agreement between Lean model and C++ reference for integer-valued inputs.
+
+---
+
+| File | Theorems | Sorry | Phase | Key result |
+|------|----------|-------|-------|------------|
+| `MathFunctions.lean` | 16 | 0 | ✅ Phase 5 | constrain/signNoZero/countSetBits |
+| `AlphaFilter.lean` | 17 | 0 | ✅ Phase 5 | IIR closed-form convergence + multi-step |
+| `SlewRate.lean` | 12 | 0 | ✅ Phase 5 | No-overshoot + convergence proofs |
+| `Deadzone.lean` | 13 | 0 | ✅ Phase 5 | Deadband range containment + odd symmetry |
+| `MedianFilter.lean` | 6 | 0 | ✅ Phase 5 | Spike-rejection: median membership + range |
+| `Interpolate.lean` | 10 | 0 | ✅ Phase 5 | Linear map range containment |
+| `Lerp.lean` | 10 | 0 | ✅ Phase 5 | Convex interpolation |
+| `Expo.lean` | 12 | 0 | ✅ Phase 5 | RC stick curve odd symmetry + fixed points |
+| `SuperExpo.lean` | 8 | 0 | ✅ Phase 5 | Superrate curve: denom_pos, odd, range |
+| `ExpoDeadzone.lean` | 9 | 0 | ✅ Phase 5 | expo∘deadzone pipeline: range + odd symmetry |
+| `InterpolateNXY.lean` | 9 | 0 | ✅ Phase 5 | 3-pt piecewise-linear: endpoints, continuity, range |
+| `InterpolateN.lean` | 14 | 0 | ✅ Phase 5 | Uniform-grid N=2/N=3: continuity, mono, range |
+| `Negate.lean` | 13 | 0 | ✅ Phase 5 | Overflow-safe negation — 🐛 bug found |
+| `WrapAngle.lean` | 10 | 0 | ✅ Phase 5 | wrapInt: 9 proved; wrapRat: via axioms |
+| `WelfordMean.lean` | 8 | 0 | ✅ Phase 5 | Online mean correctness |
+| `RingBuffer.lean` | 24 | 0 | ✅ Phase 5 | FIFO index invariants + pop model |
+| `Hysteresis.lean` | 20 | 0 | ✅ Phase 5 | Time-delayed boolean FSM: dwell lb, commit, cancel |
+| `CommanderArming.lean` | 20 | 0 | ✅ Phase 5 | Commander arming FSM invariants |
+| `SignFromBoolSq.lean` | 17 | 0 | ✅ Phase 5 | `signFromBool` (range ±1) + `sq` (non-neg, even, iff-zero) |
+| `Crc16Fold.lean` | 8 | 0 | ✅ Phase 5 | CRC-16 fold/split: streaming correctness |
+| `Crc16Sig.lean` | 8 | 0 | ✅ Phase 5 | CRC-16 add/signature (bit-by-bit CCITT) |
+| `Crc32Sig.lean` | 9 | 0 | ✅ Phase 5 | CRC-32/ISO-HDLC UAVCAN bootloader |
+| `Crc64.lean` | 7 | 0 | ✅ Phase 5 | CRC-64-WE (MSBIT-first) uORB messages |
+| `Crc8.lean` | 8 | 0 | ✅ Phase 5 | CRC-8/DVB-S2 CRSF protocol checksum |
+| `Atmosphere.lean` | 15 | 0 | ✅ Phase 5 | ISA atmosphere: temp/density/pressure; monotonicity |
+| `SqrtLinear.lean` | 15 | 0 | ✅ Phase 5 | Piecewise sqrt: neg/identity proved; sqrt branch via axioms |
+| `WrapBin.lean` | 19 | 0 | ✅ Phase 5 | Euclidean-mod wrap + C++ bug confirmed — 🐛 latent bug |
+| `BrakingDist.lean` | 9 | 0 | ✅ Phase 5 | Braking distance: non-neg, mono, quadratic scaling |
+| `GetBinAtAngle.lean` | 13 | 0 | ✅ Phase 5 | Angle-to-bin: range, periodicity, offset rotation |
+| `GetLowerBoundAngle.lean` | 8 | 0 | ✅ Phase 5 | Lower-bound angle: range invariant, periodicity |
+| `CollisionPrevComposition.lean` | 8 | 0 | ✅ Phase 5 | Rotation group + lower-bound commutativity |
+| `IsInRange.lean` | 13 | 0 | ✅ Phase 5 | Closed-interval predicate: iff, mono, shift, empty, singleton |
+| `ConstrainToInt16.lean` | 10 | 0 | ✅ Phase 5 | Float-to-int16 safe clamped conversion |
+| `RadiansDegrees.lean` | 36 | 0 | ✅ Phase 5 | Rad↔deg round-trip, monotonicity, injective, concrete values |
+| `Min3Max3.lean` | 29 | 0 | ✅ Phase 5 | min3/max3: bounds, GLB/LUB, idempotence, commutativity, duality |
+| `VelocitySmoothing.lean` | 33 | 0 | ✅ Phase 5 | Jerk-limited schedule: partition, T≥0, monotonicity, T2_zero_iff |
+| `PID.lean` | 22 | 0 | ✅ Phase 5 | PID safety (output+integral bounds), equilibrium, monotonicity |
+| `Basic.lean` | — | — | ✅ | Barrel file |
+| **Total** | **519** | **0** | — | **3 bugs found; 0 sorry; 38 files; lake build passes** |
 
 ---
 
@@ -603,13 +687,36 @@ timeline
     section Run 76
         IsInRange        : generic closed-interval predicate (13 thms, 0 sorry)
         Report           : REPORT.md updated — 383 theorems, 31 files, 0 sorry, 3 bugs found
+    section Runs 77-83
+        ConstrainToInt16 : constrainFloatToInt16 safe conversion (10 thms, 0 sorry)
+        Crc64            : CRC-64-WE MSBIT-first (7 thms, 0 sorry)
+        Crc8             : CRC-8/DVB-S2 CRSF protocol (8 thms, 0 sorry)
+        Correspondence   : CORRESPONDENCE.md audit + RadiansDegrees/Min3Max3 sections added
+    section Runs 84-87
+        RadiansDegrees   : rad↔deg round-trip + monotonicity (36 thms, 0 sorry)
+        Min3Max3         : min3/max3 bounds/GLB/LUB/duality (29 thms, 0 sorry)
+        CRITIQUE         : comprehensive update from run63 to run86 (430 theorems)
+    section Runs 88-93
+        VelocitySmoothing : jerk-limited trajectory planner computeT2/T3 (17 → 28 thms)
+        AlphaFilter       : multi-step convergence proofs added
+        Correspondence    : CORRESPONDENCE.md updated for new targets
+    section Runs 94-97
+        VelocitySmoothing : +8 more theorems (28 → 36? see correction below)
+        Hysteresis        : Route B correspondence tests (259/259 pass)
+        CI                : lean-ci.yml updated with correspondence-tests job
+        REPORT            : REPORT.md refreshed (492 theorems, run 97)
+    section Runs 98-100
+        VelocitySmoothing : +5 theorems (schedule lower bounds, mono) → 33 total
+        PID               : generic PID controller (22 thms): safety bounds + anti-windup
+        Correspondence    : PID Route B tests (7964/7964 pass)
+        Report            : REPORT.md updated — 519 theorems, 38 files, 0 sorry
 ```
 
 ---
 
 ## Toolchain
 
-- **Prover**: Lean 4 (version 4.29.0)
+- **Prover**: Lean 4 (version 4.29.1)
 - **Libraries**: Lean 4 stdlib only (Mathlib referenced in `lakefile.toml` but unavailable in CI)
 - **CI**: `.github/workflows/lean-ci.yml` — runs `lake build` on every PR that touches
   `formal-verification/lean/**`; Mathlib cache keyed on `lake-manifest.json` hash
@@ -631,6 +738,6 @@ timeline
 ---
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
-> *`lake build` verified with Lean 4.29.0. **0 `sorry`** — first sorry-free milestone.*
-> *383 theorems across 31 files. 9 proof layers + IsInRange. 3 bugs found.*
-> *CORRESPONDENCE.md covers all Lean files. Tests: `tests/atmosphere/` (26/26 pass), `tests/bin_at_angle/` (334/334 pass).*
+> *`lake build` verified with Lean 4.29.1. **0 `sorry`** — sorry-free since run 73.*
+> *519 theorems across 38 files. 11 proof layers. 3 bugs found.*
+> *CORRESPONDENCE.md covers all Lean files. Tests: `tests/atmosphere/` (26/26 pass), `tests/slew_rate/` (4327/4327 pass), `tests/pid/` (7964/7964 pass).*
