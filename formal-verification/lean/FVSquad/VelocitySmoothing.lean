@@ -382,4 +382,76 @@ theorem total_T_mono_T1 (T123 T1 T1' a0 jMax : Int)
   · rw [Int.max_eq_left (by omega)]
     exact Int.le_max_left _ _
 
+-- ============================================================
+-- § 12  Total schedule lower bounds and further monotonicity
+-- ============================================================
+
+/-- The total schedule `T1 + T2 + T3Scaled` is always ≥ `T123`.
+
+    Proof: by `total_T_partition`, total = `max T123 (T1 + T3Scaled) ≥ T123`. -/
+theorem total_T_ge_T123 (T123 T1 a0 jMax : Int) :
+    T123 ≤ T1 + computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) +
+           computeT3Scaled T1 a0 jMax := by
+  rw [total_T_partition]
+  exact Int.le_max_left _ _
+
+/-- The total schedule is always ≥ `T1 + T3Scaled`.
+
+    Proof: by `total_T_partition`, total = `max T123 (T1 + T3Scaled) ≥ T1 + T3Scaled`. -/
+theorem total_T_ge_T1_T3 (T123 T1 a0 jMax : Int) :
+    T1 + computeT3Scaled T1 a0 jMax ≤
+    T1 + computeT2 T123 T1 (computeT3Scaled T1 a0 jMax) +
+         computeT3Scaled T1 a0 jMax := by
+  rw [total_T_partition]
+  exact Int.le_max_right _ _
+
+/-- **Iff characterisation**: `computeT2 = 0` exactly when `T123 ≤ T1 + T3`.
+
+    The clamp fires (returning 0) iff the requested total duration is too short to
+    accommodate phases 1 and 3.  This is the canonical boundary condition for the
+    coast-phase check in the trajectory planner. -/
+theorem computeT2_zero_iff (T123 T1 T3 : Int) :
+    computeT2 T123 T1 T3 = 0 ↔ T123 ≤ T1 + T3 := by
+  unfold computeT2
+  constructor
+  · intro h
+    by_cases hc : T123 - T1 - T3 ≤ 0
+    · omega
+    · rw [Int.max_eq_left (by omega)] at h; omega
+  · intro h
+    rw [Int.max_eq_right (by omega)]
+
+/-- **Total schedule is monotone in `a0`**: larger initial acceleration → longer T3Scaled
+    → total schedule `max T123 (T1 + T3Scaled)` is non-decreasing.
+
+    Combines `computeT3Scaled_mono_a0` and the max-monotone argument. -/
+theorem total_T_mono_a0 (T123 T1 a0 a0' jMax : Int) (hle : a0 ≤ a0') :
+    max T123 (T1 + computeT3Scaled T1 a0 jMax) ≤
+    max T123 (T1 + computeT3Scaled T1 a0' jMax) := by
+  have hT3 : computeT3Scaled T1 a0 jMax ≤ computeT3Scaled T1 a0' jMax :=
+    computeT3Scaled_mono_a0 T1 a0 a0' jMax hle
+  have hA : T1 + computeT3Scaled T1 a0 jMax ≤ T1 + computeT3Scaled T1 a0' jMax := by omega
+  by_cases h : T123 ≤ T1 + computeT3Scaled T1 a0 jMax
+  · rw [Int.max_eq_right h]
+    exact Int.le_trans hA (Int.le_max_right _ _)
+  · rw [Int.max_eq_left (by omega)]
+    exact Int.le_max_left _ _
+
+/-- **Total schedule is monotone in `jMax`** (when `T1 ≥ 0`): higher jerk limit →
+    longer T3Scaled → total schedule `max T123 (T1 + T3Scaled)` is non-decreasing.
+
+    Combines `computeT3Scaled_mono_jMax` and the max-monotone argument. -/
+theorem total_T_mono_jMax (T123 T1 a0 jMax jMax' : Int)
+    (hT1 : 0 ≤ T1) (hle : jMax ≤ jMax') :
+    max T123 (T1 + computeT3Scaled T1 a0 jMax) ≤
+    max T123 (T1 + computeT3Scaled T1 a0 jMax') := by
+  have hT3 : computeT3Scaled T1 a0 jMax ≤ computeT3Scaled T1 a0 jMax' :=
+    computeT3Scaled_mono_jMax T1 a0 jMax jMax' hT1 hle
+  have hA : T1 + computeT3Scaled T1 a0 jMax ≤ T1 + computeT3Scaled T1 a0 jMax' := by omega
+  by_cases h : T123 ≤ T1 + computeT3Scaled T1 a0 jMax
+  · rw [Int.max_eq_right h]
+    exact Int.le_trans hA (Int.le_max_right _ _)
+  · rw [Int.max_eq_left (by omega)]
+    exact Int.le_max_left _ _
+
 end PX4.VelocitySmoothing
