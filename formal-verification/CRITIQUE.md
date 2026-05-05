@@ -4,8 +4,8 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-02 08:43 UTC
-- **Commit**: `72303932499305ddf1ce544af5ee5bc5f6370911`
+- **Date**: 2026-05-05 09:25 UTC
+- **Commit**: `789a6aa32342340545634a6c9cfddccb510111e1`
 
 ---
 
@@ -13,16 +13,17 @@
 
 Forty-three targets from PX4's mathlib, control library, sensor-fusion stack, Commander
 module, collision-prevention stack, CRC subsystem, and angle-conversion utilities have been
-identified; 37 have Lean files with fully proved theorems. The library now covers
-**541 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.1, standard
-library only). Since run 63, fourteen new Lean files have been added
+identified; 38 have Lean files with fully proved theorems. The library now covers
+**519 theorem statements, all fully proved, 0 `sorry`** (Lean 4 v4.29.1, standard
+library only). Since run 63, fifteen new Lean files have been added
 (`BrakingDist`, `CollisionPrevComposition`, `Crc16Sig`, `Crc32Sig`, `Crc64`, `Crc8`,
 `IsInRange`, `ConstrainToInt16`, `GetBinAtAngle`, `GetLowerBoundAngle`, `RadiansDegrees`,
-`Min3Max3`, `VelocitySmoothing`, and — in run 89 — 5 new AlphaFilter multi-step
-convergence theorems). Run 90 added 8 new VelocitySmoothing theorems covering jMax
-monotonicity (`computeT3Scaled_mono_jMax`), strict T123 monotonicity, cross-function
-schedule composition (`total_T_partition`, `T2_decreases_as_T3_grows`), and completed
-CORRESPONDENCE.md coverage for Min3Max3, RadiansDegrees, and VelocitySmoothing.
+`Min3Max3`, `VelocitySmoothing`, — in run 89 — 5 new AlphaFilter multi-step convergence
+theorems, and — in run 99 — `PID.lean`). Runs 90–98 added 16 new VelocitySmoothing
+theorems covering jMax monotonicity, strict T123 monotonicity, cross-function schedule
+composition, and T2/T3 tradeoff theorems. Run 99 (this run) adds 22 theorems for
+`PID.lean`, formally verifying clamping safety, anti-windup bounds, equilibrium
+(zero-error zero-output), and monotonicity properties of the PX4 generic PID controller.
 Three confirmed bugs remain open: `signNoZero<float>` returns 0 for NaN,
 `negate<int16_t>` has an incorrect INT16_MAX special case, and `wrap_bin(bin, n)`
 returns a negative index for `bin ≤ -n` in the C++ truncation-mod implementation.
@@ -209,6 +210,15 @@ returns a negative index for `bin ≤ -n` in the C++ truncation-mod implementati
 | `alphaIterate_error_formula` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | Error formula: `state_n - target = (s-target)·(1-α)ⁿ` — exponential error decay |
 | `alphaIterate_no_overshoot_up` / `alphaIterate_no_overshoot_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Multi-step no-overshoot**: for all n, filter stays in `[target, state₀]` (resp. `[state₀, target]`) |
 | `alphaIterate_mono_n_up` / `alphaIterate_mono_n_down` | [AlphaFilter.lean](lean/FVSquad/AlphaFilter.lean) | **high** | **high** | [L] | [C++](../src/lib/mathlib/math/filter/AlphaFilter.hpp) | **Monotone convergence**: each step reduces distance to target — sequence is monotone in n |
+| `total_T_ge_T123` / `total_T_ge_T1_T3` / `computeT2_zero_iff` / `total_T_mono_a0` / `total_T_mono_jMax` | [VelocitySmoothing.lean](lean/FVSquad/VelocitySmoothing.lean) | **high** | **high** | [L] | [C++](../src/lib/motion_planning/VelocitySmoothing.cpp) | (runs 98–99) Total time lower bounds by T123 and by T1+T3; T2=0 iff T1+T3≥T123; total time monotone in acceleration and jMax |
+| `clamp_ge_neg` / `clamp_le` / `clamp_in_range` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | **Output safety**: clamped PID output is always in `[-limitO, limitO]` |
+| `clamp_zero` / `clamp_of_mem` / `clamp_idempotent` / `clamp_mono` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | Clamp identity, in-range identity, idempotence, monotonicity |
+| `updateIntegral_ge_neg` / `updateIntegral_le` / `updateIntegral_in_range` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | **Anti-windup invariant**: integral always bounded by `[-limitI, limitI]` regardless of accumulated error |
+| `updateIntegral_zero_error` / `updateIntegral_mono_error` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | Zero error leaves integral unchanged; larger error → larger integral (with `gainI ≥ 0`, `dt ≥ 0`) |
+| `updateDerivative_first_call` / `updateDerivative_steady_state` / `updateDerivative_nonpos_dt` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | Derivative: 0 on first call (NaN guard), 0 at steady state, 0 for non-positive dt |
+| `pidOutput_ge_neg` / `pidOutput_le` / `pidOutput_in_range` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | **Output clamping invariant**: actuator command is always in `[-limitO, limitO]` |
+| `pidOutput_zero_steady_state` / `pidOutput_zero_first_call` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | **Equilibrium**: setpoint=feedback, integral=0 → output=0 (both steady-state and first-call cases) |
+| `pidOutput_mono_sp` / `pidOutput_mono_integral` | [PID.lean](lean/FVSquad/PID.lean) | **high** | **high** | [L] | [C++](../src/lib/pid/PID.cpp) | **Monotonicity**: larger setpoint → larger output (gainP≥0); larger integral → larger output |
 
 ---
 
@@ -562,11 +572,22 @@ to show the numerator is strictly negative. No sorry remains in `Deadzone.lean`.
     as the inductive building blocks.
 
 
+25. **`PID` controller safety and equilibrium proved (22 theorems, 0 sorry, run 99)**:
+    `PID.lean` proves 22 theorems for the PX4 generic PID controller (`src/lib/pid/PID.cpp`).
+    The central results are: `pidOutput_in_range` (actuator command is always in
+    `[-limitO, limitO]`), `updateIntegral_in_range` (anti-windup invariant: integral
+    always bounded by `[-limitI, limitI]`), `pidOutput_zero_steady_state` and
+    `pidOutput_zero_first_call` (equilibrium: setpoint=feedback, integral=0 → output=0,
+    both for steady-state and first-call configurations), and `pidOutput_mono_sp` /
+    `pidOutput_mono_integral` (monotonicity: correct direction of response to error and
+    integral). All proofs use `omega`, `simp`, and `Int.mul_le_mul_of_nonneg_left/right`
+    — no Mathlib needed. The integer model abstracts floating-point NaN/infinity and
+    `FLT_EPSILON` threshold, following the established pattern.
+
+
 ---
 
-## Known Sorry-Guarded Theorems
-
-As of run 89, **0 theorems use `sorry`** across all 37 Lean files. The three groups of
+As of run 99, **0 theorems use `sorry`** across all 38 Lean files. The three groups of
 theorems previously sorry-guarded were resolved via abstract `axiom` declarations (runs 73–82):
 
 **`WrapAngle.lean`** (6 → 0 sorry, resolved run73+80):
@@ -622,15 +643,17 @@ Since the last paper update (run54), **twenty new Lean files** have been added a
 18. **`Min3Max3.lean`** (run87, 31 theorems): Bound safety, idempotence, commutativity, negation duality for `min3`/`max3`.
 19. **`VelocitySmoothing.lean`** (run88, 17 theorems): `computeT2` non-negativity, partition identity, monotonicity.
 20. **`AlphaFilter.lean` (5 new theorems, run89)**: Multi-step convergence: error formula, no-overshoot (n steps), monotone convergence.
+21. **`VelocitySmoothing.lean` (16 new theorems, runs 90–98)**: `computeT3Scaled_mono_jMax`, strict T123 monotonicity, `total_T_partition`, `T2_decreases_as_T3_grows`, `total_T_ge_T123`, `total_T_ge_T1_T3`, `computeT2_zero_iff`, `total_T_mono_a0`, `total_T_mono_jMax`.
+22. **`PID.lean` (22 theorems, run99)**: Output clamping safety, anti-windup invariant, equilibrium (setpoint=feedback→0 output), derivative first-call/steady-state, monotonicity in setpoint and integral.
 
 ### Accuracy (run89 assessment)
 
-- Abstract theorem count is **stale** — actual count is 533 proved (all, 0 sorry).
+- Abstract theorem count is **stale** — actual count is 519 proved (all, 0 sorry).
 - Abstract bug count is **stale** — 3 bugs now confirmed (signNoZero NaN, negate involution, wrap_bin negative-index).
 - Table 1 is missing 20 files added since run54.
 - Future Work references several items now complete — should be moved to Results.
 - The sorry count should reflect 0 sorry (converted to axioms in runs 73–82).
-- The "21 C++ targets with Lean proofs" claim is stale — actual is 43+ targets, 37 Lean files.
+- The "21 C++ targets with Lean proofs" claim is stale — actual is 43+ targets, 38 Lean files.
 
 ### Remaining Open Suggestions
 
