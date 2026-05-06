@@ -1,135 +1,135 @@
 {
-  "run": 101,
-  "last_updated": "2026-05-06",
-  "lean_version": "4.29.1",
-  "lake_build_status": "passed",
-  "totals": {
-    "theorems": 530,
-    "theorems_proved": 530,
-    "axioms": 10,
-    "sorry_count": 0,
-    "lean_files": 38,
-    "targets": 38
-  },
-  "sorry_locations": {
-    "all_resolved": "0 sorry in proof bodies. 10 axioms for irrational arithmetic."
-  },
-  "open_prs": [
-    {
-      "number": 90,
-      "title": "VelocitySmoothing +5 theorems + CORRESPONDENCE.md (run98)"
+    "run": 102,
+    "last_updated": "2026-05-06",
+    "lean_version": "4.29.1",
+    "lake_build_status": "passed",
+    "totals": {
+        "theorems": 530,
+        "theorems_proved": 530,
+        "axioms": 10,
+        "sorry_count": 0,
+        "lean_files": 38,
+        "targets": 38
     },
-    {
-      "number": 91,
-      "title": "PID controller Lean 4 proofs + critique update (run99)"
+    "sorry_locations": {
+        "all_resolved": "0 sorry in proof bodies. 10 axioms for irrational arithmetic."
     },
-    {
-      "number": "new",
-      "branch": "lean-squad/report-corr-run100-25389651187",
-      "title": "REPORT.md refresh + PID Route B correspondence tests (run100)"
+    "open_prs": [
+        {
+            "number": 90,
+            "title": "VelocitySmoothing +5 theorems + CORRESPONDENCE.md (run98)"
+        },
+        {
+            "number": 91,
+            "title": "PID controller Lean 4 proofs + critique update (run99)"
+        },
+        {
+            "number": "new",
+            "branch": "lean-squad/report-corr-run100-25389651187",
+            "title": "REPORT.md refresh + PID Route B correspondence tests (run100)"
+        }
+    ],
+    "bugs_found": 3,
+    "correspondence_tests": {
+        "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
+        "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
+        "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
+        "hysteresis": "tests/hysteresis/ (259/259 pass)",
+        "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)"
+    },
+    "ci": {
+        "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+        "status": "healthy \u2014 updated run97",
+        "correspondence_test_job": "run97: atmosphere (26), slew_rate (4327) = 4353 total on every PR/push"
+    },
+    "run_history": [
+        {
+            "run": 102,
+            "date": "2026-05-06T09:13 UTC",
+            "workflow_run_id": 25426090735,
+            "tasks": [
+                "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 added dedicated ## FVSquad/PID.lean section (22 theorems, 3 C++ mappings, Route B 7964/7964, divergences analysis). Updated Last Updated header.",
+                "Task 1 (Research & Target Identification): TARGETS.md + RESEARCH.md \u2014 3 new Phase 1 targets: #45 sensor_orientation_to_yaw_offset (finite enum decidable), #46 goldensection interval invariant, #47 FilteredDerivative::update (AlphaFilter composition)."
+            ],
+            "theorems_proved": 0,
+            "sorry_changes": 0,
+            "pr_branch": "lean-squad/corr-research-run102-25426090735",
+            "notes": "No new proofs this run. PID.lean now fully documented in CORRESPONDENCE.md. Three new research targets identified and analyzed in depth. Priority: target 45 (sensor_orientation_to_yaw_offset) is immediately tractable for Phase 3/4/5 in next run."
+        },
+        {
+            "run": 101,
+            "date": "2026-05-06T01:03 UTC",
+            "workflow_run_id": 25410870088,
+            "tasks": [
+                "Task 5 (Proof Assistance): MathFunctions.lean +11 theorems (countSetBits: 6 incl. countSetBits_pos, signNoZero: 5 incl. signNoZero_mul_self_nonneg)",
+                "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 run101 notes, countSetBits+signNoZero impact updated, summary table updated"
+            ],
+            "theorems_proved": 11,
+            "sorry_changes": 0,
+            "pr_branch": "lean-squad/mathfunctions-correspondence-run101",
+            "notes": "countSetBits_pos is key new theorem: well-founded recursive proof that any positive Nat has >=1 bit set. signNoZero_mul_self_nonneg: signNoZero(x)*x >= 0 (magnitude property). All 530 theorems proved, 0 sorry."
+        },
+        {
+            "run": 100,
+            "date": "2026-05-05T16:46 UTC",
+            "workflow_run_id": 25389651187,
+            "tasks": [
+                "Task 10 (Project Report): REPORT.md updated \u2014 519 theorems, 38 files, Layer 10 (ConstrainToInt16/RadiansDegrees/Min3Max3) + Layer 11 (VelocitySmoothing/PID) added, timeline runs 77-100",
+                "Task 8 (Route B Correspondence): PID tests created in tests/pid/ \u2014 7964/7964 pass; CORRESPONDENCE.md updated with 3 PID rows + Run 100 review notes"
+            ],
+            "theorems_proved": 0,
+            "sorry_changes": 0,
+            "pr_branch": "lean-squad/report-corr-run100-25389651187",
+            "notes": "Merged PRs #90 and #91. REPORT.md refreshed from run76 state (383 thms) to run100 (519 thms). PID Route B tests: 7964 cases across clamp, derivative, integral, full PID, multi-step sequences."
+        }
+    ],
+    "discoveries": [
+        "import must come BEFORE module docblock in Lean 4",
+        "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
+        "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
+        "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
+        "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
+        "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
+        "FVSquad.lean AND Basic.lean must both import new files",
+        "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
+        "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
+        "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
+        "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
+        "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
+        "computeT3 proof: simp [max_def] + linarith covers all cases",
+        "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
+        "total_T_ge_T123: rw [total_T_partition] then exact Int.le_max_left _ _",
+        "linarith cannot combine equalities with max; use rw to substitute the equality first",
+        "ring, nlinarith, linarith are MATHLIB ONLY \u2014 not available in standard Lean 4 stdlib",
+        "Int.mul_le_mul_of_nonneg_right : a * c <= b * c when a <= b and 0 <= c (available stdlib)",
+        "simp only [def_name] beta-reduces let-bindings in goals (needed for pidOutputRaw)",
+        "rw [if_neg h]; no closing tactic needed when goal is already trivially closed by rw",
+        "simp handles mul_zero/zero_mul/add_zero for Int without explicit lemma names"
+    ],
+    "mathlib_status": "blocked_403_cache_proxy",
+    "notes": "Run102: Task 6 added dedicated PID.lean correspondence section. Task 1 added targets 45-47. Priority next: target 45 (sensor_orientation_to_yaw_offset) is immediately tractable.",
+    "report_status": {
+        "exists": true,
+        "last_updated_run": 100,
+        "stale_items": []
+    },
+    "targets": {
+        "PID": {
+            "file": "formal-verification/lean/FVSquad/PID.lean",
+            "source": "src/lib/pid/PID.cpp",
+            "phase": 5,
+            "theorems": 22,
+            "sorry": 0,
+            "correspondence_tests": "tests/pid/ (7964/7964)",
+            "notes": "Clamping, anti-windup, equilibrium, monotonicity. Int model abstracts float/NaN."
+        },
+        "VelocitySmoothing": {
+            "file": "formal-verification/lean/FVSquad/VelocitySmoothing.lean",
+            "source": "src/lib/motion_planning/VelocitySmoothing.cpp",
+            "phase": 5,
+            "theorems": 33,
+            "sorry": 0,
+            "notes": "computeT2/T3, total_T monotonicity, anti-windup, schedule partition."
+        }
     }
-  ],
-  "bugs_found": 3,
-  "correspondence_tests": {
-    "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
-    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
-    "hysteresis": "tests/hysteresis/ (259/259 pass)",
-    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)"
-  },
-  "ci": {
-    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
-    "status": "healthy \u2014 updated run97",
-    "correspondence_test_job": "run97: atmosphere (26), slew_rate (4327) = 4353 total on every PR/push"
-  },
-  "run_history": [
-    {
-      "run": 101,
-      "date": "2026-05-06T01:03 UTC",
-      "workflow_run_id": 25410870088,
-      "tasks": [
-        "Task 5 (Proof Assistance): MathFunctions.lean +11 theorems (countSetBits: 6 incl. countSetBits_pos, signNoZero: 5 incl. signNoZero_mul_self_nonneg)",
-        "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 run101 notes, countSetBits+signNoZero impact updated, summary table updated"
-      ],
-      "theorems_proved": 11,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/mathfunctions-correspondence-run101",
-      "notes": "countSetBits_pos is key new theorem: well-founded recursive proof that any positive Nat has >=1 bit set. signNoZero_mul_self_nonneg: signNoZero(x)*x >= 0 (magnitude property). All 530 theorems proved, 0 sorry."
-    },
-    {
-      "run": 100,
-      "date": "2026-05-05T16:46 UTC",
-      "workflow_run_id": 25389651187,
-      "tasks": [
-        "Task 10 (Project Report): REPORT.md updated \u2014 519 theorems, 38 files, Layer 10 (ConstrainToInt16/RadiansDegrees/Min3Max3) + Layer 11 (VelocitySmoothing/PID) added, timeline runs 77-100",
-        "Task 8 (Route B Correspondence): PID tests created in tests/pid/ \u2014 7964/7964 pass; CORRESPONDENCE.md updated with 3 PID rows + Run 100 review notes"
-      ],
-      "theorems_proved": 0,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/report-corr-run100-25389651187",
-      "notes": "Merged PRs #90 and #91. REPORT.md refreshed from run76 state (383 thms) to run100 (519 thms). PID Route B tests: 7964 cases across clamp, derivative, integral, full PID, multi-step sequences."
-    },
-    {
-      "run": 99,
-      "date": "2026-05-05T09:25 UTC",
-      "workflow_run_id": 25367144830,
-      "tasks": [
-        "Task 5 (Proof Assistance): PID.lean NEW \u2014 22 theorems: clamp safety, anti-windup, equilibrium, monotonicity, derivative properties",
-        "Task 7 (Proof Utility Critique): CRITIQUE.md updated \u2014 theorem count 519, 38 files, PID table rows, Positive Finding #25"
-      ],
-      "theorems_proved": 22,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/proof-critique-run99-25367144830",
-      "notes": "PID.lean: 22 theorems, 0 sorry. Key: pidOutput_in_range (safety), updateIntegral_in_range (anti-windup), pidOutput_zero_steady_state (equilibrium). Also merged PR #90 (VelocitySmoothing +5 from run98)."
-    }
-  ],
-  "discoveries": [
-    "import must come BEFORE module docblock in Lean 4",
-    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
-    "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
-    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
-    "FVSquad.lean AND Basic.lean must both import new files",
-    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
-    "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
-    "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
-    "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
-    "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
-    "computeT3 proof: simp [max_def] + linarith covers all cases",
-    "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
-    "total_T_ge_T123: rw [total_T_partition] then exact Int.le_max_left _ _",
-    "linarith cannot combine equalities with max; use rw to substitute the equality first",
-    "ring, nlinarith, linarith are MATHLIB ONLY \u2014 not available in standard Lean 4 stdlib",
-    "Int.mul_le_mul_of_nonneg_right : a * c <= b * c when a <= b and 0 <= c (available stdlib)",
-    "simp only [def_name] beta-reduces let-bindings in goals (needed for pidOutputRaw)",
-    "rw [if_neg h]; no closing tactic needed when goal is already trivially closed by rw",
-    "simp handles mul_zero/zero_mul/add_zero for Int without explicit lemma names"
-  ],
-  "mathlib_status": "blocked_403_cache_proxy",
-  "notes": "Run101: MathFunctions +11 theorems (countSetBits: pos/double/succ_odd/iff; signNoZero: mul_self_nonneg/neg_of_pos). CORRESPONDENCE.md updated run101 notes. Next: Task 7 (CRITIQUE update for run101 additions) or Task 1/2 (new target research).",
-  "report_status": {
-    "exists": true,
-    "last_updated_run": 100,
-    "stale_items": []
-  },
-  "targets": {
-    "PID": {
-      "file": "formal-verification/lean/FVSquad/PID.lean",
-      "source": "src/lib/pid/PID.cpp",
-      "phase": 5,
-      "theorems": 22,
-      "sorry": 0,
-      "correspondence_tests": "tests/pid/ (7964/7964)",
-      "notes": "Clamping, anti-windup, equilibrium, monotonicity. Int model abstracts float/NaN."
-    },
-    "VelocitySmoothing": {
-      "file": "formal-verification/lean/FVSquad/VelocitySmoothing.lean",
-      "source": "src/lib/motion_planning/VelocitySmoothing.cpp",
-      "phase": 5,
-      "theorems": 33,
-      "sorry": 0,
-      "notes": "computeT2/T3, total_T monotonicity, anti-windup, schedule partition."
-    }
-  }
 }
