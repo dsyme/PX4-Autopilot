@@ -1422,3 +1422,204 @@ Lean's built-in `min`/`max`, so some proofs reduce to `Lean.min_def`/`Lean.max_d
 | 5 | `wrapRat` Mathlib sorry closure | 🔄 Phase 3 | 6 axioms; needs Mathlib `Int.floor` |
 | 6 | `Atmosphere` sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `mul_lt_mul_of_neg_left` |
 | 7 | `SqrtLinear` sqrt branch sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `Real.sqrt` |
+
+---
+
+## New Target Survey — Run 102
+
+*Critique-informed update: three new targets identified for Phase 1 research. Targets 45–47 extend coverage into the collision-prevention sensor pipeline, the golden-section optimizer, and the filtered-derivative building block used throughout the flight-control stack.*
+
+---
+
+### Target 45: `sensor_orientation_to_yaw_offset` (Finite Enum Lookup)
+
+**File**: `src/lib/collision_prevention/ObstacleMath.cpp:72–119`
+
+```cpp
+float sensor_orientation_to_yaw_offset(const SensorOrientation orientation, const float q[4])
+{
+    float offset = 0.0f;
+    switch (orientation) {
+        case ROTATION_YAW_0:   offset = 0.0f;               break;
+        case ROTATION_YAW_45:  offset = M_PI_F / 4.0f;      break;
+        case ROTATION_YAW_90:  offset = M_PI_F / 2.0f;      break;
+        case ROTATION_YAW_135: offset = 3.0f * M_PI_F / 4.0f; break;
+        case ROTATION_YAW_180: offset = M_PI_F;             break;
+        case ROTATION_YAW_225: offset = -3.0f * M_PI_F / 4.0f; break;
+        case ROTATION_YAW_270: offset = -M_PI_F / 2.0f;    break;
+        case ROTATION_YAW_315: offset = -M_PI_F / 4.0f;    break;
+        case ROTATION_CUSTOM:  /* quaternion path */ break;
+    }
+    return offset;
+}
+```
+
+**Benefit**: Collision prevention uses this to orient sensor FOVs. If the lookup
+returns a wrong multiple of π/4 for a given sensor orientation, the obstacle map
+would be rotated by the wrong amount — potentially directing the vehicle into an
+obstacle. Formally verifying that each case returns the correct yaw offset (a
+multiple of π/4) and that all 8 values are distinct would confirm the enum is
+correctly set up with no aliased orientations.
+
+**Specification size**: ~12 theorems; approximately 80 Lean lines.
+
+**Proof tractability**: VERY EASY. The function is a finite lookup table over a
+9-case inductive type. All proofs close by `decide` or `cases orientation`. The
+CUSTOM case (quaternion path) can be excluded from scope by restricting to the
+8 defined orientations.
+
+**Approximations needed**: Model with an abstract `axiom pi : Rat` and `pi_pos`.
+Define a multiplier function `yawOffsetK : SensorOrientation → Int` returning the
+integer k such that `offset = k * (pi / 4)`. The float-to-Rat conversion is exact
+for multiples of π/4 (they are defined symbolically). Float rounding of the
+constant `M_PI_F` is not modelled.
+
+**Approach**:
+```lean
+inductive SensorOrientation where
+  | YAW_0 | YAW_45 | YAW_90 | YAW_135 | YAW_180
+  | YAW_225 | YAW_270 | YAW_315 | CUSTOM
+
+axiom pi : Rat
+axiom pi_pos : 0 < pi
+
+def yawOffsetK : SensorOrientation → Int
+  | .YAW_0   => 0  | .YAW_45  => 1  | .YAW_90  => 2
+  | .YAW_135 => 3  | .YAW_180 => 4  | .YAW_225 => -3
+  | .YAW_270 => -2 | .YAW_315 => -1 | .CUSTOM  => 0
+
+def yawOffset (o : SensorOrientation) : Rat := yawOffsetK o * (pi / 4)
+```
+Theorems: `yawOffset_in_range : |yawOffsetK o| ≤ 4` (by `decide`),
+`yawOffset_distinct` (the 8 non-CUSTOM multipliers are pairwise distinct, by
+`decide`), `yawOffset_YAW_0_zero` etc. (exact values). The most valuable property
+is `yawOffset_range`: for all orientations, `-(pi) ≤ yawOffset o ≤ pi`, proved by
+`have hk := yawOffset_in_range; linarith [pi_pos]`.
+
+---
+
+### Target 46: `goldensection` Interval Invariant
+
+**File**: `src/lib/mathlib/math/SearchMin.hpp:56–81`
+
+```cpp
+template<typename _Tp>
+inline const _Tp goldensection(const _Tp &arg1, const _Tp &arg2, _Tp(*fun)(_Tp), const _Tp &tol)
+{
+    _Tp a = arg1; _Tp b = arg2;
+    _Tp c = b - (b - a) / GOLDEN_RATIO;
+    _Tp d = a + (b - a) / GOLDEN_RATIO;
+    while (abs_t(c - d) > tol) {
+        if (fun(c) < fun(d)) { b = d; } else { a = c; }
+        c = b - (b - a) / GOLDEN_RATIO; d = a + (b - a) / GOLDEN_RATIO;
+    }
+    return (b + a) / (_Tp)2;
+}
+```
+
+**Benefit**: Used for flight-envelope optimisation (e.g., maximum-speed in
+waypoint transitions: `computeMaxSpeedInWaypoint` calls `goldensection` indirectly).
+The key correctness property is that after each iteration:
+1. `a ≤ c ≤ d ≤ b` (ordering invariant)  
+2. The interval width `(b - a)` shrinks by factor `1/φ ≈ 0.618` per iteration
+3. The returned midpoint is always in `[arg1, arg2]`
+
+**Specification size**: ~10 theorems; approximately 120 Lean lines.
+
+**Proof tractability**: MODERATE. The ordering invariant and interval reduction
+properties are provable with `linarith` on `Rat`. The convergence bound (interval
+becomes ≤ `tol` after `⌈log_{φ}((b₀ - a₀) / tol)⌉` steps) requires a logarithm
+or inductive argument. A bounded iteration model (fix a maximum step count N) is
+more tractable: use `Nat.rec` on the step count, prove the invariant holds at each
+step.
+
+**Approximations needed**: Model as a `Rat` pure function. The higher-order `fun`
+parameter is modelled as `fun : Rat → Rat` — Lean can handle this directly. The
+GOLDEN_RATIO constant `1.6180339887` is approximated as `Rat.ofNat 16180339887 / 10000000000`.
+
+**Approach**: Model the single-step update function:
+```lean
+def φ : Rat := 16180339887 / 10000000000  -- ≈ golden ratio
+def gssStep (a b : Rat) (f : Rat → Rat) : Rat × Rat :=
+  let c := b - (b - a) / φ
+  let d := a + (b - a) / φ
+  if f c < f d then (a, d) else (c, b)
+```
+Then prove: `gssStep_width_shrinks : ∀ a b f, (gssStep a b f).2 - (gssStep a b f).1 = (b - a) / φ`
+and `gssStep_invariant : a ≤ a' ∧ a' ≤ b' ∧ b' ≤ b` where `(a', b') = gssStep a b f`.
+These are straightforward `linarith` goals.
+
+---
+
+### Target 47: `FilteredDerivative::update` (Composition)
+
+**File**: `src/lib/mathlib/math/filter/FilteredDerivative.hpp:84–103`
+
+```cpp
+const T &update(const T &sample) {
+    if (_initialized) {
+        if (_sample_interval > FLT_EPSILON) {
+            _alpha_filter.update((sample - _previous_sample) / _sample_interval);
+        } else { _initialized = false; }
+    } else {
+        _initialized = true;
+    }
+    _previous_sample = sample;
+    return _alpha_filter.getState();
+}
+```
+
+**Benefit**: `FilteredDerivative` is used in PX4's rate controllers as a
+low-pass-filtered discrete derivative. The key safety properties are:
+1. **First-call no-output**: on the first call, the alpha filter is not updated
+   (avoids spike from uninitialized `_previous_sample`)
+2. **Constant-input convergence**: if the input signal is constant (`x_n = x`
+   for all `n`), the derivative term `(x - x) / dt = 0` and the alpha filter
+   output converges to 0 (by `AlphaFilter` convergence theorems from run 89)
+3. **Output bound**: if the alpha filter state is bounded, the derivative is
+   bounded by `|derivative| ≤ 2 * max_input / sample_interval`
+
+**Specification size**: ~8 theorems; approximately 100 Lean lines (including
+import of AlphaFilter.lean definitions).
+
+**Proof tractability**: EASY for the first-call and constant-input properties.
+The constant-input convergence proof directly reuses `alphaIterate_converges_*`
+from `AlphaFilter.lean`. The output bound requires a hypothesis on input range.
+
+**Approximations needed**: Model over `Int` with explicit `sample_interval : Nat`
+(must be > 0). The `FLT_EPSILON` threshold on `sample_interval` is modelled as
+`sample_interval > 0` (a strict positive integer). Mutable state replaced by
+pure functional record. Import `AlphaFilter.lean`.
+
+**Approach**:
+```lean
+import FVSquad.AlphaFilter  -- reuse alphaUpdate, alphaIterate
+
+structure FDState where
+  alpha  : AlphaState  -- wraps AlphaFilter state
+  prev   : Int         -- previous sample
+  inited : Bool
+
+def fdUpdate (alpha : Int) (dt : Nat) (sample : Int) (s : FDState) : FDState :=
+  if s.inited && dt > 0 then
+    { s with alpha := alphaUpdate s.alpha alpha ((sample - s.prev) / dt),
+             prev  := sample }
+  else
+    { s with prev := sample, inited := true }
+```
+Then: `fdUpdate_first_call_no_alpha_update`, `fdUpdate_const_input_converges` (by
+induction, reusing `alphaIterate_converges_up/down`), `fdUpdate_output_in_range`.
+
+---
+
+## Updated Priority Order (run 102)
+
+| Priority | Target | Phase | Rationale |
+|----------|--------|-------|-----------|
+| 1 | `sensor_orientation_to_yaw_offset` (target 45) | ⬜ Research | Immediately tractable; finite enum; decidable proofs; collision-prevention safety |
+| 2 | `FilteredDerivative::update` (target 47) | ⬜ Research | Composition of AlphaFilter; reuses existing proofs; rate-controller safety |
+| 3 | `goldensection` interval invariant (target 46) | ⬜ Research | Interesting algorithmic invariant; moderate complexity; moderate effort |
+| 4 | Multi-step PID convergence (extend PID.lean) | 🔄 Phase 5 | Analogous to AlphaFilter run 89; convergence when error → 0 |
+| 5 | `wrapRat` Mathlib sorry closure | 🔄 Phase 3 | 6 axioms; needs Mathlib `Int.floor` |
+| 6 | `Atmosphere` sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib |
+| 7 | `SqrtLinear` sqrt branch sorry closure | 🔄 Phase 3 | 3 axioms; needs Mathlib `Real.sqrt` |

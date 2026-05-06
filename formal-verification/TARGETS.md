@@ -104,6 +104,14 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 - **Phase 4 – Implementation**: Lean functional model of the C++ implementation
 - **Phase 5 – Proofs**: `sorry`-free proofs (or documented remaining stubs)
 
+## New Research Targets (Phase 1 — identified in run 102)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 45 | `sensor_orientation_to_yaw_offset` | `src/lib/collision_prevention/ObstacleMath.cpp:72` | 1 | ⬜ Research | — | Finite enum (8 defined cases); maps `SensorOrientation` to multiples of π/4; decidable injectivity and range `\|offset\| ≤ π`; CUSTOM case excluded |
+| 46 | `goldensection` interval invariant | `src/lib/mathlib/math/SearchMin.hpp:56` | 1 | ⬜ Research | — | Golden section search: `a ≤ c ≤ d ≤ b` ordering invariant; interval shrinks by `1/φ` per step; convergence (bounded by `tol`); higher-order function; needs careful abstraction |
+| 47 | `FilteredDerivative::update` | `src/lib/mathlib/math/filter/FilteredDerivative.hpp:84` | 1 | ⬜ Research | — | Discrete derivative + alpha IIR filter; first-call no-update; constant-input convergence (output → 0); builds on `AlphaFilter.lean` |
+
 ## Mathlib Dependency Notes
 
 All currently proved targets (1–19 except `wrap_pi`) use only Lean 4 stdlib — no Mathlib required.
