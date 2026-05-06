@@ -203,4 +203,76 @@ theorem countSetBits_pow2 (k : Nat) : countSetBits (2 ^ k) = 1 := by
     have hdiv : 2 ^ n * 2 / 2 = 2 ^ n := by omega
     rw [hmod, hdiv, ih]
 
+/-- `countSetBits 0 = 0`: zero has no bits set. -/
+theorem countSetBits_zero : countSetBits 0 = 0 := by native_decide
+
+/-- `countSetBits 1 = 1`: exactly one bit set in 1. -/
+theorem countSetBits_one : countSetBits 1 = 1 := by native_decide
+
+/-- Doubling a positive integer does not change its bit count.
+    Shifting left by one adds a zero LSB. -/
+theorem countSetBits_double (n : Nat) (hn : 0 < n) :
+    countSetBits (2 * n) = countSetBits n := by
+  rw [countSetBits_unfold (2 * n) (by omega)]
+  have hmod : 2 * n % 2 = 0 := by omega
+  have hdiv : 2 * n / 2 = n := by omega
+  simp [hmod, hdiv]
+
+/-- An odd number has one more bit set than its half.
+    The LSB 1 contributes exactly 1 to the count. -/
+theorem countSetBits_succ_odd (n : Nat) :
+    countSetBits (2 * n + 1) = 1 + countSetBits n := by
+  rw [countSetBits_unfold (2 * n + 1) (by omega)]
+  have hmod : (2 * n + 1) % 2 = 1 := by omega
+  have hdiv : (2 * n + 1) / 2 = n := by omega
+  rw [hmod, hdiv]
+
+/-- Any positive natural number has at least one bit set.
+    Safety property: `countSetBits n > 0` iff `n > 0`. -/
+theorem countSetBits_pos (n : Nat) (h : 0 < n) : 0 < countSetBits n := by
+  rw [countSetBits_unfold n h]
+  by_cases hmod : n % 2 = 0
+  · simp only [hmod, Nat.zero_add]
+    exact countSetBits_pos (n / 2) (by omega)
+  · omega
+termination_by n
+
+/-- Zero bit count iff zero: `countSetBits n = 0 ↔ n = 0`. -/
+theorem countSetBits_eq_zero_iff_zero (n : Nat) : countSetBits n = 0 ↔ n = 0 := by
+  constructor
+  · intro h
+    by_cases hn : n = 0
+    · exact hn
+    · exfalso
+      have hpos : 0 < n := Nat.pos_of_ne_zero hn
+      have hcpos : 0 < countSetBits n := countSetBits_pos n hpos
+      omega
+  · intro h; subst h; exact countSetBits_zero
+
+/-- The `signNoZero` product with the input is always non-negative.
+    `signNoZero(x) * x = |x|`: multiplying by the sign yields magnitude. -/
+theorem signNoZero_mul_self_nonneg (val : Int) : signNoZero val * val ≥ 0 := by
+  simp only [signNoZero]
+  by_cases h : 0 ≤ val
+  · rw [if_pos h]; omega
+  · rw [if_neg h]; omega
+
+/-- `signNoZero` negates when the input is strictly positive:
+    `signNoZero(-x) = -1` when `x > 0`. -/
+theorem signNoZero_neg_of_pos (val : Int) (h : 0 < val) : signNoZero (-val) = -1 := by
+  simp only [signNoZero]
+  have hneg : ¬ (0 : Int) ≤ -val := by omega
+  rw [if_neg hneg]
+
+/-- `signNoZero` is 1 when the input is strictly positive.
+    Companion to `signNoZero_nonneg` with strict hypothesis. -/
+theorem signNoZero_pos (val : Int) (h : 0 < val) : signNoZero val = 1 :=
+  signNoZero_nonneg val (Int.le_of_lt h)
+
+/-- `signNoZero 1 = 1`: concrete instance. -/
+theorem signNoZero_one : signNoZero 1 = 1 := by decide
+
+/-- `signNoZero (-1) = -1`: concrete instance. -/
+theorem signNoZero_neg_one : signNoZero (-1) = -1 := by decide
+
 end PX4.Math
