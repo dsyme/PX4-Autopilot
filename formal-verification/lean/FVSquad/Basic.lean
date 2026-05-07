@@ -37,3 +37,4 @@ import FVSquad.Min3Max3
 import FVSquad.VelocitySmoothing
 import FVSquad.PID
 import FVSquad.FilteredDerivative
+import FVSquad.GoldenSection
