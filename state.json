@@ -1,20 +1,27 @@
 {
-    "run": 105,
+    "run": 106,
     "last_updated": "2026-05-07",
-    "lean_version": "4.29.1",
+    "lean_version": "4.29.0",
     "lake_build_status": "passed",
     "totals": {
-        "theorems": 541,
-        "theorems_proved": 541,
+        "theorems": 554,
+        "theorems_proved": 552,
         "axioms": 10,
-        "sorry_count": 0,
-        "lean_files": 39,
-        "targets": 44
+        "sorry_count": 2,
+        "lean_files": 40,
+        "targets": 45
     },
     "sorry_locations": {
-        "all_resolved": "0 sorry in proof bodies. 10 axioms for irrational arithmetic."
+        "GoldenSection": "2 sorry: gsC_le_gsD (ring identity) + gs_midpoint_in_range (Rat.le_div_iff). Pending Mathlib.",
+        "other": "0 sorry in all other 39 files. 10 axioms for irrational arithmetic."
     },
-    "open_prs": [],
+    "open_prs": [
+        {
+            "branch": "lean-squad/goldensection-run106-25509561227",
+            "run": 106,
+            "title": "[Lean Squad] feat(fv): run106 — GoldenSection search invariants (13 theorems, 2 sorry)"
+        }
+    ],
     "bugs_found": 3,
     "correspondence_tests": {
         "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
@@ -25,60 +32,33 @@
     },
     "ci": {
         "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
-        "status": "updated run103 — correspondence-tests job restored"
+        "status": "passing"
     },
     "run_history": [
+        {
+            "run": 106,
+            "date": "2026-05-07T16:48 UTC",
+            "workflow_run_id": 25509561227,
+            "tasks": [
+                "Task 2 (Informal Spec): goldensection_informal.md — goldensection search preconditions, loop invariants, width contraction, convergence",
+                "Task 3+4+5: GoldenSection.lean — 13 theorems (11 proved, 2 sorry pending Mathlib)"
+            ],
+            "theorems_proved": 11,
+            "sorry_changes": 2,
+            "pr_branch": "lean-squad/goldensection-run106-25509561227",
+            "notes": "2 sorry: gsC_le_gsD (needs ring: d-c=(b-a)*(2r-1)) + gs_midpoint_in_range (needs Rat.le_div_iff). Both provable with Mathlib. Next: resolve sorry with Mathlib OR pick target_45 (SensorOrientation) or new target."
+        },
         {
             "run": 105,
             "date": "2026-05-07T09:30 UTC",
             "workflow_run_id": 25486614078,
             "tasks": [
-                "Task 5 (Proof Assistance): FilteredDerivative.lean — 12 theorems, 0 sorry. First-call structural invariants, constant-input convergence (fdIter_const_alpha_formula), no-overshoot bounds, monotone shrink, linear-ramp derivative identity.",
-                "Task 7 (Proof Utility Critique): CRITIQUE.md — updated to 39 files, 541 theorems. 6 new table rows for FilteredDerivative. Item 16 added. Last Updated header updated."
+                "Task 5 (Proof Assistance): FilteredDerivative.lean — 12 theorems, 0 sorry.",
+                "Task 7 (Proof Utility Critique): CRITIQUE.md updated."
             ],
             "theorems_proved": 12,
             "sorry_changes": 0,
-            "pr_branch": "lean-squad/critique-proof-run105-25486614078",
-            "notes": "541 theorems, 39 files. Next: target 46 (goldensection interval invariant) or target 45 (SensorOrientation — may already exist in unmergeable in-flight PR). Check memory carefully."
-        },
-        {
-            "run": 104,
-            "date": "2026-05-07T01:08 UTC",
-            "workflow_run_id": 25470078499,
-            "tasks": [
-                "Task 2 (Informal Spec): filteredderivative_informal.md",
-                "Task 3+4+5: FilteredDerivative.lean (run104 in-flight PR — NOT YET MERGED)"
-            ],
-            "theorems_proved": 13,
-            "sorry_changes": 0,
-            "pr_branch": "lean-squad/filtered-derivative-run104-25470078499",
-            "notes": "Run104 PR branch not found in remote — may have been deleted or not pushed. Run105 re-implemented FilteredDerivative with 12 theorems (slightly different set)."
-        },
-        {
-            "run": 103,
-            "date": "2026-05-06T16:46 UTC",
-            "workflow_run_id": 25448623268,
-            "tasks": [
-                "Task 5: SensorOrientation.lean — 15 theorems (run103 in-flight PR — NOT YET MERGED)",
-                "Task 9 (CI): lean-ci.yml — correspondence-tests job"
-            ],
-            "theorems_proved": 15,
-            "sorry_changes": 0,
-            "pr_branch": "lean-squad/sensor-orientation-ci-run103-25448623268",
-            "notes": "Run103 PR branch not found in remote — may have been deleted or not pushed."
-        },
-        {
-            "run": 102,
-            "date": "2026-05-06T09:13 UTC",
-            "workflow_run_id": 25426090735,
-            "tasks": [
-                "Task 6: CORRESPONDENCE.md — PID.lean section",
-                "Task 1: TARGETS.md + RESEARCH.md — 3 new targets (#45, #46, #47)"
-            ],
-            "theorems_proved": 0,
-            "sorry_changes": 0,
-            "pr_branch": "lean-squad/corr-research-run102-25426090735",
-            "notes": "PR #94 merged."
+            "pr_branch": "lean-squad/critique-proof-run105-25486614078"
         }
     ],
     "discoveries": [
@@ -105,45 +85,49 @@
         "simp handles mul_zero/zero_mul/add_zero for Int without explicit lemma names",
         "Rat.zero_div NOT available — use simp [Rat.div_def, Rat.mul_comm] for 0/dt = 0",
         "Rat.add_sub_cancel: a + b - a = b becomes rw [Rat.add_comm, Rat.add_sub_cancel] (no ring!)",
+        "Rat.sub_add_cancel : a - b + b = a (available stdlib)",
+        "Rat.neg_sub : -(a - b) = b - a (available stdlib)",
+        "b - (b - X) = X proof: rw [Rat.sub_eq_add_neg (a := b), Rat.neg_sub, Rat.add_comm, Rat.sub_add_cancel]",
+        "a ≤ b - c from a + c ≤ b: use (Rat.add_le_add_right (c := -c)).mpr + rw [add_assoc, add_neg_cancel, add_zero, ← sub_eq_add_neg]",
+        "Rat.le_iff_sub_nonneg : a ≤ b ↔ 0 ≤ b - a (useful for Rat inequality goals)",
         "fdIter_const proof: rw the fdUpdate step explicitly to show alphaState = alphaUpdate _ alpha 0, then apply alphaIterate induction"
     ],
     "mathlib_status": "blocked_403_cache_proxy",
-    "notes": "Run105: FilteredDerivative.lean done (12 theorems, 0 sorry). CRITIQUE.md updated. Next: target 46 (goldensection interval invariant, MODERATE) or target 45 (SensorOrientation — check if in-flight PR from run103 still exists). Also worth: Task 10 (REPORT.md update — very stale since run100).",
+    "notes": "Run106: GoldenSection.lean done (13 theorems, 2 sorry for ring/div). Next: resolve sorry with Mathlib OR pick new target. REPORT.md is stale (last updated run100). Consider updating REPORT.md in a future run.",
     "targets": {
         "PID": {
             "file": "formal-verification/lean/FVSquad/PID.lean",
             "source": "src/lib/pid/PID.cpp",
             "phase": 5,
             "theorems": 22,
-            "sorry": 0,
-            "correspondence_tests": "tests/pid/ (7964/7964)",
-            "notes": "Clamping, anti-windup, equilibrium, monotonicity. Int model abstracts float/NaN."
+            "sorry": 0
         },
         "VelocitySmoothing": {
             "file": "formal-verification/lean/FVSquad/VelocitySmoothing.lean",
             "source": "src/lib/motion_planning/VelocitySmoothing.cpp",
             "phase": 5,
             "theorems": 33,
-            "sorry": 0,
-            "notes": "computeT2/T3, total_T monotonicity, anti-windup, schedule partition."
+            "sorry": 0
         },
         "FilteredDerivative": {
             "file": "formal-verification/lean/FVSquad/FilteredDerivative.lean",
             "source": "src/lib/mathlib/math/filter/FilteredDerivative.hpp:84",
             "phase": 5,
             "theorems": 12,
-            "sorry": 0,
-            "notes": "fdUpdate structural + fdIter_const_alpha_formula (convergence) + bounds + linear-ramp derivative. Run105."
+            "sorry": 0
+        },
+        "GoldenSection": {
+            "file": "formal-verification/lean/FVSquad/GoldenSection.lean",
+            "source": "src/lib/mathlib/math/SearchMin.hpp:56",
+            "phase": 5,
+            "theorems": 13,
+            "sorry": 2,
+            "notes": "Run106. 2 sorry: gsC_le_gsD (ring: d-c=(b-a)*(2r-1)) + gs_midpoint_in_range (Rat.le_div_iff). Provable with Mathlib."
         },
         "target_45_sensor_orientation": {
             "source": "src/lib/collision_prevention/ObstacleMath.cpp:72-119",
             "phase": 1,
-            "notes": "Finite enum (8 defined cases); maps SensorOrientation to multiples of pi/4. Run103 in-flight PR may exist (branch not found in remote). If not merged, re-implement in future run."
-        },
-        "target_46_goldensection": {
-            "source": "src/lib/mathlib/math/SearchMin.hpp:56-81",
-            "phase": 1,
-            "notes": "MODERATE. Interval ordering invariant a<=c<=d<=b; shrinks by 1/phi. Higher-order function. Needs careful abstraction. Good next target."
+            "notes": "Finite enum (8 defined cases); maps SensorOrientation to multiples of pi/4. Good next target."
         }
     }
 }
