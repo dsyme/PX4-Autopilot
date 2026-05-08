@@ -1,25 +1,24 @@
 {
-    "run": 106,
-    "last_updated": "2026-05-07",
-    "lean_version": "4.29.0",
+    "run": 107,
+    "last_updated": "2026-05-08",
+    "lean_version": "4.29.1",
     "lake_build_status": "passed",
     "totals": {
-        "theorems": 554,
-        "theorems_proved": 552,
+        "theorems": 556,
+        "theorems_proved": 556,
         "axioms": 10,
-        "sorry_count": 2,
-        "lean_files": 40,
-        "targets": 45
+        "sorry_count": 0,
+        "lean_files": 41,
+        "targets": 46
     },
     "sorry_locations": {
-        "GoldenSection": "2 sorry: gsC_le_gsD (ring identity) + gs_midpoint_in_range (Rat.le_div_iff). Pending Mathlib.",
-        "other": "0 sorry in all other 39 files. 10 axioms for irrational arithmetic."
+        "all": "0 sorry in all 41 files. 10 axioms for irrational arithmetic."
     },
     "open_prs": [
         {
-            "branch": "lean-squad/goldensection-run106-25509561227",
-            "run": 106,
-            "title": "[Lean Squad] feat(fv): run106 — GoldenSection search invariants (13 theorems, 2 sorry)"
+            "branch": "run107-work",
+            "run": 107,
+            "title": "[Lean Squad] feat(fv): run107 — GoldenSection 0 sorry + CORRESPONDENCE review"
         }
     ],
     "bugs_found": 3,
@@ -36,17 +35,29 @@
     },
     "run_history": [
         {
+            "run": 107,
+            "date": "2026-05-08T01:21 UTC",
+            "workflow_run_id": 25530801981,
+            "tasks": [
+                "Task 5 (Proof Assistance): GoldenSection.lean — 2 sorry resolved (gsC_le_gsD + gs_midpoint_in_range). New helpers: rat_mul_sub, rat_two_mul, gs_interior_key, gs_interior_expand.",
+                "Task 6 (Correspondence Review): CORRESPONDENCE.md — Added FilteredDerivative + GoldenSection sections. Summary table +2 rows."
+            ],
+            "theorems_proved": 2,
+            "sorry_changes": -2,
+            "pr_branch": "run107-work",
+            "notes": "0 sorry now in all 41 files. Key discoveries: rat_mul_sub/rat_two_mul helpers enable ring-like Rat proofs without Mathlib. Midpoint proof: use Rat.div_def + native_decide for (2:Rat)⁻¹ = 1/2."
+        },
+        {
             "run": 106,
             "date": "2026-05-07T16:48 UTC",
             "workflow_run_id": 25509561227,
             "tasks": [
-                "Task 2 (Informal Spec): goldensection_informal.md — goldensection search preconditions, loop invariants, width contraction, convergence",
-                "Task 3+4+5: GoldenSection.lean — 13 theorems (11 proved, 2 sorry pending Mathlib)"
+                "Task 2 (Informal Spec): goldensection_informal.md",
+                "Task 3+4+5: GoldenSection.lean — 13 theorems (11 proved, 2 sorry)"
             ],
             "theorems_proved": 11,
             "sorry_changes": 2,
-            "pr_branch": "lean-squad/goldensection-run106-25509561227",
-            "notes": "2 sorry: gsC_le_gsD (needs ring: d-c=(b-a)*(2r-1)) + gs_midpoint_in_range (needs Rat.le_div_iff). Both provable with Mathlib. Next: resolve sorry with Mathlib OR pick target_45 (SensorOrientation) or new target."
+            "pr_branch": "lean-squad/goldensection-run106-25509561227-e6674099fdb8ac68"
         },
         {
             "run": 105,
@@ -58,7 +69,7 @@
             ],
             "theorems_proved": 12,
             "sorry_changes": 0,
-            "pr_branch": "lean-squad/critique-proof-run105-25486614078"
+            "pr_branch": "lean-squad/critique-proof-run105-25486614078-5d92a60bd2f3d1a5"
         }
     ],
     "discoveries": [
@@ -90,10 +101,20 @@
         "b - (b - X) = X proof: rw [Rat.sub_eq_add_neg (a := b), Rat.neg_sub, Rat.add_comm, Rat.sub_add_cancel]",
         "a ≤ b - c from a + c ≤ b: use (Rat.add_le_add_right (c := -c)).mpr + rw [add_assoc, add_neg_cancel, add_zero, ← sub_eq_add_neg]",
         "Rat.le_iff_sub_nonneg : a ≤ b ↔ 0 ≤ b - a (useful for Rat inequality goals)",
-        "fdIter_const proof: rw the fdUpdate step explicitly to show alphaState = alphaUpdate _ alpha 0, then apply alphaIterate induction"
+        "fdIter_const proof: rw the fdUpdate step explicitly to show alphaState = alphaUpdate _ alpha 0, then apply alphaIterate induction",
+        "rat_mul_sub: a*(b-c) = a*b - a*c proved via Rat.sub_eq_add_neg + Rat.mul_add + Rat.mul_neg (NO Mathlib needed)",
+        "rat_two_mul: r+r = 2*r proved via ← Rat.one_mul + ← Rat.add_mul + native_decide for 1+1=2 + Rat.one_mul",
+        "gsC_le_gsD proof: symm + rat_mul_sub + native_decide chain; simp [add_comm,add_assoc,add_left_comm] normalises",
+        "gs_midpoint_in_range: use Rat.div_def + native_decide for (2:Rat)⁻¹=1/2 + Rat.add_mul + hxx pattern",
+        "conv_lhs/conv_rhs NOT available without Mathlib — use calc instead to rewrite one side",
+        "Rat.mul_sub and Rat.sub_mul NOT in stdlib — must derive from Rat.sub_eq_add_neg + Rat.mul_add + Rat.mul_neg",
+        "Rat.div_add_div_same NOT in stdlib",
+        "Rat.sub_zero and sub_zero NOT in stdlib for Rat",
+        "linarith NOT available for Rat without Mathlib — use Rat.mul_le_mul_of_nonneg_right + native_decide chains",
+        "native_decide works for Rat arithmetic BUT NOT for Rat.DecidableEq on non-reduced forms (use norm_num if available)"
     ],
     "mathlib_status": "blocked_403_cache_proxy",
-    "notes": "Run106: GoldenSection.lean done (13 theorems, 2 sorry for ring/div). Next: resolve sorry with Mathlib OR pick new target. REPORT.md is stale (last updated run100). Consider updating REPORT.md in a future run.",
+    "notes": "Run107: GoldenSection fully proved (15 theorems, 0 sorry). 0 sorry in all 41 files. Key new discovery: rat_mul_sub + rat_two_mul helpers enable ring-like Rat proofs without Mathlib. Next target: target_45 (SensorOrientation/ObstacleMath.cpp:72-119) or new research.",
     "targets": {
         "PID": {
             "file": "formal-verification/lean/FVSquad/PID.lean",
@@ -120,9 +141,9 @@
             "file": "formal-verification/lean/FVSquad/GoldenSection.lean",
             "source": "src/lib/mathlib/math/SearchMin.hpp:56",
             "phase": 5,
-            "theorems": 13,
-            "sorry": 2,
-            "notes": "Run106. 2 sorry: gsC_le_gsD (ring: d-c=(b-a)*(2r-1)) + gs_midpoint_in_range (Rat.le_div_iff). Provable with Mathlib."
+            "theorems": 15,
+            "sorry": 0,
+            "notes": "Run107: 2 sorry resolved. 15 theorems: gsC_ge_a, gsD_le_b, gsD_ge_a, gsC_le_gsD, gs_width_b/a_step, gs_width_steps_equal, gs_width_nonneg_after_b_step, gs_width_contracts, gsD_in_range, gsC_in_range, gs_ordering, gs_midpoint_in_range + 2 helpers + 6 native_decide examples."
         },
         "target_45_sensor_orientation": {
             "source": "src/lib/collision_prevention/ObstacleMath.cpp:72-119",
