@@ -1,5 +1,5 @@
 {
-  "run": 132,
+  "run": 133,
   "last_updated": "2026-05-17",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
@@ -34,6 +34,19 @@
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 133,
+      "date": "2026-05-17T17:15 UTC",
+      "workflow_run_id": 25997340755,
+      "tasks": [
+        "Task 2 (Informal Spec Extraction): filteredderivative_informal.md \u2014 documents FilteredDerivative::update preconditions, postconditions, 3 examples, 7 formal properties, open questions.",
+        "Task 1 (Research & Target Identification): TARGETS.md \u2014 fixed 14 stale Research\u2192Proved entries; added targets 58 (BlockLimit), 59 (WelfordMeanVector), 60 (BlockIntegralTrap tests). RESEARCH.md \u2014 added detailed entries + updated priority queue."
+      ],
+      "theorems_proved": 0,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-133-filteredderivative-spec-targets-update",
+      "notes": "752 theorems total, 51 files, 0 sorry. Run focused on documentation: informal spec + target list cleanup."
+    },
     {
       "run": 132,
       "date": "2026-05-17T04:30 UTC",
@@ -117,16 +130,16 @@
       "notes": "Both pos/neg saturation proved. Next: pidOutput sign follows error sign when integral saturated."
     },
     {
-      "id": "blockintegraltrap-sign",
-      "name": "BlockIntegralTrap sign-invariant folds \u2014 COMPLETE (run 132)",
-      "phase": 5,
-      "notes": "5 theorems: dt_zero, nonneg_output, fold_y_nonneg, nonpos_output, fold_y_nonpos. 30 total."
+      "id": "blockstats-spec",
+      "name": "BlockStats running sum accumulator",
+      "phase": 1,
+      "notes": "Target 57 in TARGETS.md. ~8 theorems, all omega-provable. Highest priority new Lean target."
     },
     {
-      "id": "purepursuit-spec",
-      "name": "PurePursuit informal spec written (run 126)",
-      "phase": 2,
-      "notes": "Informal spec exists. Next: formal Lean spec writing (Task 3)."
+      "id": "blocklimit-spec",
+      "name": "BlockLimit asymmetric clamp",
+      "phase": 1,
+      "notes": "Target 58 in TARGETS.md. Immediate reuse of constrain_range pattern. Simple and tractable."
     }
   ]
 }
