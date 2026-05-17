@@ -1,11 +1,11 @@
 {
-  "run": 131,
-  "last_updated": "2026-05-16",
+  "run": 132,
+  "last_updated": "2026-05-17",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 747,
-    "theorems_proved": 747,
+    "theorems": 752,
+    "theorems_proved": 752,
     "axioms": 10,
     "sorry_count": 0,
     "lean_files": 51,
@@ -30,17 +30,30 @@
     "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate formula; theorem spot-checks)"
   },
   "ci": {
-    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 132,
+      "date": "2026-05-17T04:30 UTC",
+      "workflow_run_id": 25981113571,
+      "tasks": [
+        "Task 5 (Proof Assistance): BlockIntegralTrap.lean \u2014 5 new theorems: itUpdate_dt_zero (dt=0 identity), itUpdate_nonneg_output/itFold_y_nonneg (nonneg invariant), itUpdate_nonpos_output/itFold_y_nonpos (nonpos invariant). 25\u219230 theorems.",
+        "Task 10 (Project Report): REPORT.md updated \u2014 752 theorems, 51 files, alpha_filter correspondence tests added, run 132 timeline."
+      ],
+      "theorems_proved": 5,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-132-blockintegraltrap-sign-invariants-report",
+      "notes": "752 theorems total, 51 files, 0 sorry. BlockIntegralTrap now has 30 theorems."
+    },
     {
       "run": 131,
       "date": "2026-05-16T17:30 UTC",
       "workflow_run_id": 25967987089,
       "tasks": [
-        "Task 8 (Route B): AlphaFilter correspondence tests — 257/257 pass; covers boundary, dyadic-rational grid, decimal grid, multi-step convergence, theorem spot-checks.",
-        "Task 3 (Formal Spec Writing): blockintegraltrap_informal.md — informal spec for BlockIntegralTrap::update. BlockIntegralTrap.lean — 9 new theorems: itFold_u_eq_last, itUpdate_zero_limit, itUpdate_nonneg_input_nondecreasing, itUpdate_nonpos_input_nonincreasing, itUpdate_trap_symmetric, itFold_nil, itFold_singleton, itFold_cons."
+        "Task 8 (Route B): AlphaFilter correspondence tests \u2014 257/257 pass; covers boundary, dyadic-rational grid, decimal grid, multi-step convergence, theorem spot-checks.",
+        "Task 3 (Formal Spec Writing): blockintegraltrap_informal.md \u2014 informal spec for BlockIntegralTrap::update. BlockIntegralTrap.lean \u2014 9 new theorems: itFold_u_eq_last, itUpdate_zero_limit, itUpdate_nonneg_input_nondecreasing, itUpdate_nonpos_input_nonincreasing, itUpdate_trap_symmetric, itFold_nil, itFold_singleton, itFold_cons."
       ],
       "theorems_proved": 9,
       "sorry_changes": 0,
@@ -61,29 +74,29 @@
     }
   ],
   "discoveries": [
-    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) — proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
-    "cv_cube_le_cv: cv^3 ≤ cv for cv∈[0,1] — use mul_le_mul_of_nonneg_right twice with hcvsq ≤ 1",
+    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) \u2014 proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
+    "cv_cube_le_cv: cv^3 \u2264 cv for cv\u2208[0,1] \u2014 use mul_le_mul_of_nonneg_right twice with hcvsq \u2264 1",
     "expo_mono_e_neg_v derived from expo_mono_e_pos_v + expo_odd via Rat.neg_le_neg",
     "Rat.add_neg_cancel : a + -a = 0 (available in Lean 4.29.0 stdlib)",
     "import must come BEFORE module docblock in Lean 4",
     "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
     "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
-    "prefix is reserved in Lean 4 — use pfx/sfx",
+    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
     "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
     "FVSquad.lean AND Basic.lean must both import new files",
-    "Int.add_emod_right : (a + b) % b = a % b — direct periodicity lemma",
+    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
     "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
     "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
     "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
     "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
     "computeT3 proof: simp [max_def] + linarith covers all cases",
     "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
-    "ring, nlinarith, linarith are MATHLIB ONLY — not available in standard Lean 4 stdlib",
+    "ring, nlinarith, linarith are MATHLIB ONLY \u2014 not available in standard Lean 4 stdlib",
     "simp only [def_name] beta-reduces let-bindings in goals",
-    "Rat.zero_div NOT available — use simp [Rat.div_def, Rat.mul_comm] for 0/dt = 0",
-    "Rat.lt_of_lt_of_le / Rat.lt_of_le_of_lt do NOT exist — use by_cases + by_contradiction pattern",
-    "Transitivity lt_le: by_cases h : a < c; if not, then c ≤ a, then le_trans h2 (not_lt.mp h) contradicts lt",
+    "Rat.zero_div NOT available \u2014 use simp [Rat.div_def, Rat.mul_comm] for 0/dt = 0",
+    "Rat.lt_of_lt_of_le / Rat.lt_of_le_of_lt do NOT exist \u2014 use by_cases + by_contradiction pattern",
+    "Transitivity lt_le: by_cases h : a < c; if not, then c \u2264 a, then le_trans h2 (not_lt.mp h) contradicts lt",
     "cube_mono_rat: case split on sign of v2, then v1 (3 cases: both nonneg, mixed, both nonpos)",
     "constrain_mono via simp only + by_cases on h1,h3,h4 branches (5 cases total)",
     "expo_mono_val: needs constrain_mono + cube_mono_rat + two Rat.add_le_add_left/right steps",
@@ -91,35 +104,29 @@
     "updateIntegral convergence: Int.mul_pos (Int.mul_pos hg he) hdt for gainI*error*dt > 0",
     "clamp saturation: rw [if_neg (by omega), if_pos (by omega)] then exact Int.le_refl _ closes limitI<=limitI",
     "rConstrain v 0 0 = 0: by_cases h1 : v < 0; by_cases h2 : v > 0; else Rat.le_antisymm + simp + rfl",
-    "Rat.add_nonpos NOT available: use calc s.u + input ≤ s.u + 0 := ... ≤ 0 := hu",
+    "Rat.add_nonpos NOT available: use calc s.u + input \u2264 s.u + 0 := ... \u2264 0 := hu",
     "Rat.div_nonneg NOT available: use rw [Rat.div_def]; Rat.mul_nonneg + Rat.inv_pos",
-    "Rat.le_add_of_nonneg_right NOT available: use calc a = a + 0 := ... ≤ a + b via Rat.add_le_add_left.mpr",
+    "Rat.le_add_of_nonneg_right NOT available: use calc a = a + 0 := ... \u2264 a + b via Rat.add_le_add_left.mpr",
     "simp only [if_neg h, if_pos h2] + rfl to close the positive case of rConstrain case split"
   ],
   "priority_targets": [
     {
       "id": "pid-output-convergence",
-      "name": "PID output convergence (negative saturation proved; next: full sign-tracking theorem)",
+      "name": "PID output sign-tracking when integral saturated",
       "phase": 4,
-      "notes": "Both pos/neg saturation proved (runs 113+116). Next: pidOutput sign-tracking when integral saturated."
+      "notes": "Both pos/neg saturation proved. Next: pidOutput sign follows error sign when integral saturated."
     },
     {
-      "id": "axiom-closure",
-      "name": "wrapRat/Atmosphere/SqrtLinear axiom closure",
-      "phase": 3,
-      "notes": "Needs Mathlib — awaiting network/lake update"
-    },
-    {
-      "id": "alpha-filter-tests",
-      "name": "AlphaFilter correspondence tests — COMPLETE (run 131)",
+      "id": "blockintegraltrap-sign",
+      "name": "BlockIntegralTrap sign-invariant folds \u2014 COMPLETE (run 132)",
       "phase": 5,
-      "notes": "257/257 tests pass. Confirms exact rational model."
+      "notes": "5 theorems: dt_zero, nonneg_output, fold_y_nonneg, nonpos_output, fold_y_nonpos. 30 total."
     },
     {
-      "id": "blockintegraltrap-informal",
-      "name": "BlockIntegralTrap informal spec + theorems — run 131",
-      "phase": 4,
-      "notes": "Informal spec written, 9 new structural theorems added. Total 25 theorems."
+      "id": "purepursuit-spec",
+      "name": "PurePursuit informal spec written (run 126)",
+      "phase": 2,
+      "notes": "Informal spec exists. Next: formal Lean spec writing (Task 3)."
     }
   ]
 }
