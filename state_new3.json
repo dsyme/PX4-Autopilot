@@ -1,0 +1,128 @@
+{
+  "run": 133,
+  "last_updated": "2026-05-17",
+  "lean_version": "4.29.1",
+  "lake_build_status": "passed",
+  "totals": {
+    "theorems": 760,
+    "theorems_proved": 760,
+    "axioms": 10,
+    "sorry_count": 0,
+    "lean_files": 51,
+    "targets": 56
+  },
+  "sorry_locations": {
+    "all": "0 sorry in all 51 files. 10 axioms for irrational arithmetic."
+  },
+  "open_prs": [],
+  "bugs_found": 6,
+  "correspondence_tests": {
+    "atmosphere": "tests/atmosphere/ (26/26 pass)",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass)",
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass)",
+    "hysteresis": "tests/hysteresis/ (259/259 pass)",
+    "pid": "tests/pid/ (7964/7964 pass)",
+    "count_set_bits": "tests/count_set_bits/ (871/871 pass)",
+    "expo": "tests/expo/ (1373/1373 pass)",
+    "BlockIntegralTrap": "tests/BlockIntegralTrap/ (120/120 pass)",
+    "LowPassFilter2p": "tests/LowPassFilter2p/ (28/28 pass)",
+    "deadzone": "tests/deadzone/ (existing)",
+    "alpha_filter": "tests/alpha_filter/ (257/257 pass)"
+  },
+  "ci": {
+    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests'. Triggers on lean/** and tests/**.",
+    "status": "passing"
+  },
+  "run_history": [
+    {
+      "run": 133,
+      "date": "2026-05-17T10:00 UTC",
+      "workflow_run_id": 25987712606,
+      "tasks": [
+        "Task 5 (Proof Assistance): PID.lean — 8 new output sign theorems: clamp_pos/neg_of_pos/neg, pidOutputRaw_pos/neg, pidOutput_pos/neg, pidOutput_pos/neg_at_pos/neg_saturation.",
+        "Task 6 (Correspondence Review): CORRESPONDENCE.md — PurePursuit section added (10 theorems, 0 sorry). Run 131/133 notes added."
+      ],
+      "theorems_proved": 8,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-133-pid-output-sign-correspondence",
+      "notes": "~760 theorems total, 51 files, 0 sorry. PID now formally proves output sign tracks error sign."
+    },
+    {
+      "run": 132,
+      "date": "2026-05-17T04:30 UTC",
+      "workflow_run_id": 25981113571,
+      "tasks": [
+        "Task 5: BlockIntegralTrap.lean — 5 new sign-invariant theorems. Task 10: REPORT.md updated."
+      ],
+      "notes": "Memory entry only — PR status unconfirmed."
+    },
+    {
+      "run": 131,
+      "date": "2026-05-16T17:30 UTC",
+      "workflow_run_id": 25967987089,
+      "tasks": [
+        "Task 8: AlphaFilter correspondence tests (257/257). Task 3: BlockIntegralTrap informal spec + 9 theorems."
+      ],
+      "theorems_proved": 9,
+      "pr_branch": "lean-squad/run-131-alpha-filter-tests-blockintegraltrap-spec-1759510242794cf0"
+    }
+  ],
+  "discoveries": [
+    "clamp_pos_of_pos: by_cases h1: val < -limit; if so, omega; else by_cases h2: val > limit; if so exact hl; else exact hv",
+    "clamp_neg_of_neg: by_cases h1: val < -limit; if so, omega (-limit < 0); else by_cases h2: val > limit; omega (val<0); else exact hv",
+    "pidOutputRaw_pos: Int.mul_pos hgP herr + omega (treats products as atoms)",
+    "linarith is MATHLIB ONLY — use omega after naming products",
+    "split_ifs is MATHLIB ONLY — use by_cases + simp only [if_pos/if_neg]",
+    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv)",
+    "cv_cube_le_cv: cv^3 <= cv for cv in [0,1]",
+    "Rat.add_neg_cancel : a + -a = 0",
+    "import must come BEFORE module docblock in Lean 4",
+    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega",
+    "abbrev is transparent to omega; simp-unfold first is safer",
+    "prefix is reserved in Lean 4 — use pfx/sfx",
+    "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
+    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
+    "FVSquad.lean AND Basic.lean must both import new files",
+    "Int.add_emod_right : (a + b) % b = a % b",
+    "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
+    "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
+    "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
+    "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
+    "computeT3 proof: simp [max_def] + linarith covers all cases",
+    "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
+    "ring, nlinarith, linarith are MATHLIB ONLY — not available in standard Lean 4 stdlib",
+    "simp only [def_name] beta-reduces let-bindings in goals",
+    "Rat.zero_div NOT available — use simp [Rat.div_def, Rat.mul_comm]",
+    "Transitivity lt_le: by_cases + by_contradiction pattern",
+    "cube_mono_rat: case split on sign of v2, then v1",
+    "constrain_mono via simp only + by_cases on branches",
+    "expo_mono_val: needs constrain_mono + cube_mono_rat + two Rat.add_le_add steps",
+    "pidStateIterate: prove one_step lemma then use in induction",
+    "updateIntegral convergence: Int.mul_pos (Int.mul_pos hg he) hdt",
+    "clamp saturation: rw [if_neg (by omega), if_pos (by omega)] then exact Int.le_refl _",
+    "rConstrain v 0 0 = 0: by_cases h1 : v < 0; by_cases h2 : v > 0; else Rat.le_antisymm",
+    "Rat.add_nonpos NOT available: use calc",
+    "Rat.div_nonneg NOT available: use rw [Rat.div_def]; Rat.mul_nonneg + Rat.inv_pos",
+    "simp only [if_neg h, if_pos h2] + rfl to close the positive case of rConstrain case split"
+  ],
+  "priority_targets": [
+    {
+      "id": "pid-output-convergence-complete",
+      "name": "PID output sign-tracking — COMPLETE (run 133)",
+      "phase": 5,
+      "notes": "8 theorems: clamp_pos/neg_of_pos/neg, pidOutputRaw_pos/neg, pidOutput_pos/neg, saturation versions. All proved 0 sorry."
+    },
+    {
+      "id": "purepursuit-formal-spec",
+      "name": "PurePursuit formal Lean spec (Task 3)",
+      "phase": 3,
+      "notes": "10 theorems in PurePursuit.lean, 0 sorry. CORRESPONDENCE.md section added run 133. Next: Route B correspondence tests or more bearing theorems."
+    },
+    {
+      "id": "blockintegraltrap-dt-zero",
+      "name": "BlockIntegralTrap dt=0 identity and sign invariants",
+      "phase": 4,
+      "notes": "Run 131 gave 26 theorems. Run 132 memory entry claims 5 more but PR unconfirmed. Check file state before adding."
+    }
+  ]
+}
