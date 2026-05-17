@@ -662,4 +662,133 @@ theorem pidIntegralIterate_neg_saturates
           · rw [if_neg h2]; omega
       exact ih (updateIntegral init gainI error dt limitI) hstep_lo hstep_hi hdist
 
+-- ============================================================
+-- § 9  Output sign theorems
+-- These theorems prove that the PID output sign tracks the error sign
+-- when the integral term is non-negative/non-positive respectively.
+-- They formalise the intuitive property: a positive tracking error
+-- (setpoint > feedback) drives a positive control output.
+-- ============================================================
+
+/-- `clamp val limit > 0` whenever `val > 0` and `limit > 0`. -/
+theorem clamp_pos_of_pos (val limit : Int) (hv : 0 < val) (hl : 0 < limit) :
+    0 < clamp val limit := by
+  simp only [clamp]
+  by_cases h1 : val < -limit
+  · simp only [if_pos h1]; omega
+  · simp only [if_neg h1]
+    by_cases h2 : val > limit
+    · simp only [if_pos h2]; exact hl
+    · simp only [if_neg h2]; exact hv
+
+/-- `clamp val limit < 0` whenever `val < 0` and `limit > 0`. -/
+theorem clamp_neg_of_neg (val limit : Int) (hv : val < 0) (hl : 0 < limit) :
+    clamp val limit < 0 := by
+  simp only [clamp]
+  by_cases h1 : val < -limit
+  · simp only [if_pos h1]; omega
+  · simp only [if_neg h1]
+    by_cases h2 : val > limit
+    · simp only [if_pos h2]; omega
+    · simp only [if_neg h2]; exact hv
+
+/-- The raw PID output is positive when:
+    - tracking error (`sp - fb`) is positive,
+    - proportional gain is positive,
+    - integral term is non-negative, and
+    - the derivative contribution `gainD * deriv` is non-negative. -/
+theorem pidOutputRaw_pos (sp fb dt gainP gainD : Int) (state : PIDState)
+    (herr  : 0 < sp - fb)
+    (hgP   : 0 < gainP)
+    (hint  : 0 ≤ state.integral)
+    (hder  : 0 ≤ gainD * updateDerivative fb dt state.lastFeedback) :
+    0 < pidOutputRaw sp fb dt gainP gainD state := by
+  simp only [pidOutputRaw]
+  have hP : 0 < gainP * (sp - fb) := Int.mul_pos hgP herr
+  omega
+
+/-- The raw PID output is negative when:
+    - tracking error (`sp - fb`) is negative,
+    - proportional gain is positive,
+    - integral term is non-positive, and
+    - the derivative contribution is non-positive. -/
+theorem pidOutputRaw_neg (sp fb dt gainP gainD : Int) (state : PIDState)
+    (herr  : sp - fb < 0)
+    (hgP   : 0 < gainP)
+    (hint  : state.integral ≤ 0)
+    (hder  : gainD * updateDerivative fb dt state.lastFeedback ≤ 0) :
+    pidOutputRaw sp fb dt gainP gainD state < 0 := by
+  simp only [pidOutputRaw]
+  have hP : gainP * (sp - fb) < 0 := Int.mul_neg_of_pos_of_neg hgP herr
+  omega
+
+/-- The clamped PID output is positive whenever the raw output is positive and
+    the output limit is positive. -/
+theorem pidOutput_pos (sp fb dt gainP gainD limitO : Int) (state : PIDState)
+    (herr  : 0 < sp - fb)
+    (hgP   : 0 < gainP)
+    (hint  : 0 ≤ state.integral)
+    (hder  : 0 ≤ gainD * updateDerivative fb dt state.lastFeedback)
+    (hlO   : 0 < limitO) :
+    0 < pidOutput sp fb dt gainP gainD limitO state := by
+  simp only [pidOutput]
+  exact clamp_pos_of_pos _ _ (pidOutputRaw_pos sp fb dt gainP gainD state herr hgP hint hder) hlO
+
+/-- The clamped PID output is negative whenever the raw output is negative and
+    the output limit is positive. -/
+theorem pidOutput_neg (sp fb dt gainP gainD limitO : Int) (state : PIDState)
+    (herr  : sp - fb < 0)
+    (hgP   : 0 < gainP)
+    (hint  : state.integral ≤ 0)
+    (hder  : gainD * updateDerivative fb dt state.lastFeedback ≤ 0)
+    (hlO   : 0 < limitO) :
+    pidOutput sp fb dt gainP gainD limitO state < 0 := by
+  simp only [pidOutput]
+  exact clamp_neg_of_neg _ _ (pidOutputRaw_neg sp fb dt gainP gainD state herr hgP hint hder) hlO
+
+/-- **Output sign at positive saturation** (first call): when the integral is
+    at its upper limit `limitI > 0`, `sp > fb` (positive error), `gainP > 0`,
+    and it is the first derivative call (no previous feedback sample), then
+    the PID output is strictly positive.
+
+    This formalises the property that a fully saturated positive integral combined
+    with positive error always drives a positive control signal. -/
+theorem pidOutput_pos_at_pos_saturation
+    (sp fb dt gainP gainD limitO limitI : Int)
+    (state : PIDState)
+    (hsp   : 0 < sp - fb)
+    (hgP   : 0 < gainP)
+    (hlI   : 0 < limitI)
+    (hint  : state.integral = limitI)
+    (hfst  : state.lastFeedback = none)
+    (hlO   : 0 < limitO) :
+    0 < pidOutput sp fb dt gainP gainD limitO state := by
+  apply pidOutput_pos <;> try assumption
+  · rw [hint]; omega
+  · rw [hfst]
+    simp only [updateDerivative]
+    omega
+
+/-- **Output sign at negative saturation** (first call): when the integral is
+    at its lower limit `-limitI` (with `limitI > 0`), `sp < fb` (negative error),
+    `gainP > 0`, and it is the first derivative call, then the PID output is
+    strictly negative.
+
+    Symmetric counterpart of `pidOutput_pos_at_pos_saturation`. -/
+theorem pidOutput_neg_at_neg_saturation
+    (sp fb dt gainP gainD limitO limitI : Int)
+    (state : PIDState)
+    (hsp   : sp - fb < 0)
+    (hgP   : 0 < gainP)
+    (hlI   : 0 < limitI)
+    (hint  : state.integral = -limitI)
+    (hfst  : state.lastFeedback = none)
+    (hlO   : 0 < limitO) :
+    pidOutput sp fb dt gainP gainD limitO state < 0 := by
+  apply pidOutput_neg <;> try assumption
+  · rw [hint]; omega
+  · rw [hfst]
+    simp only [updateDerivative]
+    omega
+
 end PX4.PID
