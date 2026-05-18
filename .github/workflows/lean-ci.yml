@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - 'formal-verification/lean/**'
+      - 'formal-verification/tests/**'
   push:
     branches:
       - main
     paths:
       - 'formal-verification/lean/**'
+      - 'formal-verification/tests/**'
   workflow_dispatch:
 
 jobs:
@@ -65,3 +67,39 @@ jobs:
         with:
           name: lake-build-log
           path: /tmp/lake_build.log
+
+  correspondence-tests:
+    name: Correspondence Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run atmosphere correspondence tests (26 cases)
+        run: python3 formal-verification/tests/atmosphere/check_correspondence.py
+
+      - name: Run slew_rate correspondence tests (4327 cases)
+        run: python3 formal-verification/tests/slew_rate/check_correspondence.py
+
+      - name: Run count_set_bits correspondence tests (871 cases)
+        run: python3 formal-verification/tests/count_set_bits/check_correspondence.py
+
+      - name: Run expo correspondence tests (1373 cases)
+        run: python3 formal-verification/tests/expo/check_correspondence.py
+
+      - name: Run pid correspondence tests (7964 cases)
+        run: python3 formal-verification/tests/pid/check_correspondence.py
+
+      - name: Run deadzone correspondence tests (1221 cases)
+        run: python3 formal-verification/tests/deadzone/check_correspondence.py
+
+      - name: Run BlockIntegralTrap correspondence tests (120 cases)
+        run: python3 formal-verification/tests/BlockIntegralTrap/test_correspondence.py
+
+      - name: Run LowPassFilter2p correspondence tests (28 cases)
+        run: python3 formal-verification/tests/LowPassFilter2p/test_correspondence.py
