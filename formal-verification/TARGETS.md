@@ -49,20 +49,20 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 |---|------|------|-------|--------|-----------|-------|
 | 25 | `ObstacleMath::wrap_bin` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/WrapBin.lean` | 20 theorems, 0 sorry; latent C++ truncation-mod bug confirmed by `wrapBinCpp_bug_general` |
 | 26 | `math::sqrt_linear` | `src/lib/mathlib/math/Functions.hpp` | 5 | 🔄 Partial | `lean/FVSquad/SqrtLinear.lean` | 12 theorems proved, 3 sorry (sqrt branch needs Mathlib `Real.sqrt`); informal spec written |
-| 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Angle-to-bin conversion; depends on target 25; float `round` needs Mathlib for complete proof |
+| 27 | `ObstacleMath::get_bin_at_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetBinAtAngle.lean` | 14 theorems, 0 sorry; bin-index range safety, wrapping, offset variants; correspondence tests in `tests/bin_at_angle/` (334/334 pass) |
 
 ## New Research Targets (Phase 1 — identified in run 63)
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 1 | ⬜ Research | — | Lower bound angle of a bin; builds on WrapBin; rational model; range invariant [0, 360) |
-| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 1 | ⬜ Research | — | CRC fold/split: `crc16(a++b) = crc16_append(crc16(a),b)`; same structure as Crc16Fold; `List.foldl_append` proof |
+| 28 | `ObstacleMath::get_lower_bound_angle` | `src/lib/collision_prevention/ObstacleMath.cpp` | 5 | ✅ Proved | `lean/FVSquad/GetLowerBoundAngle.lean` | 14 theorems, 0 sorry; range invariant [0°, 360°), wrap properties, monotonicity |
+| 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc16Sig.lean` | 8 theorems, 0 sorry; fold/split via `List.foldl_append` |
 | 35 | `crc32_signature` fold/split (ISO-HDLC) | `src/lib/crc/crc.c` | 2 | ✅ Informal Spec | — | CRC-32/ISO-HDLC (poly `0xEDB88320`); informal spec in `specs/crc32_informal.md`; fold property mirrors Crc16Fold; used in UAVCAN bootloader |
 | 29 | `crc16_signature` fold/split (CCITT) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc16Sig.lean` | 8 theorems, 0 sorry; fold/split via `List.foldl_append` |
 | 35 | `crc32_signature` fold/split (ISO-HDLC) | `src/lib/crc/crc.c` | 5 | ✅ Proved | `lean/FVSquad/Crc32Sig.lean` | 11 theorems, 0 sorry; LSBIT-first CRC-32/ISO-HDLC; fold/split + 6 concrete examples; used in UAVCAN bootloader |
 | 30 | `math::computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp` | 5 | ✅ Proved | `lean/FVSquad/BrakingDist.lean` | 9 theorems, 0 sorry; non-negativity, monotonicity, quadratic scaling, no-delay formula; informal spec in `specs/braking_dist_informal.md` |
-| 31 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Expo curve for RC input shaping; bounded output ∈ [−1,1]; fixes ±1 and 0; linear at e=0, cubic at e=1 |
-| 32 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 1 | ⬜ Research | — | Linear interpolation; endpoint correctness, affinity in s, convex combination for 0≤s≤1 |
+| 31 | `math::expo` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Expo.lean` | RC stick curve; 12 theorems, 0 sorry; odd symmetry, range containment, fixed points, 1373/1373 Route B tests |
+| 32 | `math::lerp` | `src/lib/mathlib/math/Functions.hpp` | 5 | ✅ Proved | `lean/FVSquad/Lerp.lean` | 9 proved, 0 sorry; endpoint correctness, convex combination, affinity in s, monotonicity |
 
 ## New Research Targets (Phase 1 — identified in run 75)
 
@@ -84,8 +84,8 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 43 | `VelocitySmoothing::computeT2` (simple overload) | `src/lib/motion_planning/VelocitySmoothing.cpp:151` | 1 | ⬜ Research | — | `max(T123 - T1 - T3, 0)`; non-negativity, T1+T2+T3 ≤ T123 invariant; trivially tractable |
-| 44 | `math::min3` / `math::max3` (3-argument min/max) | `src/lib/mathlib/math/Limits.hpp:42` | 1 | ⬜ Research | — | `min(min(a,b),c)`; result ≤ each argument; commutativity/associativity of min-chain; relate to 2-arg `math::constrain` |
+| 43 | `VelocitySmoothing::computeT2` (simple overload) | `src/lib/motion_planning/VelocitySmoothing.cpp:151` | 5 | ✅ Proved | `lean/FVSquad/VelocitySmoothing.lean` | Non-negativity, T1+T2+T3 ≤ T123; covered in VelocitySmoothing.lean (33 theorems total) |
+| 44 | `math::min3` / `math::max3` (3-argument min/max) | `src/lib/mathlib/math/Limits.hpp:42` | 5 | ✅ Proved | `lean/FVSquad/Min3Max3.lean` | 31 theorems, 0 sorry; bound safety, idempotence, commutativity, negation duality |
 
 ## Non-Lean Targets (other tools recommended)
 
@@ -108,9 +108,9 @@ rationale. Phase legend: 1=Research, 2=Informal Spec, 3=Lean Spec, 4=Implementat
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 45 | `sensor_orientation_to_yaw_offset` | `src/lib/collision_prevention/ObstacleMath.cpp:72` | 1 | ⬜ Research | — | Finite enum (8 defined cases); maps `SensorOrientation` to multiples of π/4; decidable injectivity and range `\|offset\| ≤ π`; CUSTOM case excluded |
-| 46 | `goldensection` interval invariant | `src/lib/mathlib/math/SearchMin.hpp:56` | 1 | ⬜ Research | — | Golden section search: `a ≤ c ≤ d ≤ b` ordering invariant; interval shrinks by `1/φ` per step; convergence (bounded by `tol`); higher-order function; needs careful abstraction |
-| 47 | `FilteredDerivative::update` | `src/lib/mathlib/math/filter/FilteredDerivative.hpp:84` | 1 | ⬜ Research | — | Discrete derivative + alpha IIR filter; first-call no-update; constant-input convergence (output → 0); builds on `AlphaFilter.lean` |
+| 45 | `sensor_orientation_to_yaw_offset` | `src/lib/collision_prevention/ObstacleMath.cpp:72` | 5 | ✅ Proved | `lean/FVSquad/SensorOrientation.lean` | 20 theorems, 0 sorry; finite-enum decidable proofs; yaw offsets as multiples of π/4; CUSTOM case excluded |
+| 46 | `goldensection` interval invariant | `src/lib/mathlib/math/SearchMin.hpp:56` | 5 | ✅ Proved | `lean/FVSquad/GoldenSection.lean` | 13 theorems, 0 sorry; bracket shrink, midpoint containment, interior ordering, golden ratio property |
+| 47 | `FilteredDerivative::update` | `src/lib/mathlib/math/filter/FilteredDerivative.hpp:84` | 5 | ✅ Proved | `lean/FVSquad/FilteredDerivative.lean` | 12 theorems, 0 sorry; first-call no-update, derivative formula, constant-input convergence, linear-ramp identity; informal spec in `specs/filteredderivative_informal.md` |
 
 ## Mathlib Dependency Notes
 
@@ -128,10 +128,10 @@ See `RESEARCH.md §Tool Choice` for details.
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 48 | `GainCompression::update` | `src/lib/rate_control/gain_compression.cpp` | 1 | ⬜ Research | — | Adaptive gain-compression for oscillation detection; range invariant: `compression_gain ∈ [gain_min, 1]`; leakage pulls gain toward 1 when HPF energy is low; builds on `AlphaFilter.lean` |
-| 49 | `sensor_orientation_to_yaw_offset` (non-CUSTOM cases) | `src/lib/collision_prevention/ObstacleMath.cpp:72` | 1 | ⬜ Research | — | Finite switch on 8 `SensorOrientation` enum variants (ROTATION_YAW_0 … 315); each maps to a multiple of π/4; decidable range `|offset| ≤ π`; CUSTOM case excluded (depends on quaternion math) |
-| 50 | `math::lerp` (linear interpolation) | `src/lib/mathlib/math/Functions.hpp:245` | 1 | ⬜ Research | — | `lerp(a,b,s) = a*(1-s) + b*s`; endpoint correctness at s=0 and s=1; convex combination for `0≤s≤1`; monotone in s, a, b; already exists as `Lerp.lean` (run ~50) — review coverage and add monotonicity/affinity theorems if missing |
-| 51 | `math::superexpo` (superrate RC curve) | `src/lib/mathlib/math/Functions.hpp:103` | 1 | ⬜ Research | — | Output ∈ `[-1, 1]`; odd symmetry; fixes {−1, 0, 1}; denominator > 0 for `g < 1`; already partially covered by `SuperExpo.lean` — verify all key properties have been proved |
+| 48 | `GainCompression::update` | `src/lib/rate_control/gain_compression.cpp` | 5 | ✅ Proved | `lean/FVSquad/GainCompression.lean` | 11 theorems, 0 sorry; range invariant `gain ∈ [gain_min, 1]`, leakage direction, monotonicity |
+| 49 | `sensor_orientation_to_yaw_offset` (non-CUSTOM cases) | `src/lib/collision_prevention/ObstacleMath.cpp:72` | 5 | ✅ Proved | `lean/FVSquad/SensorOrientation.lean` | See target 45 — same Lean file covers all non-CUSTOM variants |
+| 50 | `math::lerp` (linear interpolation) | `src/lib/mathlib/math/Functions.hpp:245` | 5 | ✅ Proved | `lean/FVSquad/Lerp.lean` | See target 32 — same Lean file; endpoint correctness, convex combination, monotonicity all proved |
+| 51 | `math::superexpo` (superrate RC curve) | `src/lib/mathlib/math/Functions.hpp:103` | 5 | ✅ Proved | `lean/FVSquad/SuperExpo.lean` | 8 theorems, 0 sorry; denom_pos, zero/±1 fixed points, odd symmetry, range ⊆ [−1,1], g=0 reduces to expo |
 
 ## New Research Targets (Phase 1 — identified in run 110)
 
@@ -153,12 +153,20 @@ See `RESEARCH.md §Tool Choice` for details.
 | 51 | `NotchFilter::applyInternal` | `src/lib/mathlib/math/filter/NotchFilter.hpp` | 5 | ✅ Proved | `lean/FVSquad/NotchFilter.lean` | Direct Form I IIR notch filter; 15 theorems, 0 sorry; bypass, DC steady-state, zero-input, superposition, two-step formula; run 126 |
 | 52 | `SecondOrderReferenceModel` forward-Euler | `src/lib/mathlib/math/filter/second_order_reference_model.hpp` | 5 | ✅ Proved | `lean/FVSquad/SecondOrderReferenceModel.lean` | State-space model; 7 theorems, 0 sorry; reset postconditions, update formulas, equilibrium fixed point; run 125 |
 | 53 | `WelfordMeanVector` | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector online mean with Kahan summation; extends WelfordMean.lean; componentwise `mean = sum/count` invariant; 2-component model tractable |
-| 54 | `PurePursuit` lookahead distance | `src/lib/pure_pursuit/PurePursuit.hpp` | 2 | 🔄 Informal Spec | — | Informal spec written in run 126; `constrain(v*k, min, max)` range safety; lookahead_in_range theorem trivially provable via `constrain_range` |
+| 54 | `PurePursuit` lookahead distance | `src/lib/pure_pursuit/PurePursuit.hpp` | 5 | ✅ Proved | `lean/FVSquad/PurePursuit.lean` | 10 theorems, 0 sorry; range safety, zero-speed clamping, symmetric speed response, monotone in speed magnitude; informal spec in `specs/purepursuit_informal.md` |
 
 ## New Research Targets (Phase 1 — identified in run 127)
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 55 | `control::BlockLimitSym::update` | `src/lib/controllib/BlockLimitSym.cpp` | 1 | ⬜ Research | — | Symmetric clamp to `[−max, max]`; output-in-range invariant; idempotence; monotonicity; mirrors `math::constrain` but symmetric; ~6 theorems, all `omega`-provable |
+| 55 | `control::BlockLimitSym::update` | `src/lib/controllib/BlockLimitSym.cpp` | 5 | ✅ Proved | `lean/FVSquad/BlockLimitSym.lean` | 10 theorems, 0 sorry; output-in-range invariant, idempotence, odd symmetry, monotonicity |
 | 56 | `computeMaxSpeedFromDistance` | `src/lib/mathlib/math/TrajMath.hpp:61` | 1 | ⬜ Research | — | Quadratic formula for max speed given jerk, accel, braking distance, final speed; non-negativity when discriminant ≥ 0; builds on `BrakingDist.lean`; needs careful discriminant pre-condition |
 | 57 | `control::BlockStats` running sum | `src/lib/controllib/BlockStats.hpp` | 1 | ⬜ Research | — | Accumulator: `sum`, `sumSq`, `count`; key invariant `getMean() = sum/count`; similar to WelfordMean but simpler (no online variance update); ~8 theorems; all `omega`/`ring`-provable on Int model |
+
+## New Research Targets (Phase 1 — identified in run 133)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 58 | `control::BlockLimit::update` (asymmetric clamp) | `src/lib/controllib/BlockLimit.cpp` | 1 | ⬜ Research | — | Asymmetric clamp to `[min, max]`: output-in-range invariant `min ≤ output ≤ max`; idempotence; monotonicity in input; complement to BlockLimitSym (target 55); ~8 theorems, all `omega`-provable on Int model |
+| 59 | `WelfordMeanVector` componentwise online mean | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector generalisation of WelfordMean; 2-component model; componentwise `mean_i = sum_i / count` invariant; Kahan summation abstracted; builds on `WelfordMean.lean`; ~10 theorems; `omega`-provable on Int model |
+| 60 | `BlockIntegralTrap` correspondence tests | `src/lib/controllib/BlockIntegralTrap.cpp` | 1 | ⬜ Research | — | Route B correspondence tests for `BlockIntegralTrap.lean` (30 theorems); harness similar to pid/ and slew_rate/; exercises dt=0 identity, nonneg/nonpos saturation, and trapezoidal increment formula; expected ~200–500 cases |
