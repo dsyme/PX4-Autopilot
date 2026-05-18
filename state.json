@@ -1,15 +1,15 @@
 {
-  "run": 135,
+  "run": 136,
   "last_updated": "2026-05-18",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 764,
-    "theorems_proved": 764,
+    "theorems": 774,
+    "theorems_proved": 774,
     "axioms": 10,
     "sorry_count": 0,
-    "lean_files": 51,
-    "targets": 56
+    "lean_files": 52,
+    "targets": 57
   },
   "sorry_locations": {
     "all": "0 sorry in all 51 files. 10 axioms for irrational arithmetic."
@@ -34,6 +34,19 @@
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 136,
+      "date": "2026-05-18T18:10 UTC",
+      "workflow_run_id": 26051487180,
+      "tasks": [
+        "Task 2 (Informal Spec Extraction): blockstats_informal.md \u2014 full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
+        "Task 5 (Proof Assistance): BlockLimit.lean \u2014 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-136-blocklimit-blockstats-informal",
+      "notes": "774 theorems total, 52 files, 0 sorry. BlockLimit (target 58) now fully proved; BlockStats (target 57) advanced to phase 2."
+    },
     {
       "run": 135,
       "date": "2026-05-18T12:07 UTC",
@@ -98,18 +111,6 @@
       "sorry_changes": 0,
       "pr_branch": "lean-squad/run-131-alpha-filter-tests-blockintegraltrap-spec",
       "notes": "747 theorems total, 51 files, 0 sorry. AlphaFilter now has Route B tests confirming exact model. BlockIntegralTrap has informal spec + 9 new structural theorems."
-    },
-    {
-      "run": 130,
-      "date": "2026-05-16T09:52 UTC",
-      "workflow_run_id": 25958868263,
-      "tasks": [
-        "Task 5: SecondOrderReferenceModel.lean - 8 new theorems: dt=0 identity, restoring_formula, correction_neg/pos, new_rate_mono_ss, new_pos_mono_rate.",
-        "Task 6: CORRESPONDENCE.md - added sections for NotchFilter.lean (15 thms) and SecondOrderReferenceModel.lean (15 thms)."
-      ],
-      "theorems_proved": 8,
-      "pr_branch": "lean-squad/run-130-sorm-proofs-correspondence-ea0fe5a8",
-      "notes": "738 theorems, 51 files, 0 sorry."
     }
   ],
   "discoveries": [
@@ -134,14 +135,14 @@
     {
       "id": "blockstats-spec",
       "name": "BlockStats running sum accumulator",
-      "phase": 1,
-      "notes": "Target 57 in TARGETS.md. ~8 theorems, all omega-provable. Highest priority new Lean target."
+      "phase": 2,
+      "notes": "Informal spec written in run 136: blockstats_informal.md. Next: Lean spec (Task 3)."
     },
     {
       "id": "blocklimit-spec",
       "name": "BlockLimit asymmetric clamp",
-      "phase": 1,
-      "notes": "Target 58 in TARGETS.md. Immediate reuse of constrain_range pattern. Simple and tractable."
+      "phase": 5,
+      "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean \u2014 limit_above, limit_below, limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono"
     }
   ]
 }
