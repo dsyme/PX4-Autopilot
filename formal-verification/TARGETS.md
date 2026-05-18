@@ -161,12 +161,12 @@ See `RESEARCH.md §Tool Choice` for details.
 |---|------|------|-------|--------|-----------|-------|
 | 55 | `control::BlockLimitSym::update` | `src/lib/controllib/BlockLimitSym.cpp` | 5 | ✅ Proved | `lean/FVSquad/BlockLimitSym.lean` | 10 theorems, 0 sorry; output-in-range invariant, idempotence, odd symmetry, monotonicity |
 | 56 | `computeMaxSpeedFromDistance` | `src/lib/mathlib/math/TrajMath.hpp:61` | 1 | ⬜ Research | — | Quadratic formula for max speed given jerk, accel, braking distance, final speed; non-negativity when discriminant ≥ 0; builds on `BrakingDist.lean`; needs careful discriminant pre-condition |
-| 57 | `control::BlockStats` running sum | `src/lib/controllib/BlockStats.hpp` | 1 | ⬜ Research | — | Accumulator: `sum`, `sumSq`, `count`; key invariant `getMean() = sum/count`; similar to WelfordMean but simpler (no online variance update); ~8 theorems; all `omega`/`ring`-provable on Int model |
+| 57 | `control::BlockStats` running sum | `src/lib/controllib/BlockStats.hpp` | 2 | 🔄 Informal Spec | — | Informal spec in `specs/blockstats_informal.md` (run 136); scalar Int model plan; key invariant `getMean() = sum/count`; next: Lean spec (Task 3) |
 
 ## New Research Targets (Phase 1 — identified in run 133)
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 58 | `control::BlockLimit::update` (asymmetric clamp) | `src/lib/controllib/BlockLimit.cpp` | 1 | ⬜ Research | — | Asymmetric clamp to `[min, max]`: output-in-range invariant `min ≤ output ≤ max`; idempotence; monotonicity in input; complement to BlockLimitSym (target 55); ~8 theorems, all `omega`-provable on Int model |
+| 58 | `control::BlockLimit::update` (asymmetric clamp) | `src/lib/controllib/BlockLimit.cpp` | 5 | ✅ Proved | `lean/FVSquad/BlockLimit.lean` | 10 theorems, 0 sorry; limit_above/below, in-range pass-through, upper/lower/range invariants, idempotence, fixed-point endpoints, monotonicity; run 136 |
 | 59 | `WelfordMeanVector` componentwise online mean | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector generalisation of WelfordMean; 2-component model; componentwise `mean_i = sum_i / count` invariant; Kahan summation abstracted; builds on `WelfordMean.lean`; ~10 theorems; `omega`-provable on Int model |
 | 60 | `BlockIntegralTrap` correspondence tests | `src/lib/controllib/BlockIntegralTrap.cpp` | 1 | ⬜ Research | — | Route B correspondence tests for `BlockIntegralTrap.lean` (30 theorems); harness similar to pid/ and slew_rate/; exercises dt=0 identity, nonneg/nonpos saturation, and trapezoidal increment formula; expected ~200–500 cases |
