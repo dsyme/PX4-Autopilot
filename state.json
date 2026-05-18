@@ -1,11 +1,11 @@
 {
-  "run": 134,
+  "run": 135,
   "last_updated": "2026-05-18",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 758,
-    "theorems_proved": 758,
+    "theorems": 764,
+    "theorems_proved": 764,
     "axioms": 10,
     "sorry_count": 0,
     "lean_files": 51,
@@ -34,6 +34,19 @@
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 135,
+      "date": "2026-05-18T12:07 UTC",
+      "workflow_run_id": 26031790120,
+      "tasks": [
+        "Task 5 (Proof Assistance): FilteredDerivative.lean \u2014 6 new theorems: fdIter_const_shrinks_neg, fdIter_const_nonpos, fdIter_ramp_alpha_formula (KEY: linear ramp \u2192 slope/dt convergence), fdIter_ramp_bounded_pos/neg, fdUpdate_mono. 12\u219218 theorems.",
+        "Task 7 (Proof Utility Critique): CRITIQUE.md updated \u2014 764 theorems, 51 files, runs 125-135 summary, FilteredDerivative entry updated."
+      ],
+      "theorems_proved": 6,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-135-filteredderivative-ramp-convergence-critique",
+      "notes": "764 theorems total, 51 files, 0 sorry. Run-134 conflict with run-133 (PID overlap) was skipped. FilteredDerivative now has 18 theorems with full ramp convergence proof."
+    },
     {
       "run": 134,
       "date": "2026-05-18T04:39 UTC",
