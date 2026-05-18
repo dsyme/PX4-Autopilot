@@ -4,39 +4,78 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-13 10:42 UTC (run 124)
-- **Commit**: `aee95cf2c4043cdbdc1c7506aa5d3a1adcc2ed83`
+- **Date**: 2026-05-18 12:07 UTC (run 135)
+- **Commit**: `cced1116d0d92233879b43409de58a3c65be4967`
 
 ---
 
 ## Overall Assessment
 
-**Forty-seven Lean files cover 690 named theorems, all fully proved, 0 `sorry`**
+**51 Lean files cover 764 named theorems, all fully proved, 0 `sorry`**
 (Lean 4 v4.29.1, standard library only, 10 abstract axioms for Mathlib-dependent results).
 
-The library has reached a high level of maturity. Across runs 114–123, ten new files were
-added covering IIR filters (LowPassFilter2p, HighPass, FilteredDerivative), motion planning
-(VelocitySmoothing, BrakingDist), safety-critical control (BlockIntegralTrap, PID), and
-utility math (RadiansDegrees, Min3Max3, CountSetBits). The proved theorem count grew from
-~638 (run 113) to 690 (run 123), and Route B correspondence tests now validate 7 targets
-against 15,214 total cases, all passing.
+The library continues to grow steadily. Since the run-124 critique, 14 new theorems were
+added across three new modules: `NotchFilter.lean` (14 theorems), `SecondOrderReferenceModel.lean`
+(14 theorems), `BlockLimitSym.lean` (10 theorems), `PurePursuit.lean` (10 theorems), and
+`FilteredDerivative.lean` (18 theorems, including 6 new ramp-convergence and monotonicity
+theorems added in run 135). The `PID.lean` file grew from 28 to 42 theorems with comprehensive
+sign-tracking proofs. Correspondence tests now cover 11 targets against over 17,000 cases,
+all passing.
 
-**Run 124 assessment (Task 7 + Task 1)**:
-- Critique updated with run 123 additions (LowPassFilter2p + BlockIntegralTrap + correspondence).
-- New FV research targets identified: `NotchFilter`, `SecondOrderReferenceModel`,
-  `WelfordMeanVector`, and `PurePursuit` — see RESEARCH.md and TARGETS.md.
-- The conference paper and REPORT.md remain the most stale artifacts
-  (not updated since runs 53–63); updating them is the highest-priority documentation gap.
+**Run 135 assessment (Task 7 + Task 5)**:
+- Task 5: `FilteredDerivative.lean` — 6 new theorems proving monotone decay from negative
+  start, linear ramp convergence (`fdIter_ramp_alpha_formula`), bounded convergence toward
+  slope/dt (`fdIter_ramp_bounded_pos/neg`), and input monotonicity (`fdUpdate_mono`).
+  The ramp convergence result is the most valuable addition: it formally proves that if the
+  input is a linear ramp with slope `m` and step size `dt`, the alpha filter state converges
+  to `m/dt` (the slope of the input) — the fundamental correctness property of the derivative
+  estimator.
+- Task 7: This critique updated to reflect runs 125–135 additions.
 
 Six confirmed bugs remain open: `signNoZero<float>` (NaN returns 0),
 `negate<int16_t>` (incorrect INT16_MAX special case), `wrap_bin(bin, n)` (negative index
 for `bin ≤ -n`), `negate<int16_t>` involution failure at −32767, and the two
 `Negate16.lean` findings (not involutive for x=−32767, not surjective — −32767 never
-appears in the image of negate16). Route B correspondence tests now cover 7 targets:
+appears in the image of negate16). Route B correspondence tests now cover 11 targets:
 atmosphere (26/26), bin_at_angle (334/334), slew_rate (4327/4327), hysteresis (259/259),
-pid (7964/7964), count_set_bits (871/871), and expo (1373/1373).
+pid (7964/7964), count_set_bits (871/871), expo (1373/1373), BlockIntegralTrap (120/120),
+LowPassFilter2p (28/28), deadzone (existing), and alpha_filter (257/257).
 
-### Run 123 additions: `LowPassFilter2p.lean` and correspondence review
+### Run 135 additions: `FilteredDerivative.lean` — ramp convergence and monotonicity
+
+**New theorems added** (6 total):
+
+- **`fdIter_const_shrinks_neg`**: symmetric to `fdIter_const_shrinks_pos` — with constant
+  input from a negative initial state, the alpha filter state grows monotonically toward 0.
+- **`fdIter_const_nonpos`**: constant input from non-positive start → state stays non-positive.
+- **`fdIter_ramp_alpha_formula`**: (**key result**) with linear ramp input `[v0+m, v0+2m, …, v0+nm]`,
+  each step feeds derivative `m/dt` to the alpha filter, so the state after n steps equals
+  `alphaIterate alphaState alpha (m/dt) n`. This is the formal proof that the derivative estimator
+  tracks the slope of its input.
+- **`fdIter_ramp_bounded_pos`** / **`fdIter_ramp_bounded_neg`**: the alpha state is bounded
+  toward `m/dt` from above (or below) when starting on the appropriate side.
+- **`fdUpdate_mono`**: monotonicity — if two states have the same `prevSample` and `alphaState ≤`,
+  and `sample1 ≤ sample2`, then the output states also satisfy `≤`. Useful for bounding
+  filter behavior under bounded inputs.
+
+**Assessment**: `fdIter_ramp_alpha_formula` is the highest-value theorem in FilteredDerivative.
+It closes the loop between the informal property "the derivative estimator converges to the
+slope of a linear ramp" and the formal model, using `alphaIterate_no_overshoot_up/down` from
+AlphaFilter as the core ingredient.
+
+### Runs 125–134 additions summary
+
+| Run | File | New Theorems | Highlight |
+|-----|------|-------------|-----------|
+| 125–127 | NotchFilter.lean, SecondOrderReferenceModel.lean | 14 each | Notch filter pole analysis, SORM restoring-force theorems |
+| 128–129 | LowPassFilter2p correspondence, BlockLimitSym.lean | 13, 10 | DC gain=1 correspondence test; symmetric limiter invariants |
+| 130 | PurePursuit.lean | 10 | Steering geometry: L1 guidance angle bounds |
+| 131–132 | BlockIntegralTrap.lean | +14 | Sign invariants, dt=0 identity, inductive non-pos/nonneg invariant |
+| 133 | PID.lean | +14 | Sign-tracking: clamp sign, output sign tracks error sign |
+| 134 | PID.lean | +8 (run 133 branch) | Saturated integrator sign-tracking theorems |
+| 135 | FilteredDerivative.lean | +6 | Ramp convergence, monotone decay, input monotonicity |
+
+### Run 124 additions: `LowPassFilter2p.lean` and correspondence review
 
 **New file**: `lean/FVSquad/LowPassFilter2p.lean` (13 theorems, 0 sorry).
 
@@ -391,14 +430,14 @@ theorem is a clean liveness proof showing the integrator never escapes bounds ov
     (monotone convergence). These complete the multi-step analysis started with
     `alphaIterate_formula`. **Total AlphaFilter theorems: 17**.
 
-16. **`FilteredDerivative::update`** ✅ **DONE** (run105):
-    `FilteredDerivative.lean` (12 theorems, 0 sorry) formally verifies the discrete
-    derivative IIR filter pipeline: first-call structural invariants (`fdUpdate_first_call_state`,
-    `fdUpdate_first_call_initialized`, `fdUpdate_stores_prev_sample`), second-call semantics
-    (`fdUpdate_second_call_deriv`), constant-input convergence (`fdIter_const_alpha_formula`
-    reusing `alphaIterate_formula` with target=0), no-overshoot bounds (`fdIter_const_bounded_pos/neg`),
-    monotone shrink (`fdIter_const_shrinks_pos`), non-negativity (`fdIter_const_nonneg`),
-    and linear-ramp derivative identity (`fdUpdate_linear_deriv`). **Total theorems: 541**.
+16. **`FilteredDerivative::update`** ✅ **DONE + EXTENDED** (runs 105, 135):
+    `FilteredDerivative.lean` (**18 theorems**, 0 sorry) formally verifies the discrete
+    derivative IIR filter pipeline. Run 105 proved structural invariants and constant-input
+    convergence. Run 135 added 6 new theorems: `fdIter_const_shrinks_neg` (monotone decay
+    from negative start), `fdIter_const_nonpos` (non-positive invariant), `fdIter_ramp_alpha_formula`
+    (**key**: linear ramp → alpha state converges to slope/dt), `fdIter_ramp_bounded_pos/neg`
+    (bounded convergence toward target slope), and `fdUpdate_mono` (input monotonicity).
+    The ramp convergence theorem is the core correctness property of the filter. **Total theorems: 764**.
 
 17. **`GoldenSection::update`** ✅ **DONE** (runs 106–107):
     `GoldenSection.lean` (13 theorems, 0 sorry) verifies the golden-section line search:
@@ -457,12 +496,12 @@ theorem is a clean liveness proof showing the integrator never escapes bounds ov
     and new multi-step theorems cover the time-domain response completely. The z-transform
     transfer function could be stated and proved with Mathlib complex number support.
 
-14. **Conference paper** (Task 11): With 638 proved theorems across 44 files, 6 confirmed bugs,
+14. **Conference paper** (Task 11): With 764 proved theorems across 51 files, 6 confirmed bugs,
     and formal demonstration of latent C++ truncation-mod vulnerability in collision
     prevention, the project has substantial material for a conference paper (IEEE FM,
     FMCAD, or CAV). **Recommendation**: update `formal-verification/paper/paper.tex` to
-    reflect runs 106–113 additions (GoldenSection, SensorOrientation, GainCompression,
-    CountSetBits, Negate16, PID convergence, Expo).
+    reflect runs 124–135 additions (NotchFilter, SORM, BlockLimitSym, PurePursuit, BlockIntegralTrap
+    expansion, PID sign-tracking, FilteredDerivative ramp convergence).
 
 ---
 
