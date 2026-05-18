@@ -662,4 +662,108 @@ theorem pidIntegralIterate_neg_saturates
           · rw [if_neg h2]; omega
       exact ih (updateIntegral init gainI error dt limitI) hstep_lo hstep_hi hdist
 
+-- ============================================================
+-- § 9  Output sign tracking when integral is saturated
+-- ============================================================
+
+/-- **Raw output is the integral when error is zero and no derivative**:
+    if `sp = fb` (zero error) and `lastFeedback = none` (first call, no derivative),
+    then `pidOutputRaw = integral`. -/
+theorem pidOutputRaw_eq_integral_zero_error_no_deriv
+    (fb dt gainP gainD : Int) (state : PIDState)
+    (hnone : state.lastFeedback = none) :
+    pidOutputRaw fb fb dt gainP gainD state = state.integral := by
+  simp only [pidOutputRaw, updateDerivative, hnone]
+  omega
+
+/-- **Raw output strictly positive with positive error, no prior derivative, non-negative integral**:
+    when `sp > fb`, `gainP > 0`, `integral ≥ 0`, and `lastFeedback = none`,
+    the raw PID output is strictly positive. -/
+theorem pidOutputRaw_pos_pos_error_no_deriv
+    (sp fb dt gainP gainD : Int) (state : PIDState)
+    (hsp   : sp > fb)
+    (hgP   : 0 < gainP)
+    (hI    : 0 ≤ state.integral)
+    (hnone : state.lastFeedback = none) :
+    0 < pidOutputRaw sp fb dt gainP gainD state := by
+  simp only [pidOutputRaw, updateDerivative, hnone]
+  have herr : 0 < sp - fb := by omega
+  have hterm : 0 < gainP * (sp - fb) := Int.mul_pos hgP herr
+  omega
+
+/-- **Output positive when integral saturated at +limitI with positive error**:
+    if the integral equals `limitI > 0`, there is no derivative (`lastFeedback = none`),
+    error is positive (`sp > fb`), `gainP ≥ 0`, and `limitO ≥ limitI`,
+    then `pidOutput > 0`.
+
+    This is the key "sign tracking" property: when the integrator winds up fully positive
+    because the plant has been below setpoint for a long time, and error is still positive,
+    the controller output is guaranteed to be above zero. -/
+theorem pidOutput_pos_integral_saturated_pos_error
+    (sp fb dt gainP gainD limitO limitI : Int) (state : PIDState)
+    (hsp   : sp > fb)
+    (hgP   : 0 ≤ gainP)
+    (hI    : state.integral = limitI)
+    (hIpos : 0 < limitI)
+    (hLO   : limitI ≤ limitO)
+    (hnone : state.lastFeedback = none) :
+    0 < pidOutput sp fb dt gainP gainD limitO state := by
+  simp only [pidOutput, pidOutputRaw, updateDerivative, hnone, hI, clamp]
+  have herr : 0 < sp - fb := by omega
+  have hterm : 0 ≤ gainP * (sp - fb) := Int.mul_nonneg hgP (by omega)
+  by_cases h1 : gainP * (sp - fb) + limitI + gainD * 0 < -(limitO)
+  · rw [if_pos h1]; omega
+  · rw [if_neg h1]
+    by_cases h2 : gainP * (sp - fb) + limitI + gainD * 0 > limitO
+    · rw [if_pos h2]; omega
+    · rw [if_neg h2]; omega
+
+/-- **Output negative when integral saturated at -limitI with negative error**:
+    symmetric partner of `pidOutput_pos_integral_saturated_pos_error`.
+    When the integrator winds up fully negative and error is still negative,
+    the controller output is guaranteed to be strictly negative. -/
+theorem pidOutput_neg_integral_saturated_neg_error
+    (sp fb dt gainP gainD limitO limitI : Int) (state : PIDState)
+    (hsp   : sp < fb)
+    (hgP   : 0 ≤ gainP)
+    (hI    : state.integral = -limitI)
+    (hIpos : 0 < limitI)
+    (hLO   : limitI ≤ limitO)
+    (hnone : state.lastFeedback = none) :
+    pidOutput sp fb dt gainP gainD limitO state < 0 := by
+  simp only [pidOutput, pidOutputRaw, updateDerivative, hnone, hI, clamp]
+  have herr : sp - fb < 0 := by omega
+  have hterm : gainP * (sp - fb) ≤ 0 := Int.mul_nonpos_of_nonneg_of_nonpos hgP (by omega)
+  by_cases h1 : gainP * (sp - fb) + -limitI + gainD * 0 < -(limitO)
+  · rw [if_pos h1]; omega
+  · rw [if_neg h1]
+    by_cases h2 : gainP * (sp - fb) + -limitI + gainD * 0 > limitO
+    · rw [if_pos h2]; omega
+    · rw [if_neg h2]; omega
+
+/-- **Lower bound on raw output when no derivative**:
+    `gainP * (sp - fb) + state.integral ≤ pidOutputRaw sp fb dt gainP gainD state`
+    when `lastFeedback = none` (the derivative term is zero).
+
+    This gives a tight lower bound: the output is at least the proportional term plus
+    the accumulated integral, independent of any derivative contribution. -/
+theorem pidOutputRaw_lb_no_deriv
+    (sp fb dt gainP gainD : Int) (state : PIDState)
+    (hnone : state.lastFeedback = none) :
+    gainP * (sp - fb) + state.integral ≤ pidOutputRaw sp fb dt gainP gainD state := by
+  simp only [pidOutputRaw, updateDerivative, hnone]
+  omega
+
+/-- **Outputs are equal when two states share the same integral value and last feedback**:
+    `pidOutput` depends on the state only through `integral` and `lastFeedback`.
+    If two states agree on both fields, their outputs are identical for all inputs. -/
+theorem pidOutput_eq_of_state_eq
+    (sp fb dt gainP gainD limitO : Int)
+    (state state' : PIDState)
+    (hI  : state.integral  = state'.integral)
+    (hl  : state.lastFeedback = state'.lastFeedback) :
+    pidOutput sp fb dt gainP gainD limitO state =
+    pidOutput sp fb dt gainP gainD limitO state' := by
+  simp only [pidOutput, pidOutputRaw, updateDerivative, hl, hI]
+
 end PX4.PID
