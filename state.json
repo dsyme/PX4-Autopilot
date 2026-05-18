@@ -1,11 +1,11 @@
 {
-  "run": 133,
-  "last_updated": "2026-05-17",
+  "run": 134,
+  "last_updated": "2026-05-18",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 752,
-    "theorems_proved": 752,
+    "theorems": 758,
+    "theorems_proved": 758,
     "axioms": 10,
     "sorry_count": 0,
     "lean_files": 51,
@@ -18,22 +18,35 @@
   "bugs_found": 6,
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonst",
     "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
     "hysteresis": "tests/hysteresis/ (259/259 pass)",
-    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)",
-    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^k-1, 64-bit LCG)",
-    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; boundary, linear, cubic, odd-symmetry, grid)",
+    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int mo",
+    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^",
+    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; bound",
     "BlockIntegralTrap": "tests/BlockIntegralTrap/ (existing)",
     "LowPassFilter2p": "tests/LowPassFilter2p/ (existing)",
     "deadzone": "tests/deadzone/ (existing)",
-    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate formula; theorem spot-checks)"
+    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate"
   },
   "ci": {
     "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 134,
+      "date": "2026-05-18T04:39 UTC",
+      "workflow_run_id": 26013823100,
+      "tasks": [
+        "Task 5 (Proof Assistance): PID.lean \u2014 6 new sign-tracking theorems (\u00a79): pidOutputRaw_eq_integral_zero_error_no_deriv, pidOutputRaw_pos_pos_error_no_deriv, pidOutput_pos_integral_saturated_pos_error, pidOutput_neg_integral_saturated_neg_error, pidOutputRaw_lb_no_deriv, pidOutput_eq_of_state_eq. Proves that saturated integrator + same-direction error \u2192 output has correct sign.",
+        "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 added sections for BlockLimitSym.lean (10 thms) and PurePursuit.lean (10 thms); updated PID.lean entry 32\u219242 theorems; updated consolidated summary table."
+      ],
+      "theorems_proved": 6,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-134-pid-sign-tracking-correspondence",
+      "notes": "758 theorems total, 51 files, 0 sorry. PID sign-tracking priority target completed."
+    },
     {
       "run": 133,
       "date": "2026-05-17T17:15 UTC",
@@ -96,38 +109,14 @@
     "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
     "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
-    "FVSquad.lean AND Basic.lean must both import new files",
-    "Int.add_emod_right : (a + b) % b = a % b \u2014 direct periodicity lemma",
-    "wrap_bin bug: bin + n < 0 iff bin <= -n-1",
-    "by_contra unavailable without Mathlib 4.29; use by_cases + omega",
-    "simp only [if_pos h1, if_neg h2] for case-splitting on if-then-else",
-    "For radians/degrees proof: parameterise by p : Rat; round-trip by field_simp; ring",
-    "computeT3 proof: simp [max_def] + linarith covers all cases",
-    "AlphaFilter induction: use induction n generalizing state for state-updating recursion",
-    "ring, nlinarith, linarith are MATHLIB ONLY \u2014 not available in standard Lean 4 stdlib",
-    "simp only [def_name] beta-reduces let-bindings in goals",
-    "Rat.zero_div NOT available \u2014 use simp [Rat.div_def, Rat.mul_comm] for 0/dt = 0",
-    "Rat.lt_of_lt_of_le / Rat.lt_of_le_of_lt do NOT exist \u2014 use by_cases + by_contradiction pattern",
-    "Transitivity lt_le: by_cases h : a < c; if not, then c \u2264 a, then le_trans h2 (not_lt.mp h) contradicts lt",
-    "cube_mono_rat: case split on sign of v2, then v1 (3 cases: both nonneg, mixed, both nonpos)",
-    "constrain_mono via simp only + by_cases on h1,h3,h4 branches (5 cases total)",
-    "expo_mono_val: needs constrain_mono + cube_mono_rat + two Rat.add_le_add_left/right steps",
-    "pidStateIterate: to prove fixed-point stability, first prove one_step lemma then use it in induction",
-    "updateIntegral convergence: Int.mul_pos (Int.mul_pos hg he) hdt for gainI*error*dt > 0",
-    "clamp saturation: rw [if_neg (by omega), if_pos (by omega)] then exact Int.le_refl _ closes limitI<=limitI",
-    "rConstrain v 0 0 = 0: by_cases h1 : v < 0; by_cases h2 : v > 0; else Rat.le_antisymm + simp + rfl",
-    "Rat.add_nonpos NOT available: use calc s.u + input \u2264 s.u + 0 := ... \u2264 0 := hu",
-    "Rat.div_nonneg NOT available: use rw [Rat.div_def]; Rat.mul_nonneg + Rat.inv_pos",
-    "Rat.le_add_of_nonneg_right NOT available: use calc a = a + 0 := ... \u2264 a + b via Rat.add_le_add_left.mpr",
-    "simp only [if_neg h, if_pos h2] + rfl to close the positive case of rConstrain case split"
+    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63"
   ],
   "priority_targets": [
     {
       "id": "pid-output-convergence",
       "name": "PID output sign-tracking when integral saturated",
-      "phase": 4,
-      "notes": "Both pos/neg saturation proved. Next: pidOutput sign follows error sign when integral saturated."
+      "phase": 5,
+      "notes": "DONE run 134: 6 sign-tracking theorems proved \u2014 pidOutput_pos_integral_saturated_pos_error, pidOutput_neg_integral_saturated_neg_error, etc."
     },
     {
       "id": "blockstats-spec",
