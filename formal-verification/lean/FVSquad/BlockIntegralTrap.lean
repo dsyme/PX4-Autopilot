@@ -412,4 +412,124 @@ theorem itFold_cons (p : ITParams) (s₀ : ITState) (x : Rat) (xs : List Rat) :
     itFold p s₀ (x :: xs) = itFold p (itUpdate p s₀ x) xs := by
   simp [itFold]
 
+-- ─── 3.12  New theorems (run 132) ──────────────────────────────────────────
+
+/-- When `dt = 0`, the integrator output is unchanged (the trapezoidal increment
+    is zero), provided the current state is already within `[-limit, limit]`.
+
+    Concretely: when the timestep is zero no integration occurs. -/
+theorem itUpdate_dt_zero (p : ITParams) (s : ITState) (input : Rat)
+    (hdt : p.dt = 0) (hlim : 0 ≤ p.limit)
+    (hlo : -p.limit ≤ s.y) (hhi : s.y ≤ p.limit) :
+    (itUpdate p s input).y = s.y := by
+  simp only [itUpdate]
+  have htrap : s.y + (s.u + input) / 2 * p.dt = s.y := by
+    rw [hdt, Rat.mul_zero, Rat.add_zero]
+  rw [htrap]
+  exact rConstrain_id _ _ _ hlo hhi
+
+/-- When `s.y ≥ 0`, `s.u ≥ 0`, `input ≥ 0`, and `dt ≥ 0`, the output `y` is
+    non-negative.
+
+    The trapezoidal accumulation is non-negative, so clamping to `[−limit, limit]`
+    with `limit ≥ 0` can only yield a non-negative result. -/
+theorem itUpdate_nonneg_output (p : ITParams) (s : ITState) (input : Rat)
+    (hdt : 0 ≤ p.dt) (hlim : 0 ≤ p.limit)
+    (hy : 0 ≤ s.y) (hu : 0 ≤ s.u) (hi : 0 ≤ input) :
+    0 ≤ (itUpdate p s input).y := by
+  simp only [itUpdate]
+  have hnn_inv : 0 ≤ (2 : Rat)⁻¹ :=
+    Rat.le_of_lt (Rat.inv_pos.mpr (by native_decide))
+  have hincr_nn : 0 ≤ (s.u + input) / 2 * p.dt := by
+    apply Rat.mul_nonneg _ hdt
+    rw [Rat.div_def]
+    exact Rat.mul_nonneg (Rat.add_nonneg hu hi) hnn_inv
+  have htrap : 0 ≤ s.y + (s.u + input) / 2 * p.dt :=
+    Rat.add_nonneg hy hincr_nn
+  simp only [rConstrain]
+  have hneg_lim_le_zero : -p.limit ≤ 0 := by
+    have := Rat.neg_le_neg hlim; rw [Rat.neg_zero] at this; exact this
+  by_cases h1 : s.y + (s.u + input) / 2 * p.dt < -p.limit
+  · exact absurd h1 (Rat.not_lt.mpr (Rat.le_trans hneg_lim_le_zero htrap))
+  · rw [if_neg h1]
+    by_cases h2 : s.y + (s.u + input) / 2 * p.dt > p.limit
+    · rw [if_pos h2]; exact hlim
+    · rw [if_neg h2]; exact htrap
+
+/-- When all inputs are non-negative and the initial state `(y, u)` is non-negative,
+    the fold output `y` is non-negative (assuming `dt ≥ 0`, `limit ≥ 0`).
+
+    This is an inductive invariant for non-negative operation. -/
+theorem itFold_y_nonneg (p : ITParams) (s₀ : ITState) (inputs : List Rat)
+    (hdt : 0 ≤ p.dt) (hlim : 0 ≤ p.limit)
+    (hy : 0 ≤ s₀.y) (hu : 0 ≤ s₀.u) (hi : ∀ x ∈ inputs, 0 ≤ x) :
+    0 ≤ (itFold p s₀ inputs).y := by
+  induction inputs generalizing s₀ with
+  | nil => simpa [itFold]
+  | cons x xs ih =>
+    simp only [itFold]
+    apply ih
+    · exact itUpdate_nonneg_output p s₀ x hdt hlim hy hu
+        (hi x (List.mem_cons.mpr (Or.inl rfl)))
+    · rw [itUpdate_u_eq_input]; exact hi x (List.mem_cons.mpr (Or.inl rfl))
+    · intro y hy'; exact hi y (List.mem_cons.mpr (Or.inr hy'))
+
+/-- When `s.y ≤ 0`, `s.u ≤ 0`, `input ≤ 0`, and `dt ≥ 0`, the output `y` is
+    non-positive.
+
+    Symmetric counterpart of `itUpdate_nonneg_output`. -/
+theorem itUpdate_nonpos_output (p : ITParams) (s : ITState) (input : Rat)
+    (hdt : 0 ≤ p.dt) (hlim : 0 ≤ p.limit)
+    (hy : s.y ≤ 0) (hu : s.u ≤ 0) (hi : input ≤ 0) :
+    (itUpdate p s input).y ≤ 0 := by
+  simp only [itUpdate]
+  have hnn_inv : 0 ≤ (2 : Rat)⁻¹ :=
+    Rat.le_of_lt (Rat.inv_pos.mpr (by native_decide))
+  have hincr_np : (s.u + input) / 2 * p.dt ≤ 0 := by
+    have hfrac_np : (s.u + input) / 2 ≤ 0 := by
+      rw [Rat.div_def]
+      calc (s.u + input) * (2 : Rat)⁻¹
+          ≤ 0 * (2 : Rat)⁻¹ := Rat.mul_le_mul_of_nonneg_right
+              (calc s.u + input
+                  ≤ s.u + 0 := Rat.add_le_add_left.mpr hi
+                _ = s.u    := Rat.add_zero s.u
+                _ ≤ 0      := hu)
+              hnn_inv
+        _ = 0 := Rat.zero_mul _
+    calc (s.u + input) / 2 * p.dt
+        ≤ 0 * p.dt := Rat.mul_le_mul_of_nonneg_right hfrac_np hdt
+      _ = 0 := Rat.zero_mul _
+  have htrap : s.y + (s.u + input) / 2 * p.dt ≤ 0 :=
+    calc s.y + (s.u + input) / 2 * p.dt
+        ≤ s.y + 0 := Rat.add_le_add_left.mpr hincr_np
+      _ = s.y     := Rat.add_zero s.y
+      _ ≤ 0       := hy
+  simp only [rConstrain]
+  by_cases h1 : s.y + (s.u + input) / 2 * p.dt < -p.limit
+  · rw [if_pos h1]
+    have := Rat.neg_le_neg hlim; rw [Rat.neg_zero] at this; exact this
+  · rw [if_neg h1]
+    by_cases h2 : s.y + (s.u + input) / 2 * p.dt > p.limit
+    · -- htrap says trap ≤ 0 ≤ limit, but h2 says trap > limit: contradiction
+      exact absurd h2 (Rat.not_lt.mpr (Rat.le_trans htrap hlim))
+    · rw [if_neg h2]; exact htrap
+
+/-- When all inputs are non-positive and the initial state `(y, u)` is non-positive,
+    the fold output `y` is non-positive (assuming `dt ≥ 0`, `limit ≥ 0`).
+
+    Symmetric counterpart of `itFold_y_nonneg`. -/
+theorem itFold_y_nonpos (p : ITParams) (s₀ : ITState) (inputs : List Rat)
+    (hdt : 0 ≤ p.dt) (hlim : 0 ≤ p.limit)
+    (hy : s₀.y ≤ 0) (hu : s₀.u ≤ 0) (hi : ∀ x ∈ inputs, x ≤ 0) :
+    (itFold p s₀ inputs).y ≤ 0 := by
+  induction inputs generalizing s₀ with
+  | nil => simpa [itFold]
+  | cons x xs ih =>
+    simp only [itFold]
+    apply ih
+    · exact itUpdate_nonpos_output p s₀ x hdt hlim hy hu
+        (hi x (List.mem_cons.mpr (Or.inl rfl)))
+    · rw [itUpdate_u_eq_input]; exact hi x (List.mem_cons.mpr (Or.inl rfl))
+    · intro y hy'; exact hi y (List.mem_cons.mpr (Or.inr hy'))
+
 end PX4.BlockIntegralTrap

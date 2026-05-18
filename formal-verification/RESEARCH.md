@@ -1932,3 +1932,72 @@ float max_speed = 0.5*(-b + sqrt(sqr(b) - 4*c));
 | 4 | `BlockStats` informal spec (target 57) | Small, tractable, natural next controllib target |
 | 5 | `LowPassFilter2p` correspondence tests | Route B; biquad IIR; harness should be small |
 | 6 | Paper + REPORT.md update | Stale; 28+ new files since last update |
+
+---
+
+## New Targets Identified in Run 133
+
+### Target 58: `control::BlockLimit::update` (asymmetric clamp)
+
+**File**: `src/lib/controllib/BlockLimit.cpp`
+
+**What it does**: Clamps `input` to `[min, max]` (separate lower and upper bounds):
+```cpp
+float BlockLimit::update(float input) {
+    if (input > getMax()) { input = _max.get(); }
+    else if (input < getMin()) { input = getMin(); }
+    return input;
+}
+```
+
+**Benefit**: Output-in-range invariant (`min ≤ output ≤ max`); idempotence; monotonicity. Natural complement to `BlockLimitSym` (target 55) and `math::constrain` (MathFunctions.lean). Covers the asymmetric case with independent min/max bounds.
+
+**Specification size**: ~8 theorems.
+
+**Proof tractability**: All `omega` or `by_cases + simp` on Rat model. Identical structure to existing `MathFunctions.lean::constrain_range` — can reuse the proof pattern directly.
+
+**Approximations**: `_min`/`_max` BlockParam objects abstracted to direct Rat parameters.
+
+**Approach**: Direct definitional proofs; `by_cases` on three input regions.
+
+### Target 59: `WelfordMeanVector` componentwise online mean
+
+**File**: `src/lib/mathlib/math/WelfordMeanVector.hpp`
+
+**What it does**: Maintains a running online mean for each component of a 2D or 3D vector using the Welford update formula componentwise. Each component satisfies `mean_i = sum_i / count` at all times.
+
+**Benefit**: Extends `WelfordMean.lean` (target 8) to multi-component vectors. The componentwise decomposition means each component is independent, so the spec follows directly from the scalar case. Useful for multi-axis sensor statistics (e.g., accelerometer calibration).
+
+**Specification size**: ~10 theorems (mostly componentwise lifts of WelfordMean lemmas).
+
+**Proof tractability**: All `simp` + `omega` on Int model; highly tractable since each component is independent.
+
+**Approximations**: Integer/rational model; Kahan summation abstracted away; 2-component model (generalises trivially to N).
+
+**Approach**: Lift `WelfordMean.lean` lemmas component-by-component via `simp [WelfordMeanVec2.update]`.
+
+### Target 60: `BlockIntegralTrap` Route B correspondence tests
+
+**File**: `src/lib/controllib/BlockIntegralTrap.cpp`
+
+**What it does**: Not a new algorithm — this is a Task 8 (Route B) harness to validate the existing `BlockIntegralTrap.lean` (30 theorems) against the C++ implementation on shared test cases.
+
+**Benefit**: Closes the correspondence gap for `BlockIntegralTrap.lean`. The 30 proved theorems include sign invariants, dt=0 identity, and trapezoidal formula — all of which can be spot-checked against the C++ implementation on representative inputs. The harness would be similar to `tests/pid/` and `tests/slew_rate/`.
+
+**Specification size**: ~200–500 test cases; fixture-based JSON or CSV format.
+
+**Proof tractability**: Route B correspondence testing (not Lean proofs). Python harness calling C++ via subprocess or compiled test binary, compared against Lean `#eval` output.
+
+**Approach**: Route B; same structure as existing `tests/pid/` harness.
+
+---
+
+### Priority Queue (Run 133)
+
+| Priority | Target | Rationale |
+|----------|--------|-----------|
+| 1 | `BlockStats` Lean spec + proofs (target 57) | Most tractable new Lean target; ~8 theorems; all `omega`-provable |
+| 2 | `BlockLimit` Lean spec + proofs (target 58) | Asymmetric clamp; immediate reuse of `constrain_range` pattern |
+| 3 | `WelfordMeanVector` informal spec (target 59) | Componentwise lift of WelfordMean; builds on existing work |
+| 4 | `BlockIntegralTrap` correspondence tests (target 60) | Closes Route B gap for 30-theorem file; similar to existing tests/pid/ |
+| 5 | Paper + REPORT.md update (Task 11 / Task 10) | CRITIQUE.md flags paper as very stale (28+ new files since run54) |
