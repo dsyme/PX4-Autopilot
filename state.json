@@ -1,129 +1,35 @@
 {
-  "run": 138,
+  "run": 139,
   "last_updated": "2026-05-19",
   "lean_version": "4.29.1",
-  "lake_build_status": "passed",
-  "totals": {
-    "theorems": 784,
-    "theorems_proved": 784,
-    "axioms": 10,
-    "sorry_count": 0,
-    "lean_files": 53,
-    "targets": 59
-  },
-  "sorry_locations": {
-    "all": "0 sorry in all 53 files. 10 axioms for irrational arithmetic."
-  },
-  "open_prs": [
-    "lean-squad/run-138-blockstats-corr-report-d76c5bdda0"
+  "project_lean_toolchain": "v4.29.0",
+  "theorem_count": 790,
+  "file_count": 54,
+  "sorry_count": 3,
+  "targets": [
+    {"name": "computeMaxSpeedFromDistance", "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean", "phase": 3, "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq)"},
+    {"name": "BlockStats", "phase": 4, "notes": "10 theorems, correspondence tests added in run 138"},
+    {"name": "VelocitySmoothing", "phase": 4, "notes": "33 theorems"},
+    {"name": "PID", "phase": 4, "notes": "34 theorems"},
+    {"name": "BrakingDist", "phase": 4, "notes": "proved"},
+    {"name": "SqrtLinear", "phase": 4, "notes": "proved"},
+    {"name": "SensorOrientation", "phase": 4, "notes": "20 theorems"},
+    {"name": "GoldenSectionSearch", "phase": 4, "notes": "13 theorems"},
+    {"name": "GainCompression", "phase": 4, "notes": "11 theorems"},
+    {"name": "CountSetBits", "phase": 4, "notes": "24 theorems"},
+    {"name": "Negate16", "phase": 4, "notes": "18 theorems"},
+    {"name": "BlockHighPass", "phase": 4, "notes": "14 theorems"},
+    {"name": "BlockIntegralTrap", "phase": 4, "notes": "29 theorems"},
+    {"name": "SecondOrderReferenceModel", "phase": 4, "notes": "7 theorems"},
+    {"name": "NotchFilter", "phase": 4, "notes": "15 theorems"},
+    {"name": "BlockLimit", "phase": 4, "notes": "10 theorems"}
   ],
-  "bugs_found": 6,
-  "correspondence_tests": {
-    "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
-    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
-    "hysteresis": "tests/hysteresis/ (259/259 pass)",
-    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)",
-    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^k-1, 64-bit LCG)",
-    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; boundary, linear, cubic, odd-symmetry, grid)",
-    "BlockIntegralTrap": "tests/BlockIntegralTrap/ (existing)",
-    "LowPassFilter2p": "tests/LowPassFilter2p/ (existing)",
-    "deadzone": "tests/deadzone/ (existing)",
-    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate)",
-    "blockstats": "tests/blockstats/ (760/760 pass; exact integer model; confirms bsUpdate/bsReset/bsFold/bsMean for BlockStats<int,1>)"
-  },
-  "ci": {
-    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
-    "status": "passing"
-  },
-  "run_history": [
-    {
-      "run": 138,
-      "date": "2026-05-19T11:35 UTC",
-      "workflow_run_id": 26094293065,
-      "tasks": [
-        "Task 8 (Route B): BlockStats correspondence tests \u2014 formal-verification/tests/blockstats/ (760/760 pass; exact integer model matching control::BlockStats<int,1>; boundary, sequential, fold, mean, sumSq_nonneg).",
-        "Task 10 (Project Report): REPORT.md updated \u2014 784 theorems, 53 files, added BlockLimit/BlockStats entries, blockstats tests in Route B list, timeline section 133-138."
-      ],
-      "theorems_proved": 0,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-138-blockstats-corr-report-d76c5bdda0",
-      "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) now has 760/760 Route B correspondence tests."
-    },
-    {
-      "run": 137,
-      "date": "2026-05-19T04:23 UTC",
-      "workflow_run_id": 26075999403,
-      "tasks": [
-        "Task 2 (Informal Spec Extraction): computemaxspeed_informal.md \u2014 full informal spec for math::trajectory::computeMaxSpeedFromDistance; kinematic derivation of quadratic formula, discriminant non-negativity, edge cases (accel=0, dist=0, large dist), examples, Lean modelling plan.",
-        "Task 4 (Implementation Extraction): BlockStats.lean \u2014 scalar Int model of BlockStats<Type,M> running-sum accumulator; 10 theorems proved: bsUpdate_count, bsUpdate_sum, bsUpdate_sumSq, bsUpdate_sumSq_nonneg, bsUpdate_mono_count, bsReset_zero, bsFold_count, bsFold_sum, bsFold_sumSq_nonneg, bsMean_single."
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-137-blockstats-impl-computemaxspeed-spec",
-      "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) advanced to phase 5; computeMaxSpeedFromDistance (target 56) advanced to phase 2."
-    },
-    {
-      "run": 136,
-      "date": "2026-05-18T18:10 UTC",
-      "workflow_run_id": 26051487180,
-      "tasks": [
-        "Task 2 (Informal Spec Extraction): blockstats_informal.md \u2014 full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
-        "Task 5 (Proof Assistance): BlockLimit.lean \u2014 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-136-blocklimit-blockstats-informal",
-      "notes": "774 theorems total, 52 files, 0 sorry. BlockLimit (target 58) now fully proved; BlockStats (target 57) advanced to phase 2."
-    },
-    {
-      "run": 135,
-      "date": "2026-05-18T12:07 UTC",
-      "workflow_run_id": 26031790120,
-      "tasks": [
-        "Task 5 (Proof Assistance): FilteredDerivative.lean \u2014 6 new theorems: fdIter_const_shrinks_neg, fdIter_const_nonpos, fdIter_ramp_alpha_formula (KEY: linear ramp \u2192 slope/dt convergence), fdIter_ramp_bounded_pos/neg, fdUpdate_mono. 12\u219218 theorems.",
-        "Task 7 (Proof Utility Critique): CRITIQUE.md updated \u2014 764 theorems, 51 files, runs 125-135 summary, FilteredDerivative entry updated."
-      ],
-      "theorems_proved": 6,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-135-filteredderivative-ramp-convergence-critique",
-      "notes": "764 theorems total, 51 files, 0 sorry. Run-134 conflict with run-133 (PID overlap) was skipped. FilteredDerivative now has 18 theorems with full ramp convergence proof."
-    }
-  ],
-  "discoveries": [
-    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) \u2014 proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
-    "cv_cube_le_cv: cv^3 \u2264 cv for cv\u2208[0,1] \u2014 use mul_le_mul_of_nonneg_right twice with hcvsq \u2264 1",
-    "expo_mono_e_neg_v derived from expo_mono_e_pos_v + expo_odd via Rat.neg_le_neg",
-    "Rat.add_neg_cancel : a + -a = 0 (available in Lean 4.29.0 stdlib)",
-    "import must come BEFORE module docblock in Lean 4",
-    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
-    "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
-    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
-    "linarith NOT available without Mathlib \u2014 use omega, Int.add_nonneg, Rat.le_trans etc.",
-    "0 \u2264 u*u for u:Int: by_cases h:0\u2264u; Int.mul_nonneg h h; or Int.neg_mul_neg + Int.neg_nonneg.mpr",
-    "Rat div by Nat.cast 1: use Rat.inv_def; rfl for (1:Rat)\u207b\u00b9=1, then Rat.mul_one",
-    "bsFold proofs: use show foldl bsUpdate (bsUpdate s u) rest = bsFold (bsUpdate s u) rest from rfl"
-  ],
-  "priority_targets": [
-    {
-      "id": "computemaxspeed-spec",
-      "name": "computeMaxSpeedFromDistance quadratic formula",
-      "phase": 2,
-      "notes": "Informal spec written run 137. Next: Lean spec (Task 3) \u2014 sqrt over Rat challenge; focus on algebraic properties."
-    },
-    {
-      "id": "blockstats-impl",
-      "name": "BlockStats running sum accumulator",
-      "phase": 5,
-      "notes": "DONE run 137: 10 theorems in BlockStats.lean \u2014 bsUpdate_count/sum/sumSq/sumSq_nonneg/mono_count, bsReset_zero, bsFold_count/sum/sumSq_nonneg, bsMean_single."
-    },
-    {
-      "id": "blocklimit-spec",
-      "name": "BlockLimit asymmetric clamp",
-      "phase": 5,
-      "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean."
-    }
+  "open_prs": ["lean-squad/run-139-computemaxspeed-spec-report"],
+  "notes": [
+    "No Mathlib in project — ring/linarith/nlinarith/norm_num not available",
+    "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
+    "Rat.le_iff_sub_nonneg is available for a ≤ a proofs",
+    "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
+    "ComputeMaxSpeed: 3 sorry remain (arithmetic simplification), next run should close them"
   ]
 }
