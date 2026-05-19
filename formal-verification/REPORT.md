@@ -36,6 +36,12 @@ asymmetric clamp `BlockLimit` (10 theorems), and the `BlockStats` running-sum/su
 accumulator (10 theorems). **Six**
 genuine implementation bugs were discovered through formal verification. **Zero** `sorry`
 remain in proof bodies (10 axioms for irrational arithmetic are the only non-proved elements).
+asymmetric clamp `BlockLimit` (10 theorems), the `BlockStats` running-sum/sumSq
+accumulator (10 theorems), and `computeMaxSpeedFromDistance` quadratic braking kinematics
+(6 theorems, 3 sorry). **Six**
+genuine implementation bugs were discovered through formal verification. **3 `sorry`**
+remain in proof bodies (3 arithmetic simplifications in `ComputeMaxSpeed.lean`; 10 axioms
+for irrational arithmetic are the only other non-proved elements).
 Route B correspondence tests cover `atmosphere` (26 cases), `slew_rate` (4327 cases),
 `pid` (7964 cases), `bin_at_angle` (334 cases), `hysteresis` (259 cases), `count_set_bits`
 (871 cases), `expo` (1373 cases), `deadzone` (1221 cases), `BlockIntegralTrap`
