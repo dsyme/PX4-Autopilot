@@ -2,19 +2,19 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: ✅ ACTIVE — 752 theorems · **0 `sorry`** · Lean 4.29.1 · 51 files
+**Status**: ✅ ACTIVE — 790 theorems · **3 `sorry`** · Lean 4.29.1 · 54 files
 
 ## Last Updated
 
-- **Date**: 2026-05-17 04:30 UTC
-- **Commit**: `fbadd9d76d`
+- **Date**: 2026-05-19 (run 139)
+- **Commit**: `d76c5bdda0`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **752 named theorems** across
-**51 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+The Lean Squad has formally verified **790 named theorems** across
+**54 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
 (`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm, the Commander arming FSM,
 the ISA atmosphere model, `ObstacleMath::wrap_bin` / `get_bin_at_angle` / `get_lower_bound_angle`
@@ -31,13 +31,18 @@ sensor-orientation finite-enum decidable proofs (`SensorOrientation`, 20 theorem
 weight function (24 theorems), `Negate16` int16 overflow behaviour (18 theorems),
 `BlockHighPass` IIR high-pass filter (14 theorems), `BlockIntegralTrap` trapezoidal
 integrator (29 theorems), `SecondOrderReferenceModel` forward-Euler state-space model
-(7 theorems), and `NotchFilter` Direct Form I IIR notch filter (15 theorems). **Six**
-genuine implementation bugs were discovered through formal verification. **Zero** `sorry`
-remain in proof bodies (10 axioms for irrational arithmetic are the only non-proved elements).
+(7 theorems), `NotchFilter` Direct Form I IIR notch filter (15 theorems), the
+asymmetric clamp `BlockLimit` (10 theorems), the `BlockStats` running-sum/sumSq
+accumulator (10 theorems), and `computeMaxSpeedFromDistance` quadratic braking kinematics
+(6 theorems, 3 sorry). **Six**
+genuine implementation bugs were discovered through formal verification. **3 `sorry`**
+remain in proof bodies (3 arithmetic simplifications in `ComputeMaxSpeed.lean`; 10 axioms
+for irrational arithmetic are the only other non-proved elements).
 Route B correspondence tests cover `atmosphere` (26 cases), `slew_rate` (4327 cases),
 `pid` (7964 cases), `bin_at_angle` (334 cases), `hysteresis` (259 cases), `count_set_bits`
 (871 cases), `expo` (1373 cases), `deadzone` (1221 cases), `BlockIntegralTrap`
-(120 cases), `LowPassFilter2p` (28 cases), and `alpha_filter` (257 cases).
+(120 cases), `LowPassFilter2p` (28 cases), `alpha_filter` (257 cases), and
+`blockstats` (760 cases).
 
 ---
 
@@ -61,7 +66,7 @@ graph TD
     L10["Layer 10: Math Extensions<br/>ConstrainToInt16 (10) · RadiansDegrees (36) · Min3Max3 (29)<br/>75 theorems"]
     L11["Layer 11: Motion Planning + Control<br/>VelocitySmoothing (33) · PID (34) · FilteredDerivative (12)<br/>79 theorems"]
     L12["Layer 12: Optimization Algorithms<br/>GoldenSection (13)<br/>13 theorems"]
-    L13["Layer 13: New Filters + Control (runs 109–132)<br/>SensorOrientation (20) · GainCompression (11)<br/>CountSetBits (24) · Negate16 (18)<br/>HighPass (14) · BlockIntegralTrap (29)<br/>SecondOrderReferenceModel (7) · NotchFilter (15)<br/>138 theorems"]
+    L13["Layer 13: New Filters + Control (runs 109–137)<br/>SensorOrientation (20) · GainCompression (11)<br/>CountSetBits (24) · Negate16 (18)<br/>HighPass (14) · BlockIntegralTrap (29)<br/>SecondOrderReferenceModel (7) · NotchFilter (15)<br/>BlockLimit (10) · BlockStats (10)<br/>158 theorems"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
@@ -537,8 +542,10 @@ graph LR
 | `SecondOrderReferenceModel.lean` | 7 | 0 | ✅ Phase 5 | Forward-Euler state-space: reset postconditions, equilibrium fixed point |
 | `NotchFilter.lean` | 15 | 0 | ✅ Phase 5 | Direct Form I IIR notch: bypass, DC steady-state, superposition, two-step formula |
 | `LowPassFilter2p.lean` | 13 | 0 | ✅ Phase 5 | Biquad IIR low-pass: range/pass-through/zero-state |
+| `BlockLimit.lean` | 10 | 0 | ✅ Phase 5 | Asymmetric clamp: above/below/range/idempotent/monotone (10 theorems) |
+| `BlockStats.lean` | 10 | 0 | ✅ Phase 5 | Running accumulator: count/sum/sumSq invariants, fold, bsMean_single — correspondence tests 760/760 |
 | `Basic.lean` | — | — | ✅ | Barrel file |
-| **Total** | **752** | **0** | — | **6 bugs found; 0 sorry; 51 files; lake build passes** |
+| **Total** | **784** | **0** | — | **6 bugs found; 0 sorry; 53 files; lake build passes** |
 
 ---
 
@@ -858,6 +865,13 @@ timeline
         SecondOrderReferenceModel : 8 new theorems (run 130)
         NotchFilter / SORM : CORRESPONDENCE.md sections added (run 130)
         Total             : 752 theorems, 51 files, 0 sorry, 6 bugs found
+    section Runs 133-138
+        BlockLimit        : 10 theorems (asymmetric clamp) — run 136
+        BlockStats        : informal spec (run 136), 10 theorems (run 137)
+        FilteredDerivative : 6 new theorems incl. ramp convergence — run 135
+        BlockStats        : Route B correspondence tests 760/760 pass — run 138
+        REPORT            : updated — run 138
+        Total             : 784 theorems, 53 files, 0 sorry, 6 bugs found
 ```
 
 ---
@@ -887,5 +901,5 @@ timeline
 
 > 🔬 *This report was generated by Lean Squad automated formal verification.*
 > *`lake build` verified with Lean 4.29.1. **0 `sorry`** — sorry-free since run 73.*
-> *752 theorems across 51 files. 13 proof layers. 6 bugs found.*
-> *CORRESPONDENCE.md covers all Lean files. Route B tests: atmosphere (26), slew_rate (4327), pid (7964), bin_at_angle (334), hysteresis (259), count_set_bits (871), expo (1373), deadzone (1221), BlockIntegralTrap (120), alpha_filter (257).*
+> *784 theorems across 53 files. 13 proof layers. 6 bugs found.*
+> *CORRESPONDENCE.md covers all Lean files. Route B tests: atmosphere (26), slew_rate (4327), pid (7964), bin_at_angle (334), hysteresis (259), count_set_bits (871), expo (1373), deadzone (1221), BlockIntegralTrap (120), alpha_filter (257), blockstats (760).*
