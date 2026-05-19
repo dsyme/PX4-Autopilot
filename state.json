@@ -1,46 +1,59 @@
 {
-  "run": 136,
-  "last_updated": "2026-05-18",
+  "run": 137,
+  "last_updated": "2026-05-19",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 774,
-    "theorems_proved": 774,
+    "theorems": 784,
+    "theorems_proved": 784,
     "axioms": 10,
     "sorry_count": 0,
-    "lean_files": 52,
-    "targets": 57
+    "lean_files": 53,
+    "targets": 58
   },
   "sorry_locations": {
-    "all": "0 sorry in all 51 files. 10 axioms for irrational arithmetic."
+    "all": "0 sorry in all 53 files. 10 axioms for irrational arithmetic."
   },
   "open_prs": [],
   "bugs_found": 6,
   "correspondence_tests": {
     "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
-    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonst",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
     "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
     "hysteresis": "tests/hysteresis/ (259/259 pass)",
-    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int mo",
-    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^",
-    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; bound",
+    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)",
+    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^k-1, 64-bit LCG)",
+    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; boundary, linear, cubic, odd-symmetry, grid)",
     "BlockIntegralTrap": "tests/BlockIntegralTrap/ (existing)",
     "LowPassFilter2p": "tests/LowPassFilter2p/ (existing)",
     "deadzone": "tests/deadzone/ (existing)",
-    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate"
+    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate)"
   },
   "ci": {
-    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 137,
+      "date": "2026-05-19T04:23 UTC",
+      "workflow_run_id": 26075999403,
+      "tasks": [
+        "Task 2 (Informal Spec Extraction): computemaxspeed_informal.md — full informal spec for math::trajectory::computeMaxSpeedFromDistance; kinematic derivation of quadratic formula, discriminant non-negativity, edge cases (accel=0, dist=0, large dist), examples, Lean modelling plan.",
+        "Task 4 (Implementation Extraction): BlockStats.lean — scalar Int model of BlockStats<Type,M> running-sum accumulator; 10 theorems proved: bsUpdate_count, bsUpdate_sum, bsUpdate_sumSq, bsUpdate_sumSq_nonneg, bsUpdate_mono_count, bsReset_zero, bsFold_count, bsFold_sum, bsFold_sumSq_nonneg, bsMean_single."
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-137-blockstats-impl-computemaxspeed-spec",
+      "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) advanced to phase 5; computeMaxSpeedFromDistance (target 56) advanced to phase 2."
+    },
     {
       "run": 136,
       "date": "2026-05-18T18:10 UTC",
       "workflow_run_id": 26051487180,
       "tasks": [
-        "Task 2 (Informal Spec Extraction): blockstats_informal.md \u2014 full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
-        "Task 5 (Proof Assistance): BlockLimit.lean \u2014 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
+        "Task 2 (Informal Spec Extraction): blockstats_informal.md — full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
+        "Task 5 (Proof Assistance): BlockLimit.lean — 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
       ],
       "theorems_proved": 10,
       "sorry_changes": 0,
@@ -52,97 +65,49 @@
       "date": "2026-05-18T12:07 UTC",
       "workflow_run_id": 26031790120,
       "tasks": [
-        "Task 5 (Proof Assistance): FilteredDerivative.lean \u2014 6 new theorems: fdIter_const_shrinks_neg, fdIter_const_nonpos, fdIter_ramp_alpha_formula (KEY: linear ramp \u2192 slope/dt convergence), fdIter_ramp_bounded_pos/neg, fdUpdate_mono. 12\u219218 theorems.",
-        "Task 7 (Proof Utility Critique): CRITIQUE.md updated \u2014 764 theorems, 51 files, runs 125-135 summary, FilteredDerivative entry updated."
+        "Task 5 (Proof Assistance): FilteredDerivative.lean — 6 new theorems: fdIter_const_shrinks_neg, fdIter_const_nonpos, fdIter_ramp_alpha_formula (KEY: linear ramp → slope/dt convergence), fdIter_ramp_bounded_pos/neg, fdUpdate_mono. 12→18 theorems.",
+        "Task 7 (Proof Utility Critique): CRITIQUE.md updated — 764 theorems, 51 files, runs 125-135 summary, FilteredDerivative entry updated."
       ],
       "theorems_proved": 6,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/run-135-filteredderivative-ramp-convergence-critique",
       "notes": "764 theorems total, 51 files, 0 sorry. Run-134 conflict with run-133 (PID overlap) was skipped. FilteredDerivative now has 18 theorems with full ramp convergence proof."
-    },
-    {
-      "run": 134,
-      "date": "2026-05-18T04:39 UTC",
-      "workflow_run_id": 26013823100,
-      "tasks": [
-        "Task 5 (Proof Assistance): PID.lean \u2014 6 new sign-tracking theorems (\u00a79): pidOutputRaw_eq_integral_zero_error_no_deriv, pidOutputRaw_pos_pos_error_no_deriv, pidOutput_pos_integral_saturated_pos_error, pidOutput_neg_integral_saturated_neg_error, pidOutputRaw_lb_no_deriv, pidOutput_eq_of_state_eq. Proves that saturated integrator + same-direction error \u2192 output has correct sign.",
-        "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 added sections for BlockLimitSym.lean (10 thms) and PurePursuit.lean (10 thms); updated PID.lean entry 32\u219242 theorems; updated consolidated summary table."
-      ],
-      "theorems_proved": 6,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-134-pid-sign-tracking-correspondence",
-      "notes": "758 theorems total, 51 files, 0 sorry. PID sign-tracking priority target completed."
-    },
-    {
-      "run": 133,
-      "date": "2026-05-17T17:15 UTC",
-      "workflow_run_id": 25997340755,
-      "tasks": [
-        "Task 2 (Informal Spec Extraction): filteredderivative_informal.md \u2014 documents FilteredDerivative::update preconditions, postconditions, 3 examples, 7 formal properties, open questions.",
-        "Task 1 (Research & Target Identification): TARGETS.md \u2014 fixed 14 stale Research\u2192Proved entries; added targets 58 (BlockLimit), 59 (WelfordMeanVector), 60 (BlockIntegralTrap tests). RESEARCH.md \u2014 added detailed entries + updated priority queue."
-      ],
-      "theorems_proved": 0,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-133-filteredderivative-spec-targets-update",
-      "notes": "752 theorems total, 51 files, 0 sorry. Run focused on documentation: informal spec + target list cleanup."
-    },
-    {
-      "run": 132,
-      "date": "2026-05-17T04:30 UTC",
-      "workflow_run_id": 25981113571,
-      "tasks": [
-        "Task 5 (Proof Assistance): BlockIntegralTrap.lean \u2014 5 new theorems: itUpdate_dt_zero (dt=0 identity), itUpdate_nonneg_output/itFold_y_nonneg (nonneg invariant), itUpdate_nonpos_output/itFold_y_nonpos (nonpos invariant). 25\u219230 theorems.",
-        "Task 10 (Project Report): REPORT.md updated \u2014 752 theorems, 51 files, alpha_filter correspondence tests added, run 132 timeline."
-      ],
-      "theorems_proved": 5,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-132-blockintegraltrap-sign-invariants-report",
-      "notes": "752 theorems total, 51 files, 0 sorry. BlockIntegralTrap now has 30 theorems."
-    },
-    {
-      "run": 131,
-      "date": "2026-05-16T17:30 UTC",
-      "workflow_run_id": 25967987089,
-      "tasks": [
-        "Task 8 (Route B): AlphaFilter correspondence tests \u2014 257/257 pass; covers boundary, dyadic-rational grid, decimal grid, multi-step convergence, theorem spot-checks.",
-        "Task 3 (Formal Spec Writing): blockintegraltrap_informal.md \u2014 informal spec for BlockIntegralTrap::update. BlockIntegralTrap.lean \u2014 9 new theorems: itFold_u_eq_last, itUpdate_zero_limit, itUpdate_nonneg_input_nondecreasing, itUpdate_nonpos_input_nonincreasing, itUpdate_trap_symmetric, itFold_nil, itFold_singleton, itFold_cons."
-      ],
-      "theorems_proved": 9,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-131-alpha-filter-tests-blockintegraltrap-spec",
-      "notes": "747 theorems total, 51 files, 0 sorry. AlphaFilter now has Route B tests confirming exact model. BlockIntegralTrap has informal spec + 9 new structural theorems."
     }
   ],
   "discoveries": [
-    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) \u2014 proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
-    "cv_cube_le_cv: cv^3 \u2264 cv for cv\u2208[0,1] \u2014 use mul_le_mul_of_nonneg_right twice with hcvsq \u2264 1",
+    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) — proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
+    "cv_cube_le_cv: cv^3 ≤ cv for cv∈[0,1] — use mul_le_mul_of_nonneg_right twice with hcvsq ≤ 1",
     "expo_mono_e_neg_v derived from expo_mono_e_pos_v + expo_odd via Rat.neg_le_neg",
     "Rat.add_neg_cancel : a + -a = 0 (available in Lean 4.29.0 stdlib)",
     "import must come BEFORE module docblock in Lean 4",
     "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
     "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
-    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
+    "prefix is reserved in Lean 4 — use pfx/sfx",
     "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63"
+    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
+    "linarith NOT available without Mathlib — use omega, Int.add_nonneg, Rat.le_trans etc.",
+    "0 ≤ u*u for u:Int: by_cases h:0≤u; Int.mul_nonneg h h; or Int.neg_mul_neg + Int.neg_nonneg.mpr",
+    "Rat div by Nat.cast 1: use Rat.inv_def; rfl for (1:Rat)⁻¹=1, then Rat.mul_one",
+    "bsFold proofs: use show foldl bsUpdate (bsUpdate s u) rest = bsFold (bsUpdate s u) rest from rfl"
   ],
   "priority_targets": [
     {
-      "id": "pid-output-convergence",
-      "name": "PID output sign-tracking when integral saturated",
-      "phase": 5,
-      "notes": "DONE run 134: 6 sign-tracking theorems proved \u2014 pidOutput_pos_integral_saturated_pos_error, pidOutput_neg_integral_saturated_neg_error, etc."
+      "id": "computemaxspeed-spec",
+      "name": "computeMaxSpeedFromDistance quadratic formula",
+      "phase": 2,
+      "notes": "Informal spec written in run 137: computemaxspeed_informal.md. Discriminant analysis done. Next: Lean spec (Task 3) — challenge is sqrt over Rat; focus on algebraic properties (result≥final_speed, accel=0 case, discriminant≥0)."
     },
     {
-      "id": "blockstats-spec",
+      "id": "blockstats-impl",
       "name": "BlockStats running sum accumulator",
-      "phase": 2,
-      "notes": "Informal spec written in run 136: blockstats_informal.md. Next: Lean spec (Task 3)."
+      "phase": 5,
+      "notes": "DONE run 137: 10 theorems in BlockStats.lean — bsUpdate_count/sum/sumSq/sumSq_nonneg/mono_count, bsReset_zero, bsFold_count/sum/sumSq_nonneg, bsMean_single."
     },
     {
       "id": "blocklimit-spec",
       "name": "BlockLimit asymmetric clamp",
       "phase": 5,
-      "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean \u2014 limit_above, limit_below, limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono"
+      "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean."
     }
   ]
 }
