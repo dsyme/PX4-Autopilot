@@ -2,19 +2,19 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: ✅ ACTIVE — 784 theorems · **0 `sorry`** · Lean 4.29.1 · 53 files
+**Status**: ✅ ACTIVE — 790 theorems · **3 `sorry`** · Lean 4.29.1 · 54 files
 
 ## Last Updated
 
-- **Date**: 2026-05-19 11:35 UTC
+- **Date**: 2026-05-19 (run 139)
 - **Commit**: `d76c5bdda0`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **784 named theorems** across
-**53 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
+The Lean Squad has formally verified **790 named theorems** across
+**54 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
 (`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm, the Commander arming FSM,
 the ISA atmosphere model, `ObstacleMath::wrap_bin` / `get_bin_at_angle` / `get_lower_bound_angle`
@@ -32,10 +32,12 @@ weight function (24 theorems), `Negate16` int16 overflow behaviour (18 theorems)
 `BlockHighPass` IIR high-pass filter (14 theorems), `BlockIntegralTrap` trapezoidal
 integrator (29 theorems), `SecondOrderReferenceModel` forward-Euler state-space model
 (7 theorems), `NotchFilter` Direct Form I IIR notch filter (15 theorems), the
-asymmetric clamp `BlockLimit` (10 theorems), and the `BlockStats` running-sum/sumSq
-accumulator (10 theorems). **Six**
-genuine implementation bugs were discovered through formal verification. **Zero** `sorry`
-remain in proof bodies (10 axioms for irrational arithmetic are the only non-proved elements).
+asymmetric clamp `BlockLimit` (10 theorems), the `BlockStats` running-sum/sumSq
+accumulator (10 theorems), and `computeMaxSpeedFromDistance` quadratic braking kinematics
+(6 theorems, 3 sorry). **Six**
+genuine implementation bugs were discovered through formal verification. **3 `sorry`**
+remain in proof bodies (3 arithmetic simplifications in `ComputeMaxSpeed.lean`; 10 axioms
+for irrational arithmetic are the only other non-proved elements).
 Route B correspondence tests cover `atmosphere` (26 cases), `slew_rate` (4327 cases),
 `pid` (7964 cases), `bin_at_angle` (334 cases), `hysteresis` (259 cases), `count_set_bits`
 (871 cases), `expo` (1373 cases), `deadzone` (1221 cases), `BlockIntegralTrap`
