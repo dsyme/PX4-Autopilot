@@ -4,42 +4,67 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-18 12:07 UTC (run 135)
-- **Commit**: `cced1116d0d92233879b43409de58a3c65be4967`
+- **Date**: 2026-05-20 11:21 UTC (run 141)
+- **Commit**: `69863d7d48de1c9695bc93f769239099cbd1850a`
 
 ---
 
 ## Overall Assessment
 
-**51 Lean files cover 764 named theorems, all fully proved, 0 `sorry`**
+**54 Lean files cover 877 named theorems (including private helpers), 22 occurrences of `sorry` across 11 files**
 (Lean 4 v4.29.1, standard library only, 10 abstract axioms for Mathlib-dependent results).
 
-The library continues to grow steadily. Since the run-124 critique, 14 new theorems were
-added across three new modules: `NotchFilter.lean` (14 theorems), `SecondOrderReferenceModel.lean`
-(14 theorems), `BlockLimitSym.lean` (10 theorems), `PurePursuit.lean` (10 theorems), and
-`FilteredDerivative.lean` (18 theorems, including 6 new ramp-convergence and monotonicity
-theorems added in run 135). The `PID.lean` file grew from 28 to 42 theorems with comprehensive
-sign-tracking proofs. Correspondence tests now cover 11 targets against over 17,000 cases,
-all passing.
+Since run 135, 113+ theorems were added across new modules: `BlockLimit.lean` (10 theorems),
+`BlockLimitSym.lean` (10 theorems), `BlockStats.lean` (10 theorems), `ComputeMaxSpeed.lean`
+(6 theorems, 3 proved), plus growth in `BlockIntegralTrap.lean`, `PID.lean`, and other files.
+REPORT.md and TARGETS.md were updated in run 140. Three new research targets were identified:
+`BlockIntegral_update`, `WelfordMeanVector_2d`, and `computeBrakingDistanceFromVelocity`.
+Correspondence tests now cover 12 targets including BlockStats (760/760 passing).
 
-**Run 135 assessment (Task 7 + Task 5)**:
-- Task 5: `FilteredDerivative.lean` — 6 new theorems proving monotone decay from negative
-  start, linear ramp convergence (`fdIter_ramp_alpha_formula`), bounded convergence toward
-  slope/dt (`fdIter_ramp_bounded_pos/neg`), and input monotonicity (`fdUpdate_mono`).
-  The ramp convergence result is the most valuable addition: it formally proves that if the
-  input is a linear ramp with slope `m` and step size `dt`, the alpha filter state converges
-  to `m/dt` (the slope of the input) — the fundamental correctness property of the derivative
-  estimator.
-- Task 7: This critique updated to reflect runs 125–135 additions.
+**Run 141 assessment (Task 7 + Task 6)**:
+- Task 6: CORRESPONDENCE.md updated with four missing entries: `BlockLimit.lean`,
+  `BlockLimitSym.lean`, `BlockStats.lean`, and `ComputeMaxSpeed.lean`.
+- Task 7: This critique updated to reflect runs 136–141. The `sorry` count has grown to 22
+  across 11 files — primarily from `ComputeMaxSpeed.lean` (3 sorry on algebraic properties
+  requiring `sqrtQ` reasoning), plus pre-existing pattern-comment sorrys in `SqrtLinear.lean`,
+  `WrapAngle.lean`, and others. Closing the `ComputeMaxSpeed` sorrys is the highest-priority
+  proof task for the next run.
+
+**Run 141 gaps identified**:
+1. **ComputeMaxSpeed sorry closure** (high priority): `maxSpeed_accel_zero`,
+   `maxSpeed_mono_dist`, and `maxSpeed_quadratic_eq` all require algebraic manipulation
+   with `sqrtQ` axioms. `maxSpeed_quadratic_eq` should be provable by unfolding
+   `rawMaxSpeed` and applying `sqrtQ_sq`.
+2. **New research targets from run 140** need informal specs and Lean files:
+   `BlockIntegral_update`, `WelfordMeanVector_2d`, `computeBrakingDistanceFromVelocity`.
+3. **Correspondence tests** for `BlockLimit`, `BlockLimitSym`, and `ComputeMaxSpeed` do not
+   yet exist. `BlockLimit` and `BlockLimitSym` are used widely and would benefit from
+   Route B tests.
+
+**Current sorry breakdown (22 total)**:
+
+| File | Sorry count | Notes |
+|------|------------|-------|
+| `ComputeMaxSpeed.lean` | 3 | Algebraic properties with `sqrtQ`; closeable |
+| `SqrtLinear.lean` | 4 | Axiom-based; requires `sqrt` algebraic reasoning |
+| `WrapAngle.lean` | 3 | Trigonometric identities; require Mathlib `Real` |
+| `Atmosphere.lean` | 1 | Physical formula validation |
+| `BlockLimit.lean` | 1 | Edge-case arithmetic |
+| `BlockLimitSym.lean` | 1 | Symmetry arithmetic |
+| `BlockStats.lean` | 1 | Mean formula case split |
+| `Deadzone.lean` | 2 | Boundary arithmetic |
+| `InterpolateN.lean` | 1 | Inductive argument |
+| `NotchFilter.lean` | 1 | Filter pole arithmetic |
+| `PurePursuit.lean` | 1 | Trigonometric bound |
 
 Six confirmed bugs remain open: `signNoZero<float>` (NaN returns 0),
 `negate<int16_t>` (incorrect INT16_MAX special case), `wrap_bin(bin, n)` (negative index
 for `bin ≤ -n`), `negate<int16_t>` involution failure at −32767, and the two
 `Negate16.lean` findings (not involutive for x=−32767, not surjective — −32767 never
-appears in the image of negate16). Route B correspondence tests now cover 11 targets:
+appears in the image of negate16). Route B correspondence tests now cover 12 targets:
 atmosphere (26/26), bin_at_angle (334/334), slew_rate (4327/4327), hysteresis (259/259),
 pid (7964/7964), count_set_bits (871/871), expo (1373/1373), BlockIntegralTrap (120/120),
-LowPassFilter2p (28/28), deadzone (existing), and alpha_filter (257/257).
+LowPassFilter2p (28/28), deadzone (existing), alpha_filter (257/257), BlockStats (760/760).
 
 ### Run 135 additions: `FilteredDerivative.lean` — ramp convergence and monotonicity
 
@@ -62,6 +87,16 @@ LowPassFilter2p (28/28), deadzone (existing), and alpha_filter (257/257).
 It closes the loop between the informal property "the derivative estimator converges to the
 slope of a linear ramp" and the formal model, using `alphaIterate_no_overshoot_up/down` from
 AlphaFilter as the core ingredient.
+
+### Runs 136–141 additions summary
+
+| Run | Task | File | Highlight |
+|-----|------|------|-----------|
+| 136–137 | Task 5 | (merged run-133/134 PID work) | PID sign-tracking theorems merged |
+| 138 | Task 8 | `tests/blockstats/` | BlockStats Route B: 760/760 pass |
+| 139 | Task 3 | `ComputeMaxSpeed.lean` | 6-theorem spec; 3 proved, 3 sorry (quadratic/sqrt) |
+| 140 | Task 10+1 | REPORT.md, TARGETS.md | Project report corrections; 3 new research targets |
+| 141 | Task 7+6 | CRITIQUE.md, CORRESPONDENCE.md | Critique update; 4 new correspondence entries |
 
 ### Runs 125–134 additions summary
 
