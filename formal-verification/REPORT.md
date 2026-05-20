@@ -2,18 +2,18 @@
 
 > 🔬 *Lean Squad — automated formal verification for `dsyme/PX4-Autopilot`.*
 
-**Status**: ✅ ACTIVE — 790 theorems · **3 `sorry`** · Lean 4.29.1 · 54 files
+**Status**: ✅ ACTIVE — 791 theorems · **3 `sorry`** · Lean 4.29.1 · 54 files
 
 ## Last Updated
 
-- **Date**: 2026-05-19 (run 139)
-- **Commit**: `d76c5bdda0`
+- **Date**: 2026-05-20 (run 140)
+- **Commit**: `f133b0b6ba`
 
 ---
 
 ## Executive Summary
 
-The Lean Squad has formally verified **790 named theorems** across
+The Lean Squad has formally verified **791 named theorems** across
 **54 Lean 4 files**, covering the core mathematical utility library (`src/lib/mathlib/`),
 the EKF2 ring-buffer (`src/lib/ringbuffer/`), the `systemlib::Hysteresis` state machine
 (`src/lib/hysteresis/`), the Septentrio GNSS CRC-16 algorithm, the Commander arming FSM,
@@ -23,18 +23,19 @@ the ISA atmosphere model, `ObstacleMath::wrap_bin` / `get_bin_at_angle` / `get_l
 (the generic closed-interval predicate), `math::constrainFloatToInt16`, the CRC-64-WE hash,
 the CRC-8/CRSF protocol checksum, radians/degrees conversions, `math::min3`/`max3`,
 the jerk-limited trajectory planner (`VelocitySmoothing`, 33 theorems), the generic
-PID controller (`src/lib/pid/PID.cpp`, 34 theorems including directional convergence and
+PID controller (`src/lib/pid/PID.cpp`, 42 theorems including directional convergence and
 saturation liveness), the `FilteredDerivative` discrete-derivative + alpha-IIR filter
-(12 theorems), the **golden-section search** interval invariants (13 theorems), the
+(18 theorems), the **golden-section search** interval invariants (13 theorems), the
 sensor-orientation finite-enum decidable proofs (`SensorOrientation`, 20 theorems), the
 `GainCompression` adaptive gain controller (11 theorems), the `CountSetBits` Hamming
 weight function (24 theorems), `Negate16` int16 overflow behaviour (18 theorems),
-`BlockHighPass` IIR high-pass filter (14 theorems), `BlockIntegralTrap` trapezoidal
+`BlockHighPass` IIR high-pass filter (12 theorems), `BlockIntegralTrap` trapezoidal
 integrator (29 theorems), `SecondOrderReferenceModel` forward-Euler state-space model
-(7 theorems), `NotchFilter` Direct Form I IIR notch filter (15 theorems), the
-asymmetric clamp `BlockLimit` (10 theorems), the `BlockStats` running-sum/sumSq
-accumulator (10 theorems), and `computeMaxSpeedFromDistance` quadratic braking kinematics
-(6 theorems, 3 sorry). **Six**
+(14 theorems), `NotchFilter` Direct Form I IIR notch filter (14 theorems), the
+asymmetric clamp `BlockLimit` (10 theorems), the symmetric clamp `BlockLimitSym`
+(10 theorems), the `BlockStats` running-sum/sumSq accumulator (10 theorems),
+`PurePursuit` lookahead distance safety (10 theorems), and
+`computeMaxSpeedFromDistance` quadratic braking kinematics (6 theorems, 3 sorry). **Six**
 genuine implementation bugs were discovered through formal verification. **3 `sorry`**
 remain in proof bodies (3 arithmetic simplifications in `ComputeMaxSpeed.lean`; 10 axioms
 for irrational arithmetic are the only other non-proved elements).
@@ -66,7 +67,7 @@ graph TD
     L10["Layer 10: Math Extensions<br/>ConstrainToInt16 (10) · RadiansDegrees (36) · Min3Max3 (29)<br/>75 theorems"]
     L11["Layer 11: Motion Planning + Control<br/>VelocitySmoothing (33) · PID (34) · FilteredDerivative (12)<br/>79 theorems"]
     L12["Layer 12: Optimization Algorithms<br/>GoldenSection (13)<br/>13 theorems"]
-    L13["Layer 13: New Filters + Control (runs 109–137)<br/>SensorOrientation (20) · GainCompression (11)<br/>CountSetBits (24) · Negate16 (18)<br/>HighPass (14) · BlockIntegralTrap (29)<br/>SecondOrderReferenceModel (7) · NotchFilter (15)<br/>BlockLimit (10) · BlockStats (10)<br/>158 theorems"]
+    L13["Layer 13: New Filters + Control (runs 109–139)<br/>SensorOrientation (20) · GainCompression (11)<br/>CountSetBits (24) · Negate16 (18)<br/>HighPass (12) · BlockIntegralTrap (29)<br/>SecondOrderReferenceModel (14) · NotchFilter (14)<br/>BlockLimit (10) · BlockLimitSym (10)<br/>BlockStats (10) · PurePursuit (10)<br/>ComputeMaxSpeed (6, 3 sorry)<br/>188 theorems"]
     L1 --> L2a
     L1 --> L2b
     L2b --> L2c
@@ -460,12 +461,13 @@ graph LR
 
 ---
 
-### Layer 13 — New Filters & Control Utilities (8 files, 125 theorems; runs 109–126)
+### Layer 13 — New Filters & Control Utilities (13 files, 188 theorems; runs 109–139)
 
-Added in runs 109–126, this layer covers sensor-orientation decidable proofs, adaptive
+Added in runs 109–139, this layer covers sensor-orientation decidable proofs, adaptive
 gain compression, the Hamming-weight popcount function, int16 overflow-safety bugs,
-IIR high-pass and notch filters, the trapezoidal integrator, and the second-order
-reference model.
+IIR high-pass and notch filters, the trapezoidal integrator, the second-order
+reference model, asymmetric/symmetric clamps, running-sum statistics, pure-pursuit
+lookahead, and the quadratic braking-speed formula.
 
 ```mermaid
 graph LR
@@ -473,10 +475,15 @@ graph LR
     GC["GainCompression.lean<br/>11 theorems<br/>Adaptive gain range + leakage"]
     CS["CountSetBits.lean<br/>24 theorems<br/>Hamming weight recurrence + pow2"]
     N16["Negate16.lean<br/>18 theorems<br/>int16 negation — 🐛 3 bugs"]
-    HP["HighPass.lean<br/>14 theorems<br/>IIR high-pass DC blocking"]
+    HP["HighPass.lean<br/>12 theorems<br/>IIR high-pass DC blocking"]
     BIT["BlockIntegralTrap.lean<br/>29 theorems<br/>Trapezoidal integrator + saturation"]
-    SORM["SecondOrderReferenceModel.lean<br/>7 theorems<br/>Forward-Euler state-space equilibrium"]
-    NF["NotchFilter.lean<br/>15 theorems<br/>Direct Form I IIR notch filter"]
+    SORM["SecondOrderReferenceModel.lean<br/>14 theorems<br/>Forward-Euler state-space equilibrium"]
+    NF["NotchFilter.lean<br/>14 theorems<br/>Direct Form I IIR notch filter"]
+    BL["BlockLimit.lean<br/>10 theorems<br/>Asymmetric clamp"]
+    BLS["BlockLimitSym.lean<br/>10 theorems<br/>Symmetric clamp, odd symmetry"]
+    BST["BlockStats.lean<br/>10 theorems<br/>Running sum/sumSq accumulator"]
+    PP["PurePursuit.lean<br/>10 theorems<br/>Lookahead distance range safety"]
+    CMS["ComputeMaxSpeed.lean<br/>6 theorems (3 sorry)<br/>Quadratic braking kinematics"]
 ```
 
 **Key results**:
@@ -491,6 +498,9 @@ graph LR
 - `sormReset_state_zero`: second-order model reset sets state to zero.
 - `nfOut_dc_steady`: NotchFilter preserves DC input when `b0+b1+b2 = 1+a1+a2`.
 - `nfOut_add_sample`: superposition theorem — `nfOut(u+v) = nfOut(u) + b0·v`.
+- `blockLimitSym_odd`: `blockLimitSym(-u) = -blockLimitSym(u)`.
+- `ppLookahead_in_range`: `lookAheadDist` always in `[min_dist, max_dist]`.
+- `discriminant_nonneg`: the quadratic discriminant in `computeMaxSpeed` is non-negative when all inputs are non-negative.
 
 ---
 |------|----------|-------|-------|------------|
@@ -530,22 +540,25 @@ graph LR
 | `RadiansDegrees.lean` | 36 | 0 | ✅ Phase 5 | Rad↔deg round-trip, monotonicity, injective, concrete values |
 | `Min3Max3.lean` | 29 | 0 | ✅ Phase 5 | min3/max3: bounds, GLB/LUB, idempotence, commutativity, duality |
 | `VelocitySmoothing.lean` | 33 | 0 | ✅ Phase 5 | Jerk-limited schedule: partition, T≥0, monotonicity, T2_zero_iff |
-| `PID.lean` | 34 | 0 | ✅ Phase 5 | PID safety (output+integral bounds), equilibrium, convergence liveness |
-| `FilteredDerivative.lean` | 12 | 0 | ✅ Phase 5 | Discrete derivative + IIR: first-call no-update, const-input convergence |
+| `PID.lean` | 42 | 0 | ✅ Phase 5 | PID safety (output+integral bounds), equilibrium, convergence liveness |
+| `FilteredDerivative.lean` | 18 | 0 | ✅ Phase 5 | Discrete derivative + IIR: first-call no-update, const-input convergence |
 | `GoldenSection.lean` | 13 | 0 | ✅ Phase 5 | GS search: ordering invariant, probe-in-range, width contraction |
 | `SensorOrientation.lean` | 20 | 0 | ✅ Phase 5 | Sensor orientation yaw offsets: 8-variant finite enum, decidable range proofs |
 | `GainCompression.lean` | 11 | 0 | ✅ Phase 5 | Adaptive gain: range invariant, leakage direction, monotonicity |
 | `CountSetBits.lean` | 24 | 0 | ✅ Phase 5 | Hamming weight: even/odd recurrence, pow2 char., correspondence tests 871/871 |
 | `Negate16.lean` | 18 | 0 | ✅ Phase 5 | int16 negation bugs: not involutive, not injective, not surjective — 🐛 bugs 4–6 |
-| `HighPass.lean` | 14 | 0 | ✅ Phase 5 | IIR high-pass: DC blocking, coefficient bounds, geometric decay, monotone |
+| `HighPass.lean` | 12 | 0 | ✅ Phase 5 | IIR high-pass: DC blocking, coefficient bounds, geometric decay, monotone |
 | `BlockIntegralTrap.lean` | 29 | 0 | ✅ Phase 5 | Trapezoidal integrator: bounded output, saturation, sign-invariant inductive folds |
-| `SecondOrderReferenceModel.lean` | 7 | 0 | ✅ Phase 5 | Forward-Euler state-space: reset postconditions, equilibrium fixed point |
-| `NotchFilter.lean` | 15 | 0 | ✅ Phase 5 | Direct Form I IIR notch: bypass, DC steady-state, superposition, two-step formula |
+| `SecondOrderReferenceModel.lean` | 14 | 0 | ✅ Phase 5 | Forward-Euler state-space: reset postconditions, equilibrium fixed point |
+| `NotchFilter.lean` | 14 | 0 | ✅ Phase 5 | Direct Form I IIR notch: bypass, DC steady-state, superposition, two-step formula |
 | `LowPassFilter2p.lean` | 13 | 0 | ✅ Phase 5 | Biquad IIR low-pass: range/pass-through/zero-state |
 | `BlockLimit.lean` | 10 | 0 | ✅ Phase 5 | Asymmetric clamp: above/below/range/idempotent/monotone (10 theorems) |
+| `BlockLimitSym.lean` | 10 | 0 | ✅ Phase 5 | Symmetric clamp: output-in-range, idempotence, odd symmetry, monotonicity |
 | `BlockStats.lean` | 10 | 0 | ✅ Phase 5 | Running accumulator: count/sum/sumSq invariants, fold, bsMean_single — correspondence tests 760/760 |
+| `PurePursuit.lean` | 10 | 0 | ✅ Phase 5 | Lookahead distance: range safety, zero-speed clamping, symmetric speed response, monotone |
+| `ComputeMaxSpeed.lean` | 6 | 3 | 🔄 Phase 3 | Quadratic braking: discriminant_nonneg ✅, ge_finalSpeed ✅, nonneg ✅; 3 sorry |
 | `Basic.lean` | — | — | ✅ | Barrel file |
-| **Total** | **784** | **0** | — | **6 bugs found; 0 sorry; 53 files; lake build passes** |
+| **Total** | **791** | **3** | — | **6 bugs found; 3 sorry (ComputeMaxSpeed); 54 files; lake build passes** |
 
 ---
 
@@ -872,6 +885,15 @@ timeline
         BlockStats        : Route B correspondence tests 760/760 pass — run 138
         REPORT            : updated — run 138
         Total             : 784 theorems, 53 files, 0 sorry, 6 bugs found
+    section Run 139
+        ComputeMaxSpeed   : Lean spec (6 thms, 3 sorry) — quadratic braking kinematics
+        REPORT            : updated to 790 theorems, 54 files
+        Total             : 790 theorems, 54 files, 3 sorry, 6 bugs found
+    section Run 140
+        REPORT            : table corrected — added BlockLimitSym/PurePursuit/ComputeMaxSpeed rows
+        REPORT            : fixed theorem counts (PID→42, FilteredDeriv→18, SORM→14, Notch→14, HP→12)
+        RESEARCH          : 3 new FV targets identified (BlockIntegral, WelfordMeanVector, BrakingDistFromVelocity)
+        Total             : 791 theorems, 54 files, 3 sorry, 6 bugs found
 ```
 
 ---

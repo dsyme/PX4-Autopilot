@@ -2001,3 +2001,103 @@ float BlockLimit::update(float input) {
 | 3 | `WelfordMeanVector` informal spec (target 59) | Componentwise lift of WelfordMean; builds on existing work |
 | 4 | `BlockIntegralTrap` correspondence tests (target 60) | Closes Route B gap for 30-theorem file; similar to existing tests/pid/ |
 | 5 | Paper + REPORT.md update (Task 11 / Task 10) | CRITIQUE.md flags paper as very stale (28+ new files since run54) |
+
+---
+
+## New Research Targets (Run 140)
+
+### Target 61: `control::BlockIntegral::update`
+
+**File**: `src/lib/controllib/BlockIntegral.cpp`
+
+**What it does**: Rectangular integrator with symmetric saturation.
+```
+y_new = clamp(y_old + input * dt, -max, max)
+```
+Uses `BlockLimitSym::update` internally (target 55, already verified).
+
+**Benefit**: Bounded integration is a safety invariant for integral windup protection.
+If the accumulator exceeded its limit, the controller could produce runaway output.
+Verifying `blockIntegral_bounded` closes this gap. Analogous to `BlockIntegralTrap.lean`
+but simpler (rectangular, not trapezoidal).
+
+**Specification size**: ~8 theorems:
+- `blockIntegral_bounded`: output always in `[-max, max]`
+- `blockIntegral_zero_input`: zero input → output unchanged
+- `blockIntegral_positive`: positive input + non-saturated → output increases
+- `blockIntegral_saturated_pos`: at positive limit with positive input → stays at limit
+- Monotonicity, idempotence of saturation, zero-state response
+
+**Proof tractability**: All `omega`-provable on Int model; direct application of `BlockLimitSym.lean` lemmas.
+
+**Approximations**: Integer/rational model; `dt` abstracted as a rational scale factor.
+
+**Approach**: Model `update` as `blockLimitSym (y + input * dt)`; reuse `blockLimitSym_range` lemma.
+
+---
+
+### Target 62: `WelfordMeanVector` 2-component online mean
+
+**File**: `src/lib/mathlib/math/WelfordMeanVector.hpp`
+
+**What it does**: Welford's online algorithm generalised to N-dimensional vectors.
+Each component maintains `mean_i = sum_i / count` with Kahan compensated summation.
+
+**Benefit**: Used in EKF2 innovation statistics to track sensor bias means. If the
+mean formula is wrong, accumulated bias estimates will diverge. Verifying the
+componentwise invariant `mean_i = sum_i / count` gives confidence in the statistics.
+
+**Specification size**: ~10 theorems:
+- `welvec2_mean_invariant`: after n updates, `mean.0 = sum.0 / count`
+- `welvec2_count_pos`: after any update, `count ≥ 1`
+- `welvec2_single_mean`: after 1 update, `mean = input`
+- Componentwise monotonicity, reset postconditions
+
+**Proof tractability**: Int model with `omega`; Kahan accumulation abstracted away;
+directly lifts `WelfordMean.lean` lemmas component-by-component.
+
+**Approximations**: Kahan summation abstracted; 2-component model; integer arithmetic.
+
+**Approach**: Pair of `WelfordMean` models; `(wv.update v).mean = (wm1.update v.0, wm2.update v.1)`.
+
+---
+
+### Target 63: `computeBrakingDistanceFromVelocity`
+
+**File**: `src/lib/mathlib/math/TrajMath.hpp:72`
+
+**What it does**: Computes braking distance given velocity, jerk, accel, and delay accel:
+```
+d = v * (v / (2 * a) + amax_delay / j)
+```
+
+**Benefit**: Used in the trajectory planner to determine safe stopping distance.
+If the formula is wrong, the vehicle could fail to stop in time. Key properties:
+non-negativity (distance ≥ 0 when inputs ≥ 0), monotonicity in v (faster → more
+distance), and scaling.
+
+**Specification size**: ~6 theorems:
+- `brakingDistFromVel_nonneg`: d ≥ 0 when v,a,j,amax_delay ≥ 0
+- `brakingDistFromVel_zero_v`: v=0 → d=0
+- `brakingDistFromVel_mono_v`: monotone in v
+- `brakingDistFromVel_quadratic_v`: d scales as v² when amax_delay=0
+- Positive coefficients, scaling
+
+**Proof tractability**: Fully decidable on Rat model; all `omega`/`linarith` provable.
+No sqrt or trig needed. Simpler than `computeMaxSpeedFromDistance`.
+
+**Approximations**: Rational arithmetic; IEEE-754 rounding not modelled.
+
+**Approach**: Direct algebraic manipulation; `linarith` for monotonicity.
+
+---
+
+### Priority Queue (Run 140)
+
+| Priority | Target | Rationale |
+|----------|--------|-----------|
+| 1 | `computeBrakingDistanceFromVelocity` Lean spec + proofs (target 63) | Simplest new target; no sqrt; ~6 theorems; fully `omega`/`linarith` provable |
+| 2 | `BlockIntegral` Lean spec + proofs (target 61) | Builds on existing `BlockLimitSym.lean`; bounded integration safety invariant |
+| 3 | `WelfordMeanVector` 2-component (target 62) | Lifts `WelfordMean.lean`; EKF2 bias statistics invariant |
+| 4 | ComputeMaxSpeed sorry proofs (target 56) | 3 sorry remain; `maxSpeed_accel_zero` needs `sqrtQ_sq` with rational simplification |
+| 5 | CRITIQUE.md update (Task 7) | Assess current 791-theorem project state; gap analysis |
