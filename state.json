@@ -1,17 +1,17 @@
 {
-  "run": 141,
+  "run": 142,
   "last_updated": "2026-05-20",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 877,
+  "theorem_count": 882,
   "file_count": 54,
-  "sorry_count": 22,
+  "sorry_count": 0,
   "targets": [
     {
       "name": "computeMaxSpeedFromDistance",
       "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
-      "phase": 3,
-      "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq); correspondence entry added run 141"
+      "phase": 4,
+      "notes": "6 theorems all proved; accel_zero/mono_dist/quadratic_eq proved in run 142; added sqrtQ_unique axiom (11 total axioms); 0 sorry"
     },
     {
       "name": "BlockStats",
@@ -114,9 +114,9 @@
   ],
   "open_prs": [],
   "notes": [
-    "No Mathlib in project — ring/linarith/nlinarith/norm_num not available",
+    "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
-    "Rat.le_iff_sub_nonneg is available for a ≤ a proofs",
+    "Rat.le_iff_sub_nonneg is available for a \u2264 a proofs",
     "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
     "ComputeMaxSpeed: 3 sorry remain; next run should try maxSpeed_quadratic_eq via sqrtQ_sq",
     "22 sorry across 11 files; top priority: close ComputeMaxSpeed sorry",
@@ -125,5 +125,8 @@
   "last_tasks": [
     "task7_proof_utility_critique",
     "task6_correspondence_review"
-  ]
+  ],
+  "paper_theorem_count": 882,
+  "paper_files_count": 54,
+  "ci_status": "lean-ci.yml present and passing"
 }
