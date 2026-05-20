@@ -45,9 +45,9 @@ result  = max(raw_max, vf)
 | `discriminant_nonneg` | ✅ proved | disc ≥ 0 when inputs non-negative |
 | `maxSpeed_ge_finalSpeed` | ✅ proved | result ≥ finalSpeed by construction |
 | `maxSpeed_nonneg` | ✅ proved | result ≥ 0 when finalSpeed ≥ 0 |
-| `maxSpeed_accel_zero` | 🔄 sorry | accel=0 → result = finalSpeed |
-| `maxSpeed_mono_dist` | 🔄 sorry | more braking distance → higher allowed speed |
-| `maxSpeed_quadratic_eq` | 🔄 sorry | (2·ms + b)² = disc |
+| `maxSpeed_accel_zero` | ✅ proved | accel=0 → result = finalSpeed |
+| `maxSpeed_mono_dist` | ✅ proved | more braking distance → higher allowed speed |
+| `maxSpeed_quadratic_eq` | ✅ proved | (2·ms + b)² = disc |
 -/
 
 namespace PX4.ComputeMaxSpeed
@@ -66,6 +66,9 @@ axiom sqrtQ_sq (x : Rat) (h : 0 ≤ x) : sqrtQ x * sqrtQ x = x
 /-- `sqrtQ` is monotone on non-negative inputs. -/
 axiom sqrtQ_mono (u v : Rat) (hu : 0 ≤ u) (hv : 0 ≤ v) (huv : u ≤ v) :
     sqrtQ u ≤ sqrtQ v
+
+/-- Uniqueness of the non-negative square root: if `s ≥ 0` and `s² = x` then `sqrtQ x = s`. -/
+axiom sqrtQ_unique (x s : Rat) (hs : 0 ≤ s) (hx : 0 ≤ x) (h : s * s = x) : sqrtQ x = s
 
 /-! ## Helper lemmas -/
 
@@ -156,7 +159,60 @@ theorem maxSpeed_nonneg (jerk accel dist finalSpeed : Rat) (hvf : 0 ≤ finalSpe
     0 ≤ computeMaxSpeed jerk accel dist finalSpeed :=
   Rat.le_trans hvf (maxSpeed_ge_finalSpeed jerk accel dist finalSpeed)
 
-/-! ## Special cases and key properties (partial proofs) -/
+/-! ## Special cases and key properties -/
+
+/-! ### Helper lemmas for special-case proofs -/
+
+/-- `2·vf · 2·vf = 4·vf²` — used to evaluate `sqrtQ(4·vf²) = 2·vf`. -/
+private theorem mul_two_sq (vf : Rat) : 2 * vf * (2 * vf) = 4 * (vf * vf) := by
+  calc 2 * vf * (2 * vf)
+      = 2 * (vf * (2 * vf)) := Rat.mul_assoc 2 vf (2 * vf)
+    _ = 2 * ((vf * 2) * vf) := by rw [← Rat.mul_assoc vf 2 vf]
+    _ = 2 * ((2 * vf) * vf) := by rw [Rat.mul_comm vf 2]
+    _ = 2 * (2 * (vf * vf)) := by rw [Rat.mul_assoc 2 vf vf]
+    _ = 2 * 2 * (vf * vf) := (Rat.mul_assoc 2 2 (vf * vf)).symm
+    _ = 4 * (vf * vf) := by rw [show (2 : Rat) * 2 = 4 from by native_decide]
+
+/-- `2·(1/2·(-b + s)) + b = s` — used to simplify `2·rawMaxSpeed + b`. -/
+private theorem key_linear (b s : Rat) : 2 * ((1 : Rat) / 2 * (-b + s)) + b = s := by
+  have h2half : (2 : Rat) * (1 / 2) = 1 := by native_decide
+  calc 2 * (1 / 2 * (-b + s)) + b
+      = 2 * (1 / 2) * (-b + s) + b := by rw [← Rat.mul_assoc]
+    _ = 1 * (-b + s) + b := by rw [h2half]
+    _ = (-b + s) + b := by rw [Rat.one_mul]
+    _ = s := by rw [Rat.add_assoc, Rat.add_comm s b, ← Rat.add_assoc, Rat.neg_add_cancel, Rat.zero_add]
+
+/-- `max a a = a`. -/
+private theorem max_self (a : Rat) : max a a = a := by simp [Rat.max_def]
+
+/-- `max a c ≤ max b c` when `a ≤ b`. -/
+private theorem max_le_max_left (a b c : Rat) (h : a ≤ b) : max a c ≤ max b c := by
+  simp only [Rat.max_def]
+  by_cases h1 : a ≤ c <;> by_cases h2 : b ≤ c
+  · simp [h1, h2]
+  · simp [h1, h2]; exact Rat.le_of_lt (Rat.not_le.mp h2)
+  · simp [h1, h2]; exact absurd (Rat.le_trans h h2) h1
+  · simp [h1, h2, h]
+
+/-- `cCoeff` decreases (gets more negative) as `dist` increases. -/
+private theorem cCoeff_antimono_dist (accel dist₁ dist₂ finalSpeed : Rat)
+    (ha : 0 ≤ accel) (hle : dist₁ ≤ dist₂) :
+    cCoeff accel dist₂ finalSpeed ≤ cCoeff accel dist₁ finalSpeed := by
+  simp only [cCoeff, Rat.sub_eq_add_neg]
+  apply Rat.add_le_add_right.mpr
+  apply Rat.neg_le_neg
+  apply Rat.mul_le_mul_of_nonneg_left hle
+  exact Rat.mul_nonneg (by native_decide) ha
+
+/-- `discriminant` increases (gets larger) as `dist` increases. -/
+private theorem discriminant_mono_dist (jerk accel dist₁ dist₂ finalSpeed : Rat)
+    (ha : 0 ≤ accel) (hle : dist₁ ≤ dist₂) :
+    discriminant jerk accel dist₁ finalSpeed ≤ discriminant jerk accel dist₂ finalSpeed := by
+  simp only [discriminant, Rat.sub_eq_add_neg]
+  apply Rat.add_le_add_left.mpr
+  apply Rat.neg_le_neg
+  apply Rat.mul_le_mul_of_nonneg_left _ (by native_decide : (0 : Rat) ≤ 4)
+  exact cCoeff_antimono_dist accel dist₁ dist₂ finalSpeed ha hle
 
 /-- When `accel = 0`: b = 0, disc = vf², rawMaxSpeed = vf/2, result = vf.
     The `fmaxf(vf/2, vf) = vf` step uses that vf ≥ 0 implies vf/2 ≤ vf. -/
@@ -164,7 +220,19 @@ theorem maxSpeed_accel_zero (jerk dist finalSpeed : Rat) (hvf : 0 ≤ finalSpeed
     computeMaxSpeed jerk 0 dist finalSpeed = finalSpeed := by
   simp only [computeMaxSpeed, rawMaxSpeed, bCoeff, cCoeff, discriminant]
   simp only [Rat.mul_zero, Rat.zero_mul, Rat.neg_zero]
-  sorry
+  simp only [Rat.div_def, Rat.zero_mul]
+  -- Goal: max (1 * 2⁻¹ * sqrtQ (-(4 * -(finalSpeed * finalSpeed)))) finalSpeed = finalSpeed
+  rw [Rat.mul_neg, Rat.neg_neg]
+  -- sqrtQ(4*vf²) = 2*vf by uniqueness
+  have hvf2 : 0 ≤ finalSpeed * finalSpeed := Rat.mul_nonneg hvf hvf
+  have hdisc : 0 ≤ 4 * (finalSpeed * finalSpeed) := Rat.mul_nonneg (by decide) hvf2
+  rw [sqrtQ_unique _ (2 * finalSpeed) (Rat.mul_nonneg (by decide) hvf) hdisc (mul_two_sq finalSpeed)]
+  -- Now: max (1 * 2⁻¹ * (2 * finalSpeed)) finalSpeed = finalSpeed
+  have h : (1 : Rat) * 2⁻¹ * (2 * finalSpeed) = finalSpeed := by
+    have h2 : (2 : Rat)⁻¹ * 2 = 1 := by native_decide
+    rw [Rat.mul_assoc 1 2⁻¹ (2 * finalSpeed), Rat.one_mul]
+    rw [← Rat.mul_assoc 2⁻¹ 2 finalSpeed, h2, Rat.one_mul]
+  rw [h, max_self]
 
 /-- More braking distance → higher allowed approach speed (monotone). -/
 theorem maxSpeed_mono_dist (jerk accel dist₁ dist₂ finalSpeed : Rat)
@@ -172,7 +240,15 @@ theorem maxSpeed_mono_dist (jerk accel dist₁ dist₂ finalSpeed : Rat)
     (hvf : 0 ≤ finalSpeed) (hle : dist₁ ≤ dist₂) :
     computeMaxSpeed jerk accel dist₁ finalSpeed ≤
     computeMaxSpeed jerk accel dist₂ finalSpeed := by
-  sorry
+  simp only [computeMaxSpeed]
+  apply max_le_max_left
+  simp only [rawMaxSpeed]
+  apply Rat.mul_le_mul_of_nonneg_left _ (by native_decide : (0 : Rat) ≤ 1 / 2)
+  apply Rat.add_le_add_left.mpr
+  apply sqrtQ_mono
+  · exact discriminant_nonneg jerk accel dist₁ finalSpeed ha hd₁ hvf
+  · exact discriminant_nonneg jerk accel dist₂ finalSpeed ha hd₂ hvf
+  · exact discriminant_mono_dist jerk accel dist₁ dist₂ finalSpeed ha hle
 
 /-- `rawMaxSpeed` satisfies the original quadratic: `(2·ms + b)² = disc`. -/
 theorem maxSpeed_quadratic_eq (jerk accel dist finalSpeed : Rat)
@@ -180,6 +256,8 @@ theorem maxSpeed_quadratic_eq (jerk accel dist finalSpeed : Rat)
     (2 * rawMaxSpeed jerk accel dist finalSpeed + bCoeff jerk accel) *
     (2 * rawMaxSpeed jerk accel dist finalSpeed + bCoeff jerk accel) =
     discriminant jerk accel dist finalSpeed := by
-  sorry
+  simp only [rawMaxSpeed]
+  rw [key_linear]
+  exact sqrtQ_sq _ (discriminant_nonneg jerk accel dist finalSpeed ha hd hvf)
 
 end PX4.ComputeMaxSpeed

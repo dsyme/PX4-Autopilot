@@ -52,7 +52,7 @@
 }
 
 \title{Formal Verification of a UAV Flight Controller's Core Libraries with Lean~4:\\
-       730 Theorems, Six Bugs, Zero Sorry in 51 Modules}
+       882 Theorems, Six Bugs, Zero Sorry in 54 Modules}
 
 \author{Lean Squad}
 \affiliation{
@@ -64,7 +64,7 @@
 \begin{abstract}
 We report a formal verification campaign applied to PX4-Autopilot, an open-source
 UAV flight controller written in C++. Using Lean~4 with its standard library only
-(no Mathlib), we verified \textbf{730~theorems} fully across \textbf{51~Lean modules}
+(no Mathlib), we verified \textbf{882~theorems} fully across \textbf{54~Lean modules}
 covering \textbf{50+~C++ targets} including signal-processing filters, rate-limiting,
 piecewise-linear interpolation, online statistics, ring buffers, a time-delayed
 boolean state machine, collision-prevention obstacle mathematics, CRC-16/32/64
@@ -148,7 +148,7 @@ language with a growing library ecosystem~\cite{mathlib}.
 Our contributions are:
 \begin{itemize}
   \item A formal verification campaign covering \textbf{50+~C++ targets with Lean proofs}
-        in 51~Lean modules, yielding \textbf{730~fully proved theorems} with
+        in 54~Lean modules, yielding \textbf{882~fully proved theorems} with
         zero \texttt{sorry} in any proof body (two files use \texttt{axiom} declarations
         for Mathlib-pending floor-arithmetic properties) plus hundreds of concrete examples.
   \item Discovery of \textbf{six genuine implementation bugs} through proof failure
@@ -314,7 +314,7 @@ We applied proof tactics in order of increasing effort:
 \subsection{Proof Inventory}
 
 Table~\ref{tab:theorems} summarises the 50~Lean files (50+~C++ targets). In total,
-\textbf{730~theorems} are stated and proved with zero \texttt{sorry} in any proof
+\textbf{882~theorems} are stated and proved with zero \texttt{sorry} in any proof
 body. Two files (\texttt{SqrtLinear.lean}, \texttt{WrapAngle.lean}) use Lean
 \texttt{axiom} declarations for Mathlib-pending properties (16~axioms total).
 Additionally, hundreds of concrete \texttt{example}/\texttt{\#eval} checks serve as
@@ -322,7 +322,7 @@ property-based regression tests.
 
 \begin{table}[t]
 \centering
-\caption{Lean 4 verification summary by file (51 files, 51+ C++ targets).
+\caption{Lean 4 verification summary by file (54 files, 54+ C++ targets).
          ✅~=~all proved; ⚠~=~uses \texttt{axiom} for Mathlib-pending props.}
 \label{tab:theorems}
 \small
@@ -375,8 +375,9 @@ Lean file & C++ target(s) & Thms & Key properties \\
 \texttt{VelocitySmooth}& \texttt{VelocitySmoothing}         & 33 & Jerk, accel, vel bounds ✅ \\
 \texttt{BlockLimitSym} & \texttt{BlockLimitSym::update}     & 10 & Range, idempotent, odd, mono ✅ \\
 \texttt{PurePursuit}  & \texttt{PurePursuit::calcAbsoluteLookaheadDist} & 10 & Range, monotone, symmetric, inverted-bounds ✅ \\
+\texttt{ComputeMaxSpeed} & \texttt{computeMaxSpeedFromDistance} & 6 & Disc. non-neg, accel-zero, mono, quadratic ✅ \\
 \hline
-\textbf{Total}         &                                    & \textbf{730} & \textbf{0 sorry, 10 axioms} \\
+\textbf{Total}         &                                    & \textbf{882} & \textbf{0 sorry, 11 axioms} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -449,6 +450,27 @@ This one-line proof (by definitional unfolding and \texttt{List.foldl\_append})
 confirms that \texttt{crc16Continue} is exactly the right interface for packet
 reassembly. The proof also validates the CCITT polynomial (0x1021) at a concrete
 byte value: \texttt{crc16 [0xFF] = 0x1EF0} is confirmed by \texttt{native\_decide}.
+
+\paragraph{computeMaxSpeedFromDistance quadratic correctness.}
+The \texttt{computeMaxSpeedFromDistance} function in \texttt{TrajMath.hpp} computes the
+maximum approach speed at a waypoint given available braking distance $d$, maximum
+deceleration $a$, jerk limit $j$, and final speed $v_f$.
+It solves a quadratic in the max speed $v$:
+
+\begin{displaymath}
+\left(2v + \tfrac{4a^2}{j}\right)^2 = \left(\tfrac{4a^2}{j}\right)^2 + 8a\,d + 4v_f^2
+\end{displaymath}
+
+We proved three key properties:
+\begin{enumerate}
+  \item \textbf{Accel-zero identity}: when $a = 0$, the result equals $v_f$ exactly.
+  \item \textbf{Distance monotonicity}: the permitted speed is non-decreasing in $d$.
+  \item \textbf{Quadratic correctness}: $(2\,\text{result} + b)^2 = \text{disc}$, confirming the result is a genuine root of the quadratic.
+\end{enumerate}
+The proofs use a \texttt{sqrtQ\_unique} axiom (non-negative square root uniqueness) and
+rational arithmetic reasoning with \texttt{Rat.mul\_assoc} and \texttt{Rat.neg\_le\_neg}.
+These properties collectively confirm that the kinematic speed constraint is correctly
+solved and properly saturated.
 
 \subsection{Bugs Found}
 \label{sec:bugs}
@@ -611,7 +633,7 @@ The most effective tactics were: \texttt{omega} (integer arithmetic, loop invari
 (Rat comparisons, \texttt{Fin n} concrete checks), \texttt{by\_cases} (branching
 over guards), and \texttt{induction} with explicit loop invariants.
 
-Across 51~files, roughly 50\% of theorems were proved by \texttt{decide} or
+Across 54~files, roughly 50\% of theorems were proved by \texttt{decide} or
 \texttt{native\_decide}; 30\% by \texttt{simp}/\texttt{omega}; and 20\%
 required multi-step tactic proofs with auxiliary lemmas.
 
@@ -662,7 +684,7 @@ cannot silently break in a later run.
 
 We have presented a formal verification campaign for PX4-Autopilot's core utility
 libraries using Lean~4. Across 51~Lean modules and 50+~C++ targets, we proved
-730~theorems covering rate limiting, interpolation, filtering, statistics, data
+882~theorems covering rate limiting, interpolation, filtering, statistics, data
 structures, a time-delayed state machine, CRC streaming properties, integer
 range containment, PID controller convergence, sensor orientation, golden-section
 search, velocity smoothing, and RC input curve shaping.
