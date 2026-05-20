@@ -1,22 +1,22 @@
 {
-  "run": 140,
+  "run": 141,
   "last_updated": "2026-05-20",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 791,
+  "theorem_count": 877,
   "file_count": 54,
-  "sorry_count": 3,
+  "sorry_count": 22,
   "targets": [
     {
       "name": "computeMaxSpeedFromDistance",
       "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
       "phase": 3,
-      "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq)"
+      "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq); correspondence entry added run 141"
     },
     {
       "name": "BlockStats",
       "phase": 4,
-      "notes": "10 theorems, correspondence tests added in run 138"
+      "notes": "10 theorems, Route B tests 760/760 (run 138), correspondence entry added run 141"
     },
     {
       "name": "VelocitySmoothing",
@@ -26,7 +26,7 @@
     {
       "name": "PID",
       "phase": 4,
-      "notes": "34 theorems"
+      "notes": "42 theorems"
     },
     {
       "name": "BrakingDist",
@@ -36,7 +36,7 @@
     {
       "name": "SqrtLinear",
       "phase": 4,
-      "notes": "proved"
+      "notes": "proved (4 sorry on sqrt axiom properties)"
     },
     {
       "name": "SensorOrientation",
@@ -71,7 +71,7 @@
     {
       "name": "BlockIntegralTrap",
       "phase": 4,
-      "notes": "29 theorems"
+      "notes": "29 theorems, Route B tests 120/120"
     },
     {
       "name": "SecondOrderReferenceModel",
@@ -86,7 +86,12 @@
     {
       "name": "BlockLimit",
       "phase": 4,
-      "notes": "10 theorems"
+      "notes": "10 theorems, correspondence entry added run 141"
+    },
+    {
+      "name": "BlockLimitSym",
+      "phase": 4,
+      "notes": "10 theorems, correspondence entry added run 141"
     },
     {
       "name": "BlockIntegral_update",
@@ -107,18 +112,18 @@
       "notes": "v*(v/(2a)+amax/j); ~6 theorems; no sqrt; simplest remaining TrajMath target; run 140"
     }
   ],
-  "open_prs": [
-    "lean-squad/run-139-computemaxspeed-spec-report"
-  ],
+  "open_prs": [],
   "notes": [
-    "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
+    "No Mathlib in project — ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
-    "Rat.le_iff_sub_nonneg is available for a \u2264 a proofs",
+    "Rat.le_iff_sub_nonneg is available for a ≤ a proofs",
     "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
-    "ComputeMaxSpeed: 3 sorry remain (arithmetic simplification), next run should close them"
+    "ComputeMaxSpeed: 3 sorry remain; next run should try maxSpeed_quadratic_eq via sqrtQ_sq",
+    "22 sorry across 11 files; top priority: close ComputeMaxSpeed sorry",
+    "CORRESPONDENCE.md now covers all 54 Lean files (Basic.lean excluded as barrel)"
   ],
   "last_tasks": [
-    "task10_project_report",
-    "task1_research"
+    "task7_proof_utility_critique",
+    "task6_correspondence_review"
   ]
 }
