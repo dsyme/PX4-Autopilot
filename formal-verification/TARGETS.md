@@ -170,3 +170,11 @@ See `RESEARCH.md §Tool Choice` for details.
 | 58 | `control::BlockLimit::update` (asymmetric clamp) | `src/lib/controllib/BlockLimit.cpp` | 5 | ✅ Proved | `lean/FVSquad/BlockLimit.lean` | 10 theorems, 0 sorry; limit_above/below, in-range pass-through, upper/lower/range invariants, idempotence, fixed-point endpoints, monotonicity; run 136 |
 | 59 | `WelfordMeanVector` componentwise online mean | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector generalisation of WelfordMean; 2-component model; componentwise `mean_i = sum_i / count` invariant; Kahan summation abstracted; builds on `WelfordMean.lean`; ~10 theorems; `omega`-provable on Int model |
 | 60 | `BlockIntegralTrap` correspondence tests | `src/lib/controllib/BlockIntegralTrap.cpp` | 1 | ⬜ Research | — | Route B correspondence tests for `BlockIntegralTrap.lean` (30 theorems); harness similar to pid/ and slew_rate/; exercises dt=0 identity, nonneg/nonpos saturation, and trapezoidal increment formula; expected ~200–500 cases |
+
+## New Research Targets (Phase 1 — identified in run 140)
+
+| # | Name | File | Phase | Status | Lean File | Notes |
+|---|------|------|-------|--------|-----------|-------|
+| 61 | `control::BlockIntegral::update` (rectangular integrator) | `src/lib/controllib/BlockIntegral.cpp` | 1 | ⬜ Research | — | Rectangular integrator with symmetric saturation (`BlockLimitSym`); key invariant: output bounded by `[-max, max]`; simpler than `BlockIntegralTrap` (no trapezoidal term); ~8 theorems; builds on `BlockLimitSym.lean`; `omega`-provable on Int model |
+| 62 | `WelfordMeanVector` 2-component online mean | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector generalisation of WelfordMean; model 2-component case; componentwise `mean_i = sum_i / count` invariant; Kahan summation abstracted away; builds on `WelfordMean.lean`; ~10 theorems; `omega`-provable on Int model |
+| 63 | `computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp:72` | 1 | ⬜ Research | — | `v * (v/(2a) + amax/j)` braking distance formula; non-negativity when v,a,j>0; monotone in v (faster→more distance); simpler than `computeMaxSpeedFromDistance`; no sqrt needed; ~6 theorems; builds on `BrakingDist.lean` |
