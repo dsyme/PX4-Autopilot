@@ -1,35 +1,124 @@
 {
-  "run": 139,
-  "last_updated": "2026-05-19",
+  "run": 140,
+  "last_updated": "2026-05-20",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 790,
+  "theorem_count": 791,
   "file_count": 54,
   "sorry_count": 3,
   "targets": [
-    {"name": "computeMaxSpeedFromDistance", "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean", "phase": 3, "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq)"},
-    {"name": "BlockStats", "phase": 4, "notes": "10 theorems, correspondence tests added in run 138"},
-    {"name": "VelocitySmoothing", "phase": 4, "notes": "33 theorems"},
-    {"name": "PID", "phase": 4, "notes": "34 theorems"},
-    {"name": "BrakingDist", "phase": 4, "notes": "proved"},
-    {"name": "SqrtLinear", "phase": 4, "notes": "proved"},
-    {"name": "SensorOrientation", "phase": 4, "notes": "20 theorems"},
-    {"name": "GoldenSectionSearch", "phase": 4, "notes": "13 theorems"},
-    {"name": "GainCompression", "phase": 4, "notes": "11 theorems"},
-    {"name": "CountSetBits", "phase": 4, "notes": "24 theorems"},
-    {"name": "Negate16", "phase": 4, "notes": "18 theorems"},
-    {"name": "BlockHighPass", "phase": 4, "notes": "14 theorems"},
-    {"name": "BlockIntegralTrap", "phase": 4, "notes": "29 theorems"},
-    {"name": "SecondOrderReferenceModel", "phase": 4, "notes": "7 theorems"},
-    {"name": "NotchFilter", "phase": 4, "notes": "15 theorems"},
-    {"name": "BlockLimit", "phase": 4, "notes": "10 theorems"}
+    {
+      "name": "computeMaxSpeedFromDistance",
+      "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
+      "phase": 3,
+      "notes": "6 theorems; 3 proved (discriminant_nonneg, maxSpeed_ge_finalSpeed, maxSpeed_nonneg); 3 sorry (accel_zero, mono_dist, quadratic_eq)"
+    },
+    {
+      "name": "BlockStats",
+      "phase": 4,
+      "notes": "10 theorems, correspondence tests added in run 138"
+    },
+    {
+      "name": "VelocitySmoothing",
+      "phase": 4,
+      "notes": "33 theorems"
+    },
+    {
+      "name": "PID",
+      "phase": 4,
+      "notes": "34 theorems"
+    },
+    {
+      "name": "BrakingDist",
+      "phase": 4,
+      "notes": "proved"
+    },
+    {
+      "name": "SqrtLinear",
+      "phase": 4,
+      "notes": "proved"
+    },
+    {
+      "name": "SensorOrientation",
+      "phase": 4,
+      "notes": "20 theorems"
+    },
+    {
+      "name": "GoldenSectionSearch",
+      "phase": 4,
+      "notes": "13 theorems"
+    },
+    {
+      "name": "GainCompression",
+      "phase": 4,
+      "notes": "11 theorems"
+    },
+    {
+      "name": "CountSetBits",
+      "phase": 4,
+      "notes": "24 theorems"
+    },
+    {
+      "name": "Negate16",
+      "phase": 4,
+      "notes": "18 theorems"
+    },
+    {
+      "name": "BlockHighPass",
+      "phase": 4,
+      "notes": "14 theorems"
+    },
+    {
+      "name": "BlockIntegralTrap",
+      "phase": 4,
+      "notes": "29 theorems"
+    },
+    {
+      "name": "SecondOrderReferenceModel",
+      "phase": 4,
+      "notes": "7 theorems"
+    },
+    {
+      "name": "NotchFilter",
+      "phase": 4,
+      "notes": "15 theorems"
+    },
+    {
+      "name": "BlockLimit",
+      "phase": 4,
+      "notes": "10 theorems"
+    },
+    {
+      "name": "BlockIntegral_update",
+      "file": "src/lib/controllib/BlockIntegral.cpp",
+      "phase": 1,
+      "notes": "Rectangular integrator with BlockLimitSym; ~8 theorems; all omega-provable; run 140"
+    },
+    {
+      "name": "WelfordMeanVector_2d",
+      "file": "src/lib/mathlib/math/WelfordMeanVector.hpp",
+      "phase": 1,
+      "notes": "2-component online mean; componentwise mean_i=sum_i/count invariant; run 140"
+    },
+    {
+      "name": "computeBrakingDistanceFromVelocity",
+      "file": "src/lib/mathlib/math/TrajMath.hpp",
+      "phase": 1,
+      "notes": "v*(v/(2a)+amax/j); ~6 theorems; no sqrt; simplest remaining TrajMath target; run 140"
+    }
   ],
-  "open_prs": ["lean-squad/run-139-computemaxspeed-spec-report"],
+  "open_prs": [
+    "lean-squad/run-139-computemaxspeed-spec-report"
+  ],
   "notes": [
-    "No Mathlib in project — ring/linarith/nlinarith/norm_num not available",
+    "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
-    "Rat.le_iff_sub_nonneg is available for a ≤ a proofs",
+    "Rat.le_iff_sub_nonneg is available for a \u2264 a proofs",
     "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
     "ComputeMaxSpeed: 3 sorry remain (arithmetic simplification), next run should close them"
+  ],
+  "last_tasks": [
+    "task10_project_report",
+    "task1_research"
   ]
 }
