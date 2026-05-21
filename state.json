@@ -3,10 +3,19 @@
   "last_updated": "2026-05-20",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 892,
+  "theorem_count": 903,
   "file_count": 55,
   "sorry_count": 0,
   "targets": [
+    {
+      "name": "WelfordMeanVector2D",
+      "phase": 5,
+      "status": "Proved",
+      "lean_file": "lean/FVSquad/WelfordMeanVector2D.lean",
+      "theorems": 11,
+      "sorry_count": 0,
+      "notes": "Run 143: 11 theorems, 0 sorry. Componentwise mean invariant + M2 diagonal non-negativity. lake build passed Lean 4.29.1."
+    },
     {
       "name": "computeMaxSpeedFromDistance",
       "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
@@ -114,6 +123,7 @@
   ],
   "open_prs": [],
   "notes": [
+    "Run 143: WelfordMeanVector2D.lean \u2014 11 theorems proved, 0 sorry. Tasks 3+5.",
     "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
     "Rat.le_iff_sub_nonneg is available for a \u2264 a proofs",
