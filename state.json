@@ -1,10 +1,10 @@
 {
-  "run": 142,
+  "run": 143,
   "last_updated": "2026-05-20",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 882,
-  "file_count": 54,
+  "theorem_count": 892,
+  "file_count": 55,
   "sorry_count": 0,
   "targets": [
     {
@@ -95,21 +95,21 @@
     },
     {
       "name": "BlockIntegral_update",
-      "file": "src/lib/controllib/BlockIntegral.cpp",
-      "phase": 1,
-      "notes": "Rectangular integrator with BlockLimitSym; ~8 theorems; all omega-provable; run 140"
+      "file": "formal-verification/lean/FVSquad/BlockIntegral.lean",
+      "phase": 4,
+      "notes": "10 theorems all proved; rectangular integrator with saturation; run 143"
     },
     {
       "name": "WelfordMeanVector_2d",
       "file": "src/lib/mathlib/math/WelfordMeanVector.hpp",
-      "phase": 1,
-      "notes": "2-component online mean; componentwise mean_i=sum_i/count invariant; run 140"
+      "phase": 2,
+      "notes": "Informal spec written; specs/welfordmeanvector_2d_informal.md; run 143"
     },
     {
       "name": "computeBrakingDistanceFromVelocity",
       "file": "src/lib/mathlib/math/TrajMath.hpp",
-      "phase": 1,
-      "notes": "v*(v/(2a)+amax/j); ~6 theorems; no sqrt; simplest remaining TrajMath target; run 140"
+      "phase": 4,
+      "notes": "BrakingDist.lean: 9 theorems all proved; see BrakingDist.lean"
     }
   ],
   "open_prs": [],
@@ -120,7 +120,10 @@
     "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
     "ComputeMaxSpeed: 3 sorry remain; next run should try maxSpeed_quadratic_eq via sqrtQ_sq",
     "22 sorry across 11 files; top priority: close ComputeMaxSpeed sorry",
-    "CORRESPONDENCE.md now covers all 54 Lean files (Basic.lean excluded as barrel)"
+    "CORRESPONDENCE.md now covers all 54 Lean files (Basic.lean excluded as barrel)",
+    "BlockIntegral.lean: 10 theorems proved (rectangular integrator), run 143",
+    "WelfordMeanVector_2d: informal spec done (phase 2), Lean file TBD",
+    "computeBrakingDistanceFromVelocity phase fixed to 4 (memory was stale)"
   ],
   "last_tasks": [
     "task7_proof_utility_critique",
