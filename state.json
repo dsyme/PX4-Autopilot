@@ -1,10 +1,10 @@
 {
-  "run": 143,
-  "last_updated": "2026-05-20",
+  "run": 144,
+  "last_updated": "2026-05-21",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 903,
-  "file_count": 55,
+  "theorem_count": 914,
+  "file_count": 56,
   "sorry_count": 0,
   "targets": [
     {
@@ -119,6 +119,15 @@
       "file": "src/lib/mathlib/math/TrajMath.hpp",
       "phase": 4,
       "notes": "BrakingDist.lean: 9 theorems all proved; see BrakingDist.lean"
+    },
+    {
+      "name": "SignNoZero",
+      "file": "src/lib/mathlib/math/Functions.hpp",
+      "lean_file": "formal-verification/lean/FVSquad/SignNoZero.lean",
+      "phase": 5,
+      "theorems": 11,
+      "sorry_count": 0,
+      "notes": "Run 144: 11 theorems proved, 0 sorry. Binary output, nonneg/neg branches, never-zero, sq=1, natAbs=1, neg_product=-1. No Mathlib dependency."
     }
   ],
   "open_prs": [],
@@ -141,5 +150,6 @@
   ],
   "paper_theorem_count": 882,
   "paper_files_count": 54,
-  "ci_status": "lean-ci.yml present and passing"
+  "ci_status": "lean-ci.yml present and passing",
+  "ci_notes": "lean-ci.yml present; added blockstats (760 cases) and alpha_filter (257 cases) tests in run 144"
 }
