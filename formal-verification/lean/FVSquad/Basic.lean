@@ -48,3 +48,4 @@ import FVSquad.SecondOrderReferenceModel
 import FVSquad.BlockIntegralTrap
 import FVSquad.BlockLimitSym
 import FVSquad.PurePursuit
+import FVSquad.BlockIntegral
