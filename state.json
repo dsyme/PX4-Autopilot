@@ -1,21 +1,12 @@
 {
-  "run": 144,
-  "last_updated": "2026-05-21",
+  "run": 145,
+  "last_updated": "2026-05-22",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 914,
-  "file_count": 56,
+  "theorem_count": 925,
+  "file_count": 57,
   "sorry_count": 0,
   "targets": [
-    {
-      "name": "WelfordMeanVector2D",
-      "phase": 5,
-      "status": "Proved",
-      "lean_file": "lean/FVSquad/WelfordMeanVector2D.lean",
-      "theorems": 11,
-      "sorry_count": 0,
-      "notes": "Run 143: 11 theorems, 0 sorry. Componentwise mean invariant + M2 diagonal non-negativity. lake build passed Lean 4.29.1."
-    },
     {
       "name": "computeMaxSpeedFromDistance",
       "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
@@ -111,8 +102,10 @@
     {
       "name": "WelfordMeanVector_2d",
       "file": "src/lib/mathlib/math/WelfordMeanVector.hpp",
-      "phase": 2,
-      "notes": "Informal spec written; specs/welfordmeanvector_2d_informal.md; run 143"
+      "phase": 5,
+      "notes": "Run 145: WelfordMeanVector2D.lean 11 theorems proved, 0 sorry. Componentwise mean + M2 diagonal non-negativity.",
+      "lean_file": "formal-verification/lean/FVSquad/WelfordMeanVector2D.lean",
+      "theorems": 11
     },
     {
       "name": "computeBrakingDistanceFromVelocity",
@@ -130,8 +123,11 @@
       "notes": "Run 144: 11 theorems proved, 0 sorry. Binary output, nonneg/neg branches, never-zero, sq=1, natAbs=1, neg_product=-1. No Mathlib dependency."
     }
   ],
-  "open_prs": [],
+  "open_prs": [
+    "lean-squad/run-145-welfordmeanvector2d-746aa8582e"
+  ],
   "notes": [
+    "Run 145: WelfordMeanVector2D.lean \u2014 11 theorems proved, 0 sorry. Tasks 4+5.",
     "Run 143: WelfordMeanVector2D.lean \u2014 11 theorems proved, 0 sorry. Tasks 3+5.",
     "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
@@ -145,8 +141,8 @@
     "computeBrakingDistanceFromVelocity phase fixed to 4 (memory was stale)"
   ],
   "last_tasks": [
-    "task7_proof_utility_critique",
-    "task6_correspondence_review"
+    "task4_implementation",
+    "task5_proof_assistance"
   ],
   "paper_theorem_count": 882,
   "paper_files_count": 54,
