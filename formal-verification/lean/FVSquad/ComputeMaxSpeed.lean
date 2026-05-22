@@ -219,10 +219,18 @@ private theorem discriminant_mono_dist (jerk accel dist₁ dist₂ finalSpeed : 
 theorem maxSpeed_accel_zero (jerk dist finalSpeed : Rat) (hvf : 0 ≤ finalSpeed) :
     computeMaxSpeed jerk 0 dist finalSpeed = finalSpeed := by
   simp only [computeMaxSpeed, rawMaxSpeed, bCoeff, cCoeff, discriminant]
-  simp only [Rat.mul_zero, Rat.zero_mul, Rat.neg_zero]
+  -- After unfolding: bCoeff jerk 0 = 4 * (0 * 0) / jerk = 0 / jerk = 0
+  -- cCoeff 0 dist finalSpeed = -(2*0*dist) - finalSpeed² = -finalSpeed²
+  -- disc = 0² - 4*(-(2*0*dist) - finalSpeed²) = 4*finalSpeed²
+  simp only [Rat.mul_zero, Rat.zero_mul, Rat.neg_zero, Rat.zero_add]
   simp only [Rat.div_def, Rat.zero_mul]
-  -- Goal: max (1 * 2⁻¹ * sqrtQ (-(4 * -(finalSpeed * finalSpeed)))) finalSpeed = finalSpeed
-  rw [Rat.mul_neg, Rat.neg_neg]
+  -- Goal: max (1/2 * (-0 + sqrtQ (0 - 4*(0 - finalSpeed*finalSpeed)))) finalSpeed = finalSpeed
+  simp only [Rat.neg_zero, Rat.zero_add]
+  -- disc = 0 - 4 * (0 - finalSpeed*finalSpeed) = 4 * (finalSpeed*finalSpeed)
+  have hdisc_simp : (0 : Rat) - 4 * ((0 : Rat) - finalSpeed * finalSpeed) =
+                    4 * (finalSpeed * finalSpeed) := by
+    simp only [Rat.sub_eq_add_neg, Rat.zero_add, Rat.mul_neg, Rat.neg_neg]
+  rw [hdisc_simp]
   -- sqrtQ(4*vf²) = 2*vf by uniqueness
   have hvf2 : 0 ≤ finalSpeed * finalSpeed := Rat.mul_nonneg hvf hvf
   have hdisc : 0 ≤ 4 * (finalSpeed * finalSpeed) := Rat.mul_nonneg (by decide) hvf2
@@ -230,8 +238,7 @@ theorem maxSpeed_accel_zero (jerk dist finalSpeed : Rat) (hvf : 0 ≤ finalSpeed
   -- Now: max (1 * 2⁻¹ * (2 * finalSpeed)) finalSpeed = finalSpeed
   have h : (1 : Rat) * 2⁻¹ * (2 * finalSpeed) = finalSpeed := by
     have h2 : (2 : Rat)⁻¹ * 2 = 1 := by native_decide
-    rw [Rat.mul_assoc 1 2⁻¹ (2 * finalSpeed), Rat.one_mul]
-    rw [← Rat.mul_assoc 2⁻¹ 2 finalSpeed, h2, Rat.one_mul]
+    rw [Rat.one_mul, ← Rat.mul_assoc, h2, Rat.one_mul]
   rw [h, max_self]
 
 /-- More braking distance → higher allowed approach speed (monotone). -/

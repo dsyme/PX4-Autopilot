@@ -45,3 +45,8 @@ import FVSquad.LowPassFilter2p
 import FVSquad.BlockIntegralTrap
 import FVSquad.SecondOrderReferenceModel
 import FVSquad.BlockStats
+
+import FVSquad.SignNoZero
+import FVSquad.BlockLimit
+import FVSquad.BlockLimitSym
+import FVSquad.ComputeMaxSpeed
