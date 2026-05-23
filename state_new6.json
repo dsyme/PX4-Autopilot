@@ -1,21 +1,21 @@
 {
-  "run": 146,
+  "run": 147,
   "last_updated": "2026-05-23",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 834,
-    "theorems_proved": 834,
+    "theorems": 820,
+    "theorems_proved": 820,
     "axioms": 10,
     "sorry_count": 0,
-    "lean_files": 59,
-    "targets": 61
+    "lean_files": 56,
+    "targets": 62
   },
   "sorry_locations": {
     "all": "0 sorry in all 56 files. 10 axioms for irrational arithmetic."
   },
   "open_prs": [
-    "lean-squad/run-146-welfordvec2d-m2-theorems-fbb74d1984"
+    "lean-squad/run-147-blockintegral-critique-93e572fc6d"
   ],
   "bugs_found": 6,
   "correspondence_tests": {
@@ -33,110 +33,35 @@
     "blockstats": "tests/blockstats/ (760/760 pass; exact integer model; confirms bsUpdate/bsReset/bsFold/bsMean for BlockStats<int,1>)"
   },
   "ci": {
-    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
     "status": "passing"
   },
   "run_history": [
+    {
+      "run": 147,
+      "date": "2026-05-23T10:30 UTC",
+      "workflow_run_id": 26329891503,
+      "tasks": [
+        "Task 4: BlockIntegral.lean — 10 theorems for control::BlockIntegral::update rectangular integrator. biUpdate bounded/exact/saturation/mono, biIterate_bounded. All proofs reduce to BlockLimitSym lemmas. 0 sorry.",
+        "Task 7: CRITIQUE.md updated — sorry count confirmed 0; new gaps: BlockIntegral correspondence tests, WelfordMeanVector2D m2 off-diagonal proofs, VelocitySmoothing::computeT3 informal spec."
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-147-blockintegral-critique-93e572fc6d",
+      "notes": "820+ theorems total, 56 files, 0 sorry. BlockIntegral (target 61) advanced to phase 5."
+    },
     {
       "run": 146,
       "date": "2026-05-23T04:00 UTC",
       "workflow_run_id": 26323001369,
       "tasks": [
-        "Task 5: WelfordMeanVector2D \u2014 7 new M2 theorems (single-obs M2=0, fold invariants for m00/m11 non-negativity). Total: 18 theorems in file.",
+        "Task 5: WelfordMeanVector2D — 7 new M2 theorems (single-obs M2=0, fold invariants for m00/m11 non-negativity). Total: 18 theorems in file.",
         "Housekeeping: Added 8 missing imports to FVSquad.lean. Merged open PRs: run-140, run-143."
       ],
       "theorems_proved": 7,
       "sorry_changes": 0,
       "pr_branch": "lean-squad/run-146-welfordvec2d-m2-theorems-fbb74d1984",
       "notes": "834 theorems total, 59 files, 0 sorry."
-    },
-    {
-      "run": 139,
-      "date": "2026-05-22T11:15 UTC",
-      "workflow_run_id": 26284535381,
-      "tasks": [
-        "Task 3 (Formal Spec Writing): SignNoZero.lean \u2014 10 theorems for math::signNoZero<int>: nonneg, neg, zero, range, ne_zero, sq, natAbs, neg_val, pos_val_neg, mul_neg. All proved via simp+omega over Int.",
-        "Task 5 (Proof Assistance): Fix ComputeMaxSpeed.lean Lean 4.29.0 regression \u2014 maxSpeed_accel_zero proof rewritten (Rat.zero_div\u2192Rat.div_def, Rat.mul_neg pattern fix); added BlockLimit/BlockLimitSym/ComputeMaxSpeed to FVSquad.lean imports."
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-139-signnozero-computemaxspeed-fix",
-      "notes": "811 theorems total, 56 files, 0 sorry. signNoZero (target 59) at phase 5. ComputeMaxSpeed regression fixed."
-    },
-    {
-      "run": 138,
-      "date": "2026-05-19T11:35 UTC",
-      "workflow_run_id": 26094293065,
-      "tasks": [
-        "Task 8 (Route B): BlockStats correspondence tests \u2014 formal-verification/tests/blockstats/ (760/760 pass; exact integer model matching control::BlockStats<int,1>; boundary, sequential, fold, mean, sumSq_nonneg).",
-        "Task 10 (Project Report): REPORT.md updated \u2014 784 theorems, 53 files, added BlockLimit/BlockStats entries, blockstats tests in Route B list, timeline section 133-138."
-      ],
-      "theorems_proved": 0,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-138-blockstats-corr-report-d76c5bdda0",
-      "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) now has 760/760 Route B correspondence tests."
-    },
-    {
-      "run": 137,
-      "date": "2026-05-19T04:23 UTC",
-      "workflow_run_id": 26075999403,
-      "tasks": [
-        "Task 2 (Informal Spec Extraction): computemaxspeed_informal.md \u2014 full informal spec for math::trajectory::computeMaxSpeedFromDistance; kinematic derivation of quadratic formula, discriminant non-negativity, edge cases (accel=0, dist=0, large dist), examples, Lean modelling plan.",
-        "Task 4 (Implementation Extraction): BlockStats.lean \u2014 scalar Int model of BlockStats<Type,M> running-sum accumulator; 10 theorems proved: bsUpdate_count, bsUpdate_sum, bsUpdate_sumSq, bsUpdate_sumSq_nonneg, bsUpdate_mono_count, bsReset_zero, bsFold_count, bsFold_sum, bsFold_sumSq_nonneg, bsMean_single."
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-137-blockstats-impl-computemaxspeed-spec",
-      "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) advanced to phase 5; computeMaxSpeedFromDistance (target 56) advanced to phase 2."
-    },
-    {
-      "run": 136,
-      "date": "2026-05-18T18:10 UTC",
-      "workflow_run_id": 26051487180,
-      "tasks": [
-        "Task 2 (Informal Spec Extraction): blockstats_informal.md \u2014 full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
-        "Task 5 (Proof Assistance): BlockLimit.lean \u2014 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
-      ],
-      "theorems_proved": 10,
-      "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-136-blocklimit-blockstats-informal",
-      "notes": "774 theorems total, 52 files, 0 sorry. BlockLimit (target 58) now fully proved; BlockStats (target 57) advanced to phase 2."
-    }
-  ],
-  "discoveries": [
-    "expo_as_correction: (1-ec)*cv + ec*cv^3 = cv + ec*(cv^3-cv) \u2014 proved via rw with add_mul/one_mul/mul_assoc + simp + add_comm",
-    "cv_cube_le_cv: cv^3 \u2264 cv for cv\u2208[0,1] \u2014 use mul_le_mul_of_nonneg_right twice with hcvsq \u2264 1",
-    "expo_mono_e_neg_v derived from expo_mono_e_pos_v + expo_odd via Rat.neg_le_neg",
-    "Rat.add_neg_cancel : a + -a = 0 (available in Lean 4.29.0 stdlib)",
-    "import must come BEFORE module docblock in Lean 4",
-    "INT16_MIN/MAX: use simp only [INT16_MIN, INT16_MAX] at * before omega for multi-const goals",
-    "abbrev is transparent to omega; simp-unfold first is safer for multi-constant proofs",
-    "prefix is reserved in Lean 4 \u2014 use pfx/sfx",
-    "CRC-32 is LSBIT-first (reflected): use >>> right-shift",
-    "CRC-64-WE is MSBIT-first: use <<< left-shift, check bit 63",
-    "linarith NOT available without Mathlib \u2014 use omega, Int.add_nonneg, Rat.le_trans etc.",
-    "0 \u2264 u*u for u:Int: by_cases h:0\u2264u; Int.mul_nonneg h h; or Int.neg_mul_neg + Int.neg_nonneg.mpr",
-    "Rat div by Nat.cast 1: use Rat.inv_def; rfl for (1:Rat)\u207b\u00b9=1, then Rat.mul_one",
-    "bsFold proofs: use show foldl bsUpdate (bsUpdate s u) rest = bsFold (bsUpdate s u) rest from rfl"
-  ],
-  "priority_targets": [
-    {
-      "id": "computemaxspeed-spec",
-      "name": "computeMaxSpeedFromDistance quadratic formula",
-      "phase": 2,
-      "notes": "Informal spec written run 137. Next: Lean spec (Task 3) \u2014 sqrt over Rat challenge; focus on algebraic properties."
-    },
-    {
-      "id": "blockstats-impl",
-      "name": "BlockStats running sum accumulator",
-      "phase": 5,
-      "notes": "DONE run 137: 10 theorems in BlockStats.lean \u2014 bsUpdate_count/sum/sumSq/sumSq_nonneg/mono_count, bsReset_zero, bsFold_count/sum/sumSq_nonneg, bsMean_single."
-    },
-    {
-      "id": "blocklimit-spec",
-      "name": "BlockLimit asymmetric clamp",
-      "phase": 5,
-      "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean."
     }
   ]
 }
