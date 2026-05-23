@@ -1,21 +1,21 @@
 {
-  "run": 140,
-  "last_updated": "2026-05-22",
+  "run": 146,
+  "last_updated": "2026-05-23",
   "lean_version": "4.29.1",
   "lake_build_status": "passed",
   "totals": {
-    "theorems": 816,
-    "theorems_proved": 816,
+    "theorems": 834,
+    "theorems_proved": 834,
     "axioms": 10,
     "sorry_count": 0,
-    "lean_files": 56,
-    "targets": 63
+    "lean_files": 59,
+    "targets": 61
   },
   "sorry_locations": {
     "all": "0 sorry in all 56 files. 10 axioms for irrational arithmetic."
   },
   "open_prs": [
-    "lean-squad/run-140-correspondence-review-signozero-welford"
+    "lean-squad/run-146-welfordvec2d-m2-theorems-fbb74d1984"
   ],
   "bugs_found": 6,
   "correspondence_tests": {
@@ -38,17 +38,17 @@
   },
   "run_history": [
     {
-      "run": 140,
-      "date": "2026-05-22T18:30 UTC",
-      "workflow_run_id": 26303871914,
+      "run": 146,
+      "date": "2026-05-23T04:00 UTC",
+      "workflow_run_id": 26323001369,
       "tasks": [
-        "Task 5 (Proof Assistance): SignNoZero.lean \u2014 5 new arithmetic theorems: signNoZero_neg_anticomm, signNoZero_mul_self_nonneg, signNoZero_mul_pos_eq, signNoZero_mul_neg_eq, signNoZero_mul_eq_natAbs (key identity: signNoZero v * v = |v|). Total: 15 theorems.",
-        "Task 6 (Correspondence Review): CORRESPONDENCE.md \u2014 added SignNoZero entry (exact correspondence), added WelfordMeanVector2D entry (abstraction; 5 divergences documented), fixed stale ComputeMaxSpeed entry (3 theorems were listed as sorry-guarded but were proved in run 139)."
+        "Task 5: WelfordMeanVector2D \u2014 7 new M2 theorems (single-obs M2=0, fold invariants for m00/m11 non-negativity). Total: 18 theorems in file.",
+        "Housekeeping: Added 8 missing imports to FVSquad.lean. Merged open PRs: run-140, run-143."
       ],
-      "theorems_proved": 5,
+      "theorems_proved": 7,
       "sorry_changes": 0,
-      "pr_branch": "lean-squad/run-140-correspondence-review-signozero-welford",
-      "notes": "816 theorems total, 56 files, 0 sorry. SignNoZero now has 15 theorems including key identity. CORRESPONDENCE.md now covers all 56 Lean files."
+      "pr_branch": "lean-squad/run-146-welfordvec2d-m2-theorems-fbb74d1984",
+      "notes": "834 theorems total, 59 files, 0 sorry."
     },
     {
       "run": 139,
@@ -88,6 +88,19 @@
       "sorry_changes": 0,
       "pr_branch": "lean-squad/run-137-blockstats-impl-computemaxspeed-spec",
       "notes": "784 theorems total, 53 files, 0 sorry. BlockStats (target 57) advanced to phase 5; computeMaxSpeedFromDistance (target 56) advanced to phase 2."
+    },
+    {
+      "run": 136,
+      "date": "2026-05-18T18:10 UTC",
+      "workflow_run_id": 26051487180,
+      "tasks": [
+        "Task 2 (Informal Spec Extraction): blockstats_informal.md \u2014 full informal spec for BlockStats<Type,M> running-sum accumulator; scalar Int model plan, invariants, edge cases, examples.",
+        "Task 5 (Proof Assistance): BlockLimit.lean \u2014 10 new theorems for asymmetric clamp target 58: limit_above, limit_below (with hlohi), limit_in_range, limit_upper, limit_lower, limit_range, limit_idempotent, limit_lo_fixed, limit_hi_fixed, limit_mono."
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-136-blocklimit-blockstats-informal",
+      "notes": "774 theorems total, 52 files, 0 sorry. BlockLimit (target 58) now fully proved; BlockStats (target 57) advanced to phase 2."
     }
   ],
   "discoveries": [
@@ -125,6 +138,5 @@
       "phase": 5,
       "notes": "DONE run 136: 10 theorems proved in BlockLimit.lean."
     }
-  ],
-  "correspondence_complete": "All 56 Lean files have correspondence entries as of run 140"
+  ]
 }
