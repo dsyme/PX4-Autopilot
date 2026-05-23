@@ -41,6 +41,11 @@ multiplier in control and normalisation contexts where 0 would be incorrect.
 | `signNoZero_neg_val` | ✅ proved | `v < 0 → signNoZero (-v) = 1` |
 | `signNoZero_pos_val_neg` | ✅ proved | `0 < v → signNoZero (-v) = -1` |
 | `signNoZero_mul_neg` | ✅ proved | `v ≠ 0 → signNoZero v * signNoZero (-v) = -1` |
+| `signNoZero_neg_anticomm` | ✅ proved | `v ≠ 0 → signNoZero (-v) = -(signNoZero v)` |
+| `signNoZero_mul_self_nonneg` | ✅ proved | `0 ≤ signNoZero v * v` |
+| `signNoZero_mul_pos_eq` | ✅ proved | `0 < v → signNoZero v * v = v` |
+| `signNoZero_mul_neg_eq` | ✅ proved | `v < 0 → signNoZero v * v = -v` |
+| `signNoZero_mul_eq_natAbs` | ✅ proved | `signNoZero v * v = ↑v.natAbs` |
 -/
 
 namespace PX4.SignNoZero
@@ -112,5 +117,60 @@ theorem signNoZero_mul_neg (v : Int) (hv : v ≠ 0) :
     have hlt : v < 0 := Int.not_le.mp h
     rw [signNoZero_neg v hlt, signNoZero_neg_val v hlt]
     simp
+
+/-! ## Arithmetic properties -/
+
+/-- For non-zero `v`, `signNoZero (-v) = -(signNoZero v)`.
+    Negating the input negates the output (anti-commutativity with negation).
+    Note: at `v = 0`, `signNoZero 0 = 1` and `signNoZero (-0) = 1`,
+    so this property requires `v ≠ 0`. -/
+theorem signNoZero_neg_anticomm (v : Int) (hv : v ≠ 0) :
+    signNoZero (-v) = -(signNoZero v) := by
+  by_cases h : 0 ≤ v
+  · have h1 : signNoZero v = 1 := signNoZero_nonneg v h
+    have h2 : signNoZero (-v) = -1 := signNoZero_pos_val_neg v (by omega)
+    rw [h1, h2]
+  · have hlt : v < 0 := Int.not_le.mp h
+    have h1 : signNoZero v = -1 := signNoZero_neg v hlt
+    have h2 : signNoZero (-v) = 1 := signNoZero_neg_val v hlt
+    rw [h1, h2]; omega
+
+/-- `signNoZero v * v ≥ 0` for all `v`.
+    Multiplying a value by its sign-or-one is always non-negative.
+    This is useful in control contexts where `signNoZero` is used as a direction
+    multiplier to obtain a magnitude-like quantity. -/
+theorem signNoZero_mul_self_nonneg (v : Int) : 0 ≤ signNoZero v * v := by
+  by_cases h : 0 ≤ v
+  · rw [signNoZero_nonneg v h]
+    simp [h]
+  · have hlt : v < 0 := Int.not_le.mp h
+    rw [signNoZero_neg v hlt]
+    simp
+    omega
+
+/-- For positive `v`, `signNoZero v * v = v`.
+    The function acts as the identity on positive integers. -/
+theorem signNoZero_mul_pos_eq (v : Int) (h : 0 < v) : signNoZero v * v = v := by
+  rw [signNoZero_nonneg v (by omega)]
+  simp
+
+/-- For negative `v`, `signNoZero v * v = -v`.
+    The function returns the absolute value (as a positive integer) for negative inputs. -/
+theorem signNoZero_mul_neg_eq (v : Int) (h : v < 0) : signNoZero v * v = -v := by
+  rw [signNoZero_neg v h]
+  simp
+
+/-- `signNoZero v * v = v.natAbs` as an integer.
+    The product of a value with its `signNoZero` equals the absolute value.
+    This is the key identity: `signNoZero` acts as the sign function so that
+    `sign(v) * v = |v|`. -/
+theorem signNoZero_mul_eq_natAbs (v : Int) : signNoZero v * v = ↑v.natAbs := by
+  by_cases h0 : 0 ≤ v
+  · rw [signNoZero_nonneg v h0]
+    simp [Int.natAbs_of_nonneg h0]
+  · have hlt : v < 0 := Int.not_le.mp h0
+    rw [signNoZero_neg v hlt]
+    simp
+    omega
 
 end PX4.SignNoZero
