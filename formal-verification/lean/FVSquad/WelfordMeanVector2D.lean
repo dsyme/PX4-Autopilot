@@ -39,14 +39,21 @@ M2[1,0]  = M2[0,1]   // symmetry
 | `welfordVec2_count` | Count increments by 1 | ✅ Proved |
 | `welfordVec2_mean_x_step` | x-mean recurrence: `mean_x * n = old_mean_x * (n-1) + x` | ✅ Proved |
 | `welfordVec2_mean_y_step` | y-mean recurrence: `mean_y * n = old_mean_y * (n-1) + y` | ✅ Proved |
-| `welfordVec2_m00_nonneg` | M2[0,0] ≥ 0 preserved | ✅ Proved |
-| `welfordVec2_m11_nonneg` | M2[1,1] ≥ 0 preserved | ✅ Proved |
+| `welfordVec2_m00_nonneg` | M2[0,0] ≥ 0 preserved per step | ✅ Proved |
+| `welfordVec2_m11_nonneg` | M2[1,1] ≥ 0 preserved per step | ✅ Proved |
 | `welfordVec2FoldFrom_count` | Count after fold = init_count + length | ✅ Proved |
 | `welfordVec2FoldFrom_mean_x_inv` | mean_x * count = init_mean_x * init_count + Σxᵢ | ✅ Proved |
 | `welfordVec2FoldFrom_mean_y_inv` | mean_y * count = init_mean_y * init_count + Σyᵢ | ✅ Proved |
 | `welfordVec2Fold_count` | fold count = list length | ✅ Proved |
 | `welfordVec2Fold_mean_x` | Non-empty list: mean_x = Σxᵢ / length | ✅ Proved |
 | `welfordVec2Fold_mean_y` | Non-empty list: mean_y = Σyᵢ / length | ✅ Proved |
+| `welfordVec2_m00_single` | Single observation → m00 = 0 (variance of one point = 0) | ✅ Proved |
+| `welfordVec2_m11_single` | Single observation → m11 = 0 | ✅ Proved |
+| `welfordVec2_m01_single` | Single observation → m01 = 0 (covariance of one point = 0) | ✅ Proved |
+| `welfordVec2FoldFrom_m00_nonneg` | Fold preserves m00 ≥ 0 | ✅ Proved |
+| `welfordVec2FoldFrom_m11_nonneg` | Fold preserves m11 ≥ 0 | ✅ Proved |
+| `welfordVec2Fold_m00_nonneg` | From-zero fold: m00 ≥ 0 | ✅ Proved |
+| `welfordVec2Fold_m11_nonneg` | From-zero fold: m11 ≥ 0 | ✅ Proved |
 -/
 
 namespace PX4.WelfordMeanVector2D
@@ -287,5 +294,74 @@ theorem welfordVec2Fold_mean_y (pts : List (Rat × Rat)) (hne : pts ≠ []) :
   simp only [Nat.zero_add] at h
   simp only [welfordVec2Fold, initState2]
   rw [← h, Rat.div_def, Rat.mul_assoc, Rat.mul_inv_cancel _ hlenR, Rat.mul_one]
+
+/-! ## Single-observation and M2 non-negativity theorems -/
+
+/-- After a single observation from the zero state, `m00 = 0`.
+    Variance of a single point is zero — the running M2 accumulator starts
+    from 0 and the first `δ * (x - mx')` term evaluates to 0. -/
+theorem welfordVec2_m00_single (x y : Rat) :
+    (welfordVec2Fold [(x, y)]).m00 = 0 := by
+  simp only [welfordVec2Fold, welfordVec2FoldFrom, welfordVec2Update, initState2, Rat.zero_add]
+  have h1 : (↑(0 + 1 : Nat) : Rat) = 1 := by native_decide
+  have h2 : (1 : Rat)⁻¹ = 1 := by native_decide
+  have h3 : x - (0 : Rat) = x := by rw [Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero]
+  have h4 : x / (1 : Rat) = x := by rw [Rat.div_def, h2, Rat.mul_one]
+  rw [h1, h3, h4, Rat.sub_self, Rat.mul_zero]
+
+/-- After a single observation from the zero state, `m11 = 0`. -/
+theorem welfordVec2_m11_single (x y : Rat) :
+    (welfordVec2Fold [(x, y)]).m11 = 0 := by
+  simp only [welfordVec2Fold, welfordVec2FoldFrom, welfordVec2Update, initState2, Rat.zero_add]
+  have h1 : (↑(0 + 1 : Nat) : Rat) = 1 := by native_decide
+  have h2 : (1 : Rat)⁻¹ = 1 := by native_decide
+  have h3 : y - (0 : Rat) = y := by rw [Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero]
+  have h4 : y / (1 : Rat) = y := by rw [Rat.div_def, h2, Rat.mul_one]
+  rw [h1, h3, h4, Rat.sub_self, Rat.mul_zero]
+
+/-- After a single observation from the zero state, `m01 = 0`.
+    The off-diagonal covariance accumulator is also zero for a single point. -/
+theorem welfordVec2_m01_single (x y : Rat) :
+    (welfordVec2Fold [(x, y)]).m01 = 0 := by
+  simp only [welfordVec2Fold, welfordVec2FoldFrom, welfordVec2Update, initState2, Rat.zero_add]
+  have h1 : (↑(0 + 1 : Nat) : Rat) = 1 := by native_decide
+  have h2 : (1 : Rat)⁻¹ = 1 := by native_decide
+  have h3x : x - (0 : Rat) = x := by rw [Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero]
+  have h3y : y - (0 : Rat) = y := by rw [Rat.sub_eq_add_neg, Rat.neg_zero, Rat.add_zero]
+  have h4 : y / (1 : Rat) = y := by rw [Rat.div_def, h2, Rat.mul_one]
+  rw [h1, h3x, h3y, h4, Rat.sub_self, Rat.mul_zero]
+
+/-- `m00` is non-negative after any fold from a non-negative initial `m00`.
+    Invariant: once `m00 ≥ 0`, it stays non-negative through all updates. -/
+theorem welfordVec2FoldFrom_m00_nonneg (s₀ : WelfordVec2State) (pts : List (Rat × Rat))
+    (h0 : 0 ≤ s₀.m00) : 0 ≤ (welfordVec2FoldFrom s₀ pts).m00 := by
+  induction pts generalizing s₀ with
+  | nil  => simpa [welfordVec2FoldFrom]
+  | cons p t ih =>
+    obtain ⟨x, y⟩ := p
+    apply ih
+    exact welfordVec2_m00_nonneg s₀ x y h0
+
+/-- `m11` is non-negative after any fold from a non-negative initial `m11`. -/
+theorem welfordVec2FoldFrom_m11_nonneg (s₀ : WelfordVec2State) (pts : List (Rat × Rat))
+    (h0 : 0 ≤ s₀.m11) : 0 ≤ (welfordVec2FoldFrom s₀ pts).m11 := by
+  induction pts generalizing s₀ with
+  | nil  => simpa [welfordVec2FoldFrom]
+  | cons p t ih =>
+    obtain ⟨x, y⟩ := p
+    apply ih
+    exact welfordVec2_m11_nonneg s₀ x y h0
+
+/-- Starting from the zero state, `m00 ≥ 0` after any fold. -/
+theorem welfordVec2Fold_m00_nonneg (pts : List (Rat × Rat)) :
+    0 ≤ (welfordVec2Fold pts).m00 := by
+  apply welfordVec2FoldFrom_m00_nonneg
+  simp [initState2]
+
+/-- Starting from the zero state, `m11 ≥ 0` after any fold. -/
+theorem welfordVec2Fold_m11_nonneg (pts : List (Rat × Rat)) :
+    0 ≤ (welfordVec2Fold pts).m11 := by
+  apply welfordVec2FoldFrom_m11_nonneg
+  simp [initState2]
 
 end PX4.WelfordMeanVector2D

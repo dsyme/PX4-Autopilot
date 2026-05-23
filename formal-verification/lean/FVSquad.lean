@@ -50,3 +50,11 @@ import FVSquad.SignNoZero
 import FVSquad.BlockLimit
 import FVSquad.BlockLimitSym
 import FVSquad.ComputeMaxSpeed
+import FVSquad.BlockIntegral
+import FVSquad.GainCompression
+import FVSquad.HighPass
+import FVSquad.NotchFilter
+import FVSquad.PID
+import FVSquad.PurePursuit
+import FVSquad.SensorOrientation
+import FVSquad.WelfordMeanVector2D
