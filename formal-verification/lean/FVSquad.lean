@@ -45,3 +45,4 @@ import FVSquad.LowPassFilter2p
 import FVSquad.BlockIntegralTrap
 import FVSquad.SecondOrderReferenceModel
 import FVSquad.BlockStats
+import FVSquad.BlockIntegral

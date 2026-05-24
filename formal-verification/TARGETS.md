@@ -175,6 +175,6 @@ See `RESEARCH.md §Tool Choice` for details.
 
 | # | Name | File | Phase | Status | Lean File | Notes |
 |---|------|------|-------|--------|-----------|-------|
-| 61 | `control::BlockIntegral::update` (rectangular integrator) | `src/lib/controllib/BlockIntegral.cpp` | 1 | ⬜ Research | — | Rectangular integrator with symmetric saturation (`BlockLimitSym`); key invariant: output bounded by `[-max, max]`; simpler than `BlockIntegralTrap` (no trapezoidal term); ~8 theorems; builds on `BlockLimitSym.lean`; `omega`-provable on Int model |
+| 61 | `control::BlockIntegral::update` (rectangular integrator) | `src/lib/controllib/BlockIntegral.cpp` | 5 | ✅ Proved | `lean/FVSquad/BlockIntegral.lean` | 10 theorems, 0 sorry; bounded output, exact formula, saturation, monotone in input, iterated bound; run 147 |
 | 62 | `WelfordMeanVector` 2-component online mean | `src/lib/mathlib/math/WelfordMeanVector.hpp` | 1 | ⬜ Research | — | Vector generalisation of WelfordMean; model 2-component case; componentwise `mean_i = sum_i / count` invariant; Kahan summation abstracted away; builds on `WelfordMean.lean`; ~10 theorems; `omega`-provable on Int model |
 | 63 | `computeBrakingDistanceFromVelocity` | `src/lib/mathlib/math/TrajMath.hpp:72` | 1 | ⬜ Research | — | `v * (v/(2a) + amax/j)` braking distance formula; non-negativity when v,a,j>0; monotone in v (faster→more distance); simpler than `computeMaxSpeedFromDistance`; no sqrt needed; ~6 theorems; builds on `BrakingDist.lean` |
