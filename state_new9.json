@@ -1,0 +1,80 @@
+{
+  "run": 150,
+  "last_updated": "2026-05-24",
+  "lean_version": "4.29.1",
+  "lake_build_status": "passed",
+  "totals": {
+    "theorems": 925,
+    "theorems_proved": 925,
+    "axioms": 10,
+    "sorry_count": 0,
+    "lean_files": 56,
+    "targets": 62
+  },
+  "sorry_locations": {},
+  "open_prs": [
+    "lean-squad/run-150-blockintegral-proofs-correspondence"
+  ],
+  "bugs_found": 6,
+  "correspondence_tests": {
+    "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
+    "hysteresis": "tests/hysteresis/ (259/259 pass)",
+    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)",
+    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^k-1, 64-bit LCG)",
+    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; boundary, linear, cubic, odd-symmetry, grid)",
+    "BlockIntegralTrap": "tests/BlockIntegralTrap/ (existing)",
+    "LowPassFilter2p": "tests/LowPassFilter2p/ (existing)",
+    "deadzone": "tests/deadzone/ (existing)",
+    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate)",
+    "blockstats": "tests/blockstats/ (760/760 pass; exact integer model; confirms bsUpdate/bsReset/bsFold/bsMean for BlockStats<int,1>)",
+    "BlockIntegral": "tests/BlockIntegral/ (498/498 pass; covers zero_input, bounds, exact, saturation, monotone, iterate_bounded, accumulation, dt=0)"
+  },
+  "ci": {
+    "lean_ci": "lean-ci.yml — two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+    "status": "passing"
+  },
+  "correspondence_reviewed": [
+    "BlockIntegral (run 150)",
+    "WelfordMeanVector2D (run 150)",
+    "BlockLimit, BlockLimitSym, BlockStats, ComputeMaxSpeed (run 141)",
+    "PurePursuit, PID sign (run 133)",
+    "NotchFilter, SORM (run 130)"
+  ],
+  "key_achievements": {
+    "welfordVec2_psd": "FULLY PROVED in run 149. PSD preservation (m01²≤m00*m11) proved via psd_ring_id (ring identity) + psd_identity (Schur complement) + quad_form_nonneg (case B=0 vs B>0).",
+    "blockintegral_proofs": "Run 150: +4 new theorems (biIterate_zero_input, biIterate_mono, biUpdate_idempotent, biIterate_nonneg). Total 14 theorems, 0 sorry.",
+    "total_theorems": "925 theorems (including private), 0 sorry, all verified by lake build"
+  },
+  "run_history": [
+    {
+      "run": 148,
+      "tasks": [
+        "Task 5: WelfordMeanVector2D M2 off-diagonal proofs (+9 theorems, 2 sorry)",
+        "Task 8: BlockIntegral correspondence tests"
+      ],
+      "pr_branch": "lean-squad/run-148-welford-m01-blockintegral-tests-e57d688d1e"
+    },
+    {
+      "run": 149,
+      "date": "2026-05-23",
+      "tasks": [
+        "Task 5: Eliminated both sorry in WelfordMeanVector2D.lean — proved welfordVec2_m01_single_obs and welfordVec2_psd.",
+        "Task Final: Update status issue"
+      ],
+      "sorry_eliminated": 2,
+      "pr_branch": "lean-squad/run-149-psd-proofs"
+    },
+    {
+      "run": 150,
+      "date": "2026-05-24",
+      "tasks": [
+        "Task 5: BlockIntegral.lean — +4 theorems (biIterate_zero_input, biIterate_mono, biUpdate_idempotent, biIterate_nonneg). Total 14 theorems, 0 sorry.",
+        "Task 6: CORRESPONDENCE.md — Added entries for BlockIntegral and WelfordMeanVector2D.",
+        "Task Final: Update status issue"
+      ],
+      "pr_branch": "lean-squad/run-150-blockintegral-proofs-correspondence"
+    }
+  ]
+}
