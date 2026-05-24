@@ -4,58 +4,38 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-20 11:21 UTC (run 141)
-- **Commit**: `69863d7d48de1c9695bc93f769239099cbd1850a`
+- **Date**: 2026-05-23 10:30 UTC (run 147)
+- **Commit**: `93e572fc6d512ae0a0e98a002a1ddacc509dad8d`
 
 ---
 
 ## Overall Assessment
 
-**54 Lean files cover 877 named theorems (including private helpers), 22 occurrences of `sorry` across 11 files**
+**56 Lean files cover 820+ named theorems (including private helpers), 0 occurrences of `sorry` in code**
 (Lean 4 v4.29.1, standard library only, 10 abstract axioms for Mathlib-dependent results).
 
-Since run 135, 113+ theorems were added across new modules: `BlockLimit.lean` (10 theorems),
-`BlockLimitSym.lean` (10 theorems), `BlockStats.lean` (10 theorems), `ComputeMaxSpeed.lean`
-(6 theorems, 3 proved), plus growth in `BlockIntegralTrap.lean`, `PID.lean`, and other files.
-REPORT.md and TARGETS.md were updated in run 140. Three new research targets were identified:
-`BlockIntegral_update`, `WelfordMeanVector_2d`, and `computeBrakingDistanceFromVelocity`.
-Correspondence tests now cover 12 targets including BlockStats (760/760 passing).
+Runs 142–147 closed all outstanding sorrys: `ComputeMaxSpeed.lean` regression fixed (run 139),
+`WelfordMeanVector2D.lean` added (11+7 theorems, runs 145–146), `BlockIntegral.lean` added
+(10 theorems, run 147). All 56 files now build cleanly with 0 sorry.
 
-**Run 141 assessment (Task 7 + Task 6)**:
-- Task 6: CORRESPONDENCE.md updated with four missing entries: `BlockLimit.lean`,
-  `BlockLimitSym.lean`, `BlockStats.lean`, and `ComputeMaxSpeed.lean`.
-- Task 7: This critique updated to reflect runs 136–141. The `sorry` count has grown to 22
-  across 11 files — primarily from `ComputeMaxSpeed.lean` (3 sorry on algebraic properties
-  requiring `sqrtQ` reasoning), plus pre-existing pattern-comment sorrys in `SqrtLinear.lean`,
-  `WrapAngle.lean`, and others. Closing the `ComputeMaxSpeed` sorrys is the highest-priority
-  proof task for the next run.
+**Run 147 assessment (Task 4 + Task 7)**:
+- Task 4: `BlockIntegral.lean` added — rectangular integrator with `BlockLimitSym` clamping;
+  10 theorems proved: `biUpdate_bounded`, `biUpdate_upper`, `biUpdate_lower`, `biUpdate_exact`,
+  `biUpdate_sat_upper`, `biUpdate_sat_lower`, `biUpdate_zero_input`, `biUpdate_mono`,
+  `biIterate_bounded`, all by direct reduction to `BlockLimitSym` lemmas. 0 sorry.
+- Task 7: This critique updated to reflect runs 142–147. The sorry count has dropped to 0.
 
-**Run 141 gaps identified**:
-1. **ComputeMaxSpeed sorry closure** (high priority): `maxSpeed_accel_zero`,
-   `maxSpeed_mono_dist`, and `maxSpeed_quadratic_eq` all require algebraic manipulation
-   with `sqrtQ` axioms. `maxSpeed_quadratic_eq` should be provable by unfolding
-   `rawMaxSpeed` and applying `sqrtQ_sq`.
-2. **New research targets from run 140** need informal specs and Lean files:
-   `BlockIntegral_update`, `WelfordMeanVector_2d`, `computeBrakingDistanceFromVelocity`.
-3. **Correspondence tests** for `BlockLimit`, `BlockLimitSym`, and `ComputeMaxSpeed` do not
-   yet exist. `BlockLimit` and `BlockLimitSym` are used widely and would benefit from
-   Route B tests.
+**Run 147 gaps identified**:
+1. **BlockIntegral correspondence tests** (medium priority): Route B tests for `BlockIntegral.lean`
+   (similar to `pid/` harness); exercises dt=0 identity, saturation, accumulation.
+2. **WelfordMeanVector2D M2 proofs** (medium): `m2_nonneg` for the 2×2 off-diagonal entries
+   (m01/m10) — requires reasoning about cross-term cancellation not yet attempted.
+3. **VelocitySmoothing::computeT3** (target 41) still at Phase 1 — informal spec not yet written.
+4. **New targets (61–63)** still at Phase 1: `BlockIntegral::update` is now done (run 147);
+   `WelfordMeanVector` 2-component (target 59/62) and `computeBrakingDistanceFromVelocity`
+   (target 63) still need informal specs.
 
-**Current sorry breakdown (22 total)**:
-
-| File | Sorry count | Notes |
-|------|------------|-------|
-| `ComputeMaxSpeed.lean` | 3 | Algebraic properties with `sqrtQ`; closeable |
-| `SqrtLinear.lean` | 4 | Axiom-based; requires `sqrt` algebraic reasoning |
-| `WrapAngle.lean` | 3 | Trigonometric identities; require Mathlib `Real` |
-| `Atmosphere.lean` | 1 | Physical formula validation |
-| `BlockLimit.lean` | 1 | Edge-case arithmetic |
-| `BlockLimitSym.lean` | 1 | Symmetry arithmetic |
-| `BlockStats.lean` | 1 | Mean formula case split |
-| `Deadzone.lean` | 2 | Boundary arithmetic |
-| `InterpolateN.lean` | 1 | Inductive argument |
-| `NotchFilter.lean` | 1 | Filter pole arithmetic |
-| `PurePursuit.lean` | 1 | Trigonometric bound |
+**Current sorry breakdown (0 total)**: All files are sorry-free as of run 147.
 
 Six confirmed bugs remain open: `signNoZero<float>` (NaN returns 0),
 `negate<int16_t>` (incorrect INT16_MAX special case), `wrap_bin(bin, n)` (negative index
