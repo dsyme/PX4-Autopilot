@@ -1,0 +1,84 @@
+{
+  "run": 148,
+  "last_updated": "2026-05-23",
+  "lean_version": "4.29.1",
+  "lake_build_status": "passed",
+  "totals": {
+    "theorems": 917,
+    "theorems_proved": 915,
+    "axioms": 10,
+    "sorry_count": 2,
+    "lean_files": 56,
+    "targets": 62
+  },
+  "sorry_locations": {
+    "WelfordMeanVector2D": "2 sorry: welfordVec2_m01_single_obs (needs Rat.inv_one/sub_zero), welfordVec2_psd (needs ring for polynomial expansion + Schur complement)",
+    "note": "ring tactic unavailable without Mathlib dependency; proof strategy documented"
+  },
+  "open_prs": [
+    "lean-squad/run-148-welford-m01-blockintegral-tests-e57d688d1e"
+  ],
+  "bugs_found": 6,
+  "correspondence_tests": {
+    "atmosphere": "tests/atmosphere/ (26/26 pass, max_rel_err=1.9e-16)",
+    "bin_at_angle": "tests/bin_at_angle/ (334/334 pass; confirms getBinI/getOffsetBinI exact; demonstrates wrap_bin latent bug)",
+    "slew_rate": "tests/slew_rate/ (4327/4327 pass; confirms SlewRate::update exact for Rat model)",
+    "hysteresis": "tests/hysteresis/ (259/259 pass)",
+    "pid": "tests/pid/ (7964/7964 pass; confirms clamp/derivative/integral/output for Int model)",
+    "count_set_bits": "tests/count_set_bits/ (871/871 pass; exact Nat model; all 0-255, powers of 2, 2^k-1, 64-bit LCG)",
+    "expo": "tests/expo/ (1373/1373 pass; confirms expoRat matches C++ expo<T> exactly; boundary, linear, cubic, odd-symmetry, grid)",
+    "BlockIntegralTrap": "tests/BlockIntegralTrap/ (existing)",
+    "LowPassFilter2p": "tests/LowPassFilter2p/ (existing)",
+    "deadzone": "tests/deadzone/ (existing)",
+    "alpha_filter": "tests/alpha_filter/ (257/257 pass; exact for dyadic inputs; confirms alphaUpdate)",
+    "blockstats": "tests/blockstats/ (760/760 pass; exact integer model; confirms bsUpdate/bsReset/bsFold/bsMean for BlockStats<int,1>)",
+    "BlockIntegral": "tests/BlockIntegral/ (498/498 pass; covers zero_input, bounds, exact, saturation, monotone, iterate_bounded, accumulation, dt=0)"
+  },
+  "ci": {
+    "lean_ci": "lean-ci.yml \u2014 two jobs: 'build' (Lean proofs) and 'correspondence-tests' (atmosphere 26 + slew_rate 4327). Triggers on lean/** and tests/**.",
+    "status": "passing"
+  },
+  "run_history": [
+    {
+      "run": 147,
+      "date": "2026-05-23T10:30 UTC",
+      "workflow_run_id": 26329891503,
+      "tasks": [
+        "Task 4: BlockIntegral.lean \u2014 10 theorems for control::BlockIntegral::update rectangular integrator. biUpdate bounded/exact/saturation/mono, biIterate_bounded. All proofs reduce to BlockLimitSym lemmas. 0 sorry.",
+        "Task 7: CRITIQUE.md updated \u2014 sorry count confirmed 0; new gaps: BlockIntegral correspondence tests, WelfordMeanVector2D m2 off-diagonal proofs, VelocitySmoothing::computeT3 informal spec."
+      ],
+      "theorems_proved": 10,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-147-blockintegral-critique-93e572fc6d",
+      "notes": "820+ theorems total, 56 files, 0 sorry. BlockIntegral (target 61) advanced to phase 5."
+    },
+    {
+      "run": 146,
+      "date": "2026-05-23T04:00 UTC",
+      "workflow_run_id": 26323001369,
+      "tasks": [
+        "Task 5: WelfordMeanVector2D \u2014 7 new M2 theorems (single-obs M2=0, fold invariants for m00/m11 non-negativity). Total: 18 theorems in file.",
+        "Housekeeping: Added 8 missing imports to FVSquad.lean. Merged open PRs: run-140, run-143."
+      ],
+      "theorems_proved": 7,
+      "sorry_changes": 0,
+      "pr_branch": "lean-squad/run-146-welfordvec2d-m2-theorems-fbb74d1984",
+      "notes": "834 theorems total, 59 files, 0 sorry."
+    },
+    {
+      "run": 148,
+      "date": "2026-05-23",
+      "workflow_run_id": 26352003046,
+      "tasks": [
+        "Task 5: WelfordMeanVector2D M2 off-diagonal proofs (+9 new theorems: m01_step, m01_single_obs[sorry], m00_increment, m11_increment, psd[sorry], FoldFrom/Fold variants)",
+        "Task 8: BlockIntegral correspondence tests (498/498 pass, all 10 theorems exercised)"
+      ],
+      "theorems_added": 9,
+      "sorry_added": 2,
+      "new_files": [
+        "formal-verification/tests/BlockIntegral/check_correspondence.py"
+      ],
+      "notes": "ring unavailable in Init without Mathlib; 2 polynomial identity proofs use sorry; theorem statements are correct"
+    }
+  ]
+}
