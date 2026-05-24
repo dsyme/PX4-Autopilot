@@ -46,18 +46,22 @@ biIterate(n, input, dt, max) = state after n steps from 0
 rounding. The Lean model captures the pure numeric behaviour under the assumption
 that `max ≥ 0` (as required by `BlockLimitSym`).
 
-## Properties Proved (10 theorems, 0 sorry)
+## Properties Proved (14 theorems, 0 sorry)
 
-1. `biUpdate_zero_input`   — zero input leaves state unchanged (if already 0)
-2. `biUpdate_bounded`      — output is bounded by max when max ≥ 0
-3. `biUpdate_upper`        — output ≤ max when max ≥ 0
-4. `biUpdate_lower`        — −max ≤ output when max ≥ 0
-5. `biUpdate_exact_pos`    — exact value when sum is within range (pos direction)
-6. `biUpdate_exact_neg`    — exact value when sum is within range (neg direction)
-7. `biUpdate_sat_upper`    — output = max when sum exceeds max
-8. `biUpdate_sat_lower`    — output = −max when sum goes below −max
-9. `biUpdate_mono`         — monotone in input when max ≥ 0
-10. `biIterate_bounded`    — iterated output remains bounded by max
+1. `biUpdate_zero_input`      — zero input leaves state unchanged (if already 0)
+2. `biUpdate_bounded`         — output is bounded by max when max ≥ 0
+3. `biUpdate_upper`           — output ≤ max when max ≥ 0
+4. `biUpdate_lower`           — −max ≤ output when max ≥ 0
+5. `biUpdate_exact_pos`       — exact value when sum is within range (pos direction)
+6. `biUpdate_exact_neg`       — exact value when sum is within range (neg direction)
+7. `biUpdate_sat_upper`       — output = max when sum exceeds max
+8. `biUpdate_sat_lower`       — output = −max when sum goes below −max
+9. `biUpdate_mono`            — monotone in input when max ≥ 0
+10. `biIterate_bounded`       — iterated output remains bounded by max
+11. `biIterate_zero_input`    — zero input leaves accumulated state at 0
+12. `biIterate_mono`          — iterated output is monotone in input (dt ≥ 0)
+13. `biUpdate_idempotent`     — applying biUpdate to a saturated state at max stays at max
+14. `biIterate_nonneg`        — non-negative input and dt gives non-negative iterated output
 -/
 
 namespace PX4.BlockIntegral
@@ -136,5 +140,52 @@ theorem biIterate_bounded (n : Nat) (input dt max : Rat) (hmax : 0 ≤ max) :
   | succ n ih =>
     simp [biIterate]
     exact biUpdate_bounded _ _ _ _ hmax
+
+-- ─── Additional iterated-update theorems ─────────────────────────────────────
+
+/-- Zero input keeps the accumulated state at 0 for all n steps. -/
+theorem biIterate_zero_input (n : Nat) (dt max : Rat) (hmax : 0 ≤ max) :
+    biIterate n 0 dt max = 0 := by
+  induction n with
+  | zero => simp [biIterate]
+  | succ n ih =>
+    simp only [biIterate, biUpdate, ih, Rat.zero_mul, Rat.add_zero]
+    exact limitSym_zero max hmax
+
+/-- Iterated update is monotone in `input`: larger input → larger or equal accumulated output (dt ≥ 0). -/
+theorem biIterate_mono (n : Nat) (input₁ input₂ dt max : Rat)
+    (hdt : 0 ≤ dt) (hmax : 0 ≤ max) (hi : input₁ ≤ input₂) :
+    biIterate n input₁ dt max ≤ biIterate n input₂ dt max := by
+  induction n with
+  | zero => simp only [biIterate]; exact Rat.le_refl
+  | succ n ih =>
+    simp only [biIterate, biUpdate]
+    apply limitSym_mono _ _ _ hmax
+    have hdt2 : input₁ * dt ≤ input₂ * dt := Rat.mul_le_mul_of_nonneg_right hi hdt
+    calc biIterate n input₁ dt max + input₁ * dt
+        ≤ biIterate n input₂ dt max + input₁ * dt := Rat.add_le_add_right.mpr ih
+      _ ≤ biIterate n input₂ dt max + input₂ * dt := Rat.add_le_add_left.mpr hdt2
+
+/-- If the state equals `max`, non-negative input and dt keeps it at `max`
+    (since `max + input * dt ≥ max`, clamping the sum returns `max`). -/
+theorem biUpdate_idempotent (input dt max : Rat)
+    (hdt : 0 ≤ dt) (hmax : 0 ≤ max) (hi : 0 ≤ input) :
+    biUpdate max input dt max = max := by
+  unfold biUpdate
+  have h1 : 0 ≤ input * dt := Rat.mul_nonneg hi hdt
+  have hge : max + 0 ≤ max + input * dt := Rat.add_le_add_left.mpr h1
+  rw [Rat.add_zero] at hge
+  rcases Rat.le_iff_lt_or_eq.mp hge with hlt | heq
+  · exact limitSym_above _ _ hlt
+  · rw [← heq]
+    exact limitSym_in_range max max (Rat.le_trans (Rat.neg_le_iff.mp hmax) hmax) Rat.le_refl
+
+/-- Non-negative input and dt gives non-negative iterated output (from 0 initial state). -/
+theorem biIterate_nonneg (n : Nat) (input dt max : Rat)
+    (hdt : 0 ≤ dt) (hmax : 0 ≤ max) (hi : 0 ≤ input) :
+    0 ≤ biIterate n input dt max := by
+  have h0 : biIterate n 0 dt max = 0 := biIterate_zero_input n dt max hmax
+  calc 0 = biIterate n 0 dt max := h0.symm
+    _ ≤ biIterate n input dt max := biIterate_mono n 0 input dt max hdt hmax hi
 
 end PX4.BlockIntegral
