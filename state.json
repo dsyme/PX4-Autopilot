@@ -1,162 +1,47 @@
 {
-  "run": 148,
-  "last_updated": "2026-05-23",
+  "run": 149,
+  "last_updated": "2026-05-25",
   "lean_version": "4.29.1",
   "project_lean_toolchain": "v4.29.0",
-  "theorem_count": 834,
-  "file_count": 57,
-  "sorry_count": 13,
+  "theorem_count": 805,
+  "file_count": 55,
+  "sorry_count": 0,
   "targets": [
-    {
-      "name": "computeMaxSpeedFromDistance",
-      "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean",
-      "phase": 4,
-      "notes": "6 theorems all proved; accel_zero/mono_dist/quadratic_eq proved in run 142; added sqrtQ_unique axiom (11 total axioms); 0 sorry"
-    },
-    {
-      "name": "BlockStats",
-      "phase": 4,
-      "notes": "10 theorems, Route B tests 760/760 (run 138), correspondence entry added run 141"
-    },
-    {
-      "name": "VelocitySmoothing",
-      "phase": 4,
-      "notes": "33 theorems"
-    },
-    {
-      "name": "PID",
-      "phase": 4,
-      "notes": "42 theorems"
-    },
-    {
-      "name": "BrakingDist",
-      "phase": 4,
-      "notes": "proved"
-    },
-    {
-      "name": "SqrtLinear",
-      "phase": 4,
-      "notes": "proved (4 sorry on sqrt axiom properties)"
-    },
-    {
-      "name": "SensorOrientation",
-      "phase": 4,
-      "notes": "20 theorems"
-    },
-    {
-      "name": "GoldenSectionSearch",
-      "phase": 4,
-      "notes": "13 theorems"
-    },
-    {
-      "name": "GainCompression",
-      "phase": 4,
-      "notes": "11 theorems"
-    },
-    {
-      "name": "CountSetBits",
-      "phase": 4,
-      "notes": "24 theorems"
-    },
-    {
-      "name": "Negate16",
-      "phase": 4,
-      "notes": "18 theorems"
-    },
-    {
-      "name": "BlockHighPass",
-      "phase": 4,
-      "notes": "14 theorems"
-    },
-    {
-      "name": "BlockIntegralTrap",
-      "phase": 4,
-      "notes": "29 theorems, Route B tests 120/120"
-    },
-    {
-      "name": "SecondOrderReferenceModel",
-      "phase": 4,
-      "notes": "7 theorems"
-    },
-    {
-      "name": "NotchFilter",
-      "phase": 4,
-      "notes": "15 theorems"
-    },
-    {
-      "name": "BlockLimit",
-      "phase": 4,
-      "notes": "10 theorems, correspondence entry added run 141"
-    },
-    {
-      "name": "BlockLimitSym",
-      "phase": 4,
-      "notes": "10 theorems, correspondence entry added run 141"
-    },
-    {
-      "name": "BlockIntegral_update",
-      "file": "formal-verification/lean/FVSquad/BlockIntegral.lean",
-      "phase": 4,
-      "notes": "10 theorems all proved; rectangular integrator with saturation; run 143"
-    },
-    {
-      "name": "WelfordMeanVector_2d",
-      "file": "src/lib/mathlib/math/WelfordMeanVector.hpp",
-      "phase": 5,
-      "notes": "Run 145: WelfordMeanVector2D.lean 11 theorems proved, 0 sorry. Componentwise mean + M2 diagonal non-negativity.",
-      "lean_file": "formal-verification/lean/FVSquad/WelfordMeanVector2D.lean",
-      "theorems": 11
-    },
-    {
-      "name": "computeBrakingDistanceFromVelocity",
-      "file": "src/lib/mathlib/math/TrajMath.hpp",
-      "phase": 4,
-      "notes": "BrakingDist.lean: 9 theorems all proved; see BrakingDist.lean"
-    },
-    {
-      "name": "SignNoZero",
-      "file": "src/lib/mathlib/math/Functions.hpp",
-      "lean_file": "formal-verification/lean/FVSquad/SignNoZero.lean",
-      "phase": 5,
-      "theorems": 11,
-      "sorry_count": 0,
-      "notes": "Run 144: 11 theorems proved, 0 sorry. Binary output, nonneg/neg branches, never-zero, sq=1, natAbs=1, neg_product=-1. No Mathlib dependency."
-    },
-    {
-      "name": "signNoZero",
-      "file": "formal-verification/lean/FVSquad/SignNoZero.lean",
-      "phase": 5,
-      "notes": "15 theorems; key identity sign(v)*v=|v|; runs 139-140"
-    },
-    {
-      "name": "WelfordMeanVector2D",
-      "file": "formal-verification/lean/FVSquad/WelfordMeanVector2D.lean",
-      "phase": 5,
-      "notes": "18 theorems; M2 diagonal non-negativity fold invariant; runs 143-146"
-    }
+    {"name": "computeMaxSpeedFromDistance", "file": "formal-verification/lean/FVSquad/ComputeMaxSpeed.lean", "phase": 4, "notes": "6 theorems all proved; 0 sorry"},
+    {"name": "BlockStats", "phase": 4, "notes": "10 theorems, Route B tests 760/760"},
+    {"name": "VelocitySmoothing", "phase": 4, "notes": "33 theorems"},
+    {"name": "PID", "phase": 4, "notes": "42 theorems"},
+    {"name": "BrakingDist", "phase": 4, "notes": "9 theorems proved"},
+    {"name": "SqrtLinear", "phase": 4, "notes": "15 theorems (2 axioms for sqrt)"},
+    {"name": "SensorOrientation", "phase": 4, "notes": "20 theorems"},
+    {"name": "GoldenSectionSearch", "phase": 4, "notes": "13 theorems"},
+    {"name": "GainCompression", "phase": 4, "notes": "11 theorems"},
+    {"name": "CountSetBits", "phase": 4, "notes": "24 theorems"},
+    {"name": "Negate16", "phase": 4, "notes": "18 theorems"},
+    {"name": "BlockHighPass", "phase": 4, "notes": "12 theorems (HighPass.lean)"},
+    {"name": "BlockIntegralTrap", "phase": 4, "notes": "29 theorems, Route B tests 120/120"},
+    {"name": "SecondOrderReferenceModel", "phase": 4, "notes": "14 theorems"},
+    {"name": "NotchFilter", "phase": 4, "notes": "14 theorems"},
+    {"name": "BlockLimit", "phase": 4, "notes": "10 theorems"},
+    {"name": "BlockLimitSym", "phase": 4, "notes": "10 theorems"},
+    {"name": "LowPassFilter2p", "phase": 4, "notes": "13 theorems"},
+    {"name": "WelfordMeanVector_2d", "file": "formal-verification/lean/FVSquad/WelfordMeanVector2D.lean", "phase": 5, "notes": "Run 149: 15 theorems (4 new fold invariants for M2 non-negativity). Confirms C++ diagonal clamp is redundant.", "lean_file": "formal-verification/lean/FVSquad/WelfordMeanVector2D.lean", "theorems": 15},
+    {"name": "computeBrakingDistanceFromVelocity", "file": "src/lib/mathlib/math/TrajMath.hpp", "phase": 4, "notes": "BrakingDist.lean: 9 theorems"},
+    {"name": "SignNoZero", "file": "src/lib/mathlib/math/Functions.hpp", "lean_file": "formal-verification/lean/FVSquad/MathFunctions.lean", "phase": 5, "theorems": 27, "sorry_count": 0, "notes": "In MathFunctions.lean (27 total theorems)"},
+    {"name": "WelfordMean", "file": "formal-verification/lean/FVSquad/WelfordMean.lean", "phase": 5, "notes": "8 theorems; mean fold invariant"}
   ],
-  "open_prs": [],
+  "open_prs": ["lean-squad/run-149-task5-task11-welford-paper"],
   "notes": [
-    "Run 148: Tasks 1+6. Research/Targets updated. BlockIntegral correspondence added. PRs 144-147 merged. 57 files, 834 theorems, ~13 sorry.",
-    "Run 145: WelfordMeanVector2D.lean \u2014 11 theorems proved, 0 sorry. Tasks 4+5.",
-    "Run 143: WelfordMeanVector2D.lean \u2014 11 theorems proved, 0 sorry. Tasks 3+5.",
-    "No Mathlib in project \u2014 ring/linarith/nlinarith/norm_num not available",
+    "Run 149: Task5+Task11. WelfordMeanVector2D: 4 new fold invariants (15 total). Paper updated: 805 theorems, 55 modules, 8 missing files added to Table 1.",
+    "Run 148: Tasks 1+6. Research/Targets updated. PRs 144-147 merged. 57 files, 834 theorems per memory (actual: 805 at git HEAD).",
+    "No Mathlib in project — ring/linarith/nlinarith/norm_num not available",
     "Use 'theorem' not 'lemma' (lemma not a keyword without Mathlib)",
-    "Rat.le_iff_sub_nonneg is available for a \u2264 a proofs",
-    "Rat.neg_le_neg + Rat.neg_zero works for neg proofs",
-    "ComputeMaxSpeed: 3 sorry remain; next run should try maxSpeed_quadratic_eq via sqrtQ_sq",
-    "22 sorry across 11 files; top priority: close ComputeMaxSpeed sorry",
-    "CORRESPONDENCE.md now covers all 54 Lean files (Basic.lean excluded as barrel)",
-    "BlockIntegral.lean: 10 theorems proved (rectangular integrator), run 143",
-    "WelfordMeanVector_2d: informal spec done (phase 2), Lean file TBD",
-    "computeBrakingDistanceFromVelocity phase fixed to 4 (memory was stale)"
+    "Paper was stale: had 882 theorems (now 805 actual), was missing 8 files from Table 1",
+    "CORRESPONDENCE.md covers all 55 Lean files",
+    "0 sorry in any proof body. 11 axioms total (SqrtLinear, WrapAngle)."
   ],
-  "last_tasks": [
-    "task4_implementation",
-    "task5_proof_assistance"
-  ],
-  "paper_theorem_count": 882,
-  "paper_files_count": 54,
-  "ci_status": "lean-ci.yml present and passing",
-  "ci_notes": "lean-ci.yml present; added blockstats (760 cases) and alpha_filter (257 cases) tests in run 144"
+  "last_tasks": ["task5_proof_assistance", "task11_conference_paper"],
+  "paper_theorem_count": 805,
+  "paper_files_count": 55,
+  "ci_status": "lean-ci.yml present and passing"
 }
