@@ -4,67 +4,53 @@
 
 ## Last Updated
 
-- **Date**: 2026-05-20 11:21 UTC (run 141)
-- **Commit**: `69863d7d48de1c9695bc93f769239099cbd1850a`
+- **Date**: 2026-06-06 UTC (run 151)
+- **Commit**: `(run-151-blockstats-cauchy-schwarz-critique)`
 
 ---
 
 ## Overall Assessment
 
-**54 Lean files cover 877 named theorems (including private helpers), 22 occurrences of `sorry` across 11 files**
-(Lean 4 v4.29.1, standard library only, 10 abstract axioms for Mathlib-dependent results).
+**56 Lean files cover 913+ named theorems (including private helpers), 0 occurrences of `sorry` in proofs**
+(Lean 4 v4.29.1, standard library only — no Mathlib dependency).
 
-Since run 135, 113+ theorems were added across new modules: `BlockLimit.lean` (10 theorems),
-`BlockLimitSym.lean` (10 theorems), `BlockStats.lean` (10 theorems), `ComputeMaxSpeed.lean`
-(6 theorems, 3 proved), plus growth in `BlockIntegralTrap.lean`, `PID.lean`, and other files.
-REPORT.md and TARGETS.md were updated in run 140. Three new research targets were identified:
-`BlockIntegral_update`, `WelfordMeanVector_2d`, and `computeBrakingDistanceFromVelocity`.
-Correspondence tests now cover 12 targets including BlockStats (760/760 passing).
+Runs 142–151 have progressively eliminated all sorry and added substantial coverage.
+As of run 151, `BlockStats.lean` now contains the fully verified Cauchy–Schwarz / variance
+non-negativity proof (5 new theorems: `cs_ring_identity`, `cs_goal_identity`,
+`bsUpdate_cauchy_schwarz_step`, `bsFold_cauchy_schwarz`, `bsFold_var_nonneg`) with
+total of 15 theorems. All 56 files build cleanly with 0 sorry.
 
-**Run 141 assessment (Task 7 + Task 6)**:
-- Task 6: CORRESPONDENCE.md updated with four missing entries: `BlockLimit.lean`,
-  `BlockLimitSym.lean`, `BlockStats.lean`, and `ComputeMaxSpeed.lean`.
-- Task 7: This critique updated to reflect runs 136–141. The `sorry` count has grown to 22
-  across 11 files — primarily from `ComputeMaxSpeed.lean` (3 sorry on algebraic properties
-  requiring `sqrtQ` reasoning), plus pre-existing pattern-comment sorrys in `SqrtLinear.lean`,
-  `WrapAngle.lean`, and others. Closing the `ComputeMaxSpeed` sorrys is the highest-priority
-  proof task for the next run.
+**Run 151 assessment (Task 5 + Task 7)**:
+- Task 5: `BlockStats.lean` Cauchy–Schwarz / variance non-negativity theorems added.
+  The proof required developing two ring identity helpers (`cs_ring_identity` and
+  `cs_goal_identity`) via explicit `Int.mul_assoc`/`Int.mul_comm` rewrite chains since
+  the `ring` tactic (Mathlib-only) is unavailable in this stdlib-only project.
+  The inductive proof over `bsFold` uses a conjunctive invariant (CS + sumSq ≥ 0).
+  0 sorry.
+- Task 7: This critique updated to reflect run 151 findings.
 
-**Run 141 gaps identified**:
-1. **ComputeMaxSpeed sorry closure** (high priority): `maxSpeed_accel_zero`,
-   `maxSpeed_mono_dist`, and `maxSpeed_quadratic_eq` all require algebraic manipulation
-   with `sqrtQ` axioms. `maxSpeed_quadratic_eq` should be provable by unfolding
-   `rawMaxSpeed` and applying `sqrtQ_sq`.
-2. **New research targets from run 140** need informal specs and Lean files:
-   `BlockIntegral_update`, `WelfordMeanVector_2d`, `computeBrakingDistanceFromVelocity`.
-3. **Correspondence tests** for `BlockLimit`, `BlockLimitSym`, and `ComputeMaxSpeed` do not
-   yet exist. `BlockLimit` and `BlockLimitSym` are used widely and would benefit from
-   Route B tests.
+**Run 151 gaps identified**:
+1. **Mathlib-only tactics**: The stdlib-only constraint means `ring`, `nlinarith`,
+   `linarith`, `push_cast`, and `norm_cast` are unavailable. Each algebraic identity
+   requires verbose explicit rewrite chains. Consider adding Mathlib to `lakefile.toml`
+   to dramatically reduce proof complexity and enable more powerful automation.
+   This is the single highest-leverage improvement available.
+2. **`^` notation**: `x ^ 2` is not reliably provable equal to `x * x` without `ring`.
+   All proofs now use `x * x` directly. Once Mathlib is available, migrate to `x ^ 2`
+   using `sq` / `pow_two` lemmas.
+3. **WelfordMeanVector2D M2 cross-term proofs** (medium): `m2_nonneg` for off-diagonal
+   entries (m01/m10) still not attempted.
+4. **VelocitySmoothing::computeT3** (target 41) still at Phase 1 — informal spec not yet written.
+5. **New targets** (62–63): `WelfordMeanVector` 2-component and `computeBrakingDistanceFromVelocity`
+   still need informal specs.
 
-**Current sorry breakdown (22 total)**:
-
-| File | Sorry count | Notes |
-|------|------------|-------|
-| `ComputeMaxSpeed.lean` | 3 | Algebraic properties with `sqrtQ`; closeable |
-| `SqrtLinear.lean` | 4 | Axiom-based; requires `sqrt` algebraic reasoning |
-| `WrapAngle.lean` | 3 | Trigonometric identities; require Mathlib `Real` |
-| `Atmosphere.lean` | 1 | Physical formula validation |
-| `BlockLimit.lean` | 1 | Edge-case arithmetic |
-| `BlockLimitSym.lean` | 1 | Symmetry arithmetic |
-| `BlockStats.lean` | 1 | Mean formula case split |
-| `Deadzone.lean` | 2 | Boundary arithmetic |
-| `InterpolateN.lean` | 1 | Inductive argument |
-| `NotchFilter.lean` | 1 | Filter pole arithmetic |
-| `PurePursuit.lean` | 1 | Trigonometric bound |
+**Current sorry breakdown (0 total)**: All files are sorry-free as of run 151.
 
 Six confirmed bugs remain open: `signNoZero<float>` (NaN returns 0),
 `negate<int16_t>` (incorrect INT16_MAX special case), `wrap_bin(bin, n)` (negative index
 for `bin ≤ -n`), `negate<int16_t>` involution failure at −32767, and the two
 `Negate16.lean` findings (not involutive for x=−32767, not surjective — −32767 never
-appears in the image of negate16). Route B correspondence tests now cover 12 targets:
-atmosphere (26/26), bin_at_angle (334/334), slew_rate (4327/4327), hysteresis (259/259),
-pid (7964/7964), count_set_bits (871/871), expo (1373/1373), BlockIntegralTrap (120/120),
-LowPassFilter2p (28/28), deadzone (existing), alpha_filter (257/257), BlockStats (760/760).
+appears in the image of negate16). Route B correspondence tests now cover 12 targets.
 
 ### Run 135 additions: `FilteredDerivative.lean` — ramp convergence and monotonicity
 
