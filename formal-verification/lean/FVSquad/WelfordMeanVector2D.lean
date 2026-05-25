@@ -47,6 +47,10 @@ M2[1,0]  = M2[0,1]   // symmetry
 | `welfordVec2Fold_count` | fold count = list length | ✅ Proved |
 | `welfordVec2Fold_mean_x` | Non-empty list: mean_x = Σxᵢ / length | ✅ Proved |
 | `welfordVec2Fold_mean_y` | Non-empty list: mean_y = Σyᵢ / length | ✅ Proved |
+| `welfordVec2FoldFrom_m00_nonneg` | M2[0,0] ≥ 0 preserved across any fold | ✅ Proved |
+| `welfordVec2FoldFrom_m11_nonneg` | M2[1,1] ≥ 0 preserved across any fold | ✅ Proved |
+| `welfordVec2Fold_m00_nonneg` | M2[0,0] ≥ 0 after full fold from init | ✅ Proved |
+| `welfordVec2Fold_m11_nonneg` | M2[1,1] ≥ 0 after full fold from init | ✅ Proved |
 -/
 
 namespace PX4.WelfordMeanVector2D
@@ -287,5 +291,49 @@ theorem welfordVec2Fold_mean_y (pts : List (Rat × Rat)) (hne : pts ≠ []) :
   simp only [Nat.zero_add] at h
   simp only [welfordVec2Fold, initState2]
   rw [← h, Rat.div_def, Rat.mul_assoc, Rat.mul_inv_cancel _ hlenR, Rat.mul_one]
+
+/-! ## Fold invariants for M2 non-negativity -/
+
+/-- M2[0,0] is non-negative after folding any list, given it was non-negative initially.
+
+    This lifts `welfordVec2_m00_nonneg` from a single step to an arbitrary number
+    of updates via structural induction.  The C++ diagonal clamp `max(M2(0,0), 0)`
+    is therefore redundant for the rational model — it can never fire. -/
+theorem welfordVec2FoldFrom_m00_nonneg (s₀ : WelfordVec2State)
+    (pts : List (Rat × Rat)) (h : 0 ≤ s₀.m00) :
+    0 ≤ (welfordVec2FoldFrom s₀ pts).m00 := by
+  induction pts generalizing s₀ with
+  | nil  => simpa [welfordVec2FoldFrom]
+  | cons p t ih =>
+    obtain ⟨x, y⟩ := p
+    simp only [welfordVec2FoldFrom]
+    exact ih (welfordVec2Update s₀ x y) (welfordVec2_m00_nonneg s₀ x y h)
+
+/-- M2[1,1] is non-negative after folding any list, given it was non-negative initially.
+
+    Symmetric to `welfordVec2FoldFrom_m00_nonneg`. -/
+theorem welfordVec2FoldFrom_m11_nonneg (s₀ : WelfordVec2State)
+    (pts : List (Rat × Rat)) (h : 0 ≤ s₀.m11) :
+    0 ≤ (welfordVec2FoldFrom s₀ pts).m11 := by
+  induction pts generalizing s₀ with
+  | nil  => simpa [welfordVec2FoldFrom]
+  | cons p t ih =>
+    obtain ⟨x, y⟩ := p
+    simp only [welfordVec2FoldFrom]
+    exact ih (welfordVec2Update s₀ x y) (welfordVec2_m11_nonneg s₀ x y h)
+
+/-- After folding any list from the zero-initialised state, M2[0,0] ≥ 0.
+
+    Corollary of `welfordVec2FoldFrom_m00_nonneg` with `initState2.m00 = 0`. -/
+theorem welfordVec2Fold_m00_nonneg (pts : List (Rat × Rat)) :
+    0 ≤ (welfordVec2Fold pts).m00 :=
+  welfordVec2FoldFrom_m00_nonneg initState2 pts (le_refl 0)
+
+/-- After folding any list from the zero-initialised state, M2[1,1] ≥ 0.
+
+    Corollary of `welfordVec2FoldFrom_m11_nonneg` with `initState2.m11 = 0`. -/
+theorem welfordVec2Fold_m11_nonneg (pts : List (Rat × Rat)) :
+    0 ≤ (welfordVec2Fold pts).m11 :=
+  welfordVec2FoldFrom_m11_nonneg initState2 pts (le_refl 0)
 
 end PX4.WelfordMeanVector2D

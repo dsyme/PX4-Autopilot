@@ -52,7 +52,7 @@
 }
 
 \title{Formal Verification of a UAV Flight Controller's Core Libraries with Lean~4:\\
-       882 Theorems, Six Bugs, Zero Sorry in 54 Modules}
+       805 Theorems, Six Bugs, Zero Sorry in 55 Modules}
 
 \author{Lean Squad}
 \affiliation{
@@ -64,13 +64,15 @@
 \begin{abstract}
 We report a formal verification campaign applied to PX4-Autopilot, an open-source
 UAV flight controller written in C++. Using Lean~4 with its standard library only
-(no Mathlib), we verified \textbf{882~theorems} fully across \textbf{54~Lean modules}
-covering \textbf{50+~C++ targets} including signal-processing filters, rate-limiting,
-piecewise-linear interpolation, online statistics, ring buffers, a time-delayed
-boolean state machine, collision-prevention obstacle mathematics, CRC-16/32/64
-streaming correctness, integer range utilities, PID controller convergence,
-sensor orientation, golden-section search, velocity smoothing, radians/degrees
-conversion, exponential RC curve shaping, and symmetric saturation clamping.
+(no Mathlib), we verified \textbf{805~theorems} fully across \textbf{55~Lean modules}
+covering \textbf{55+~C++ targets} including signal-processing filters (notch, high-pass,
+low-pass, second-order reference model, alpha filter, filtered derivative),
+rate-limiting, piecewise-linear interpolation, online statistics (Welford scalar and
+2D vector), ring buffers, a time-delayed boolean state machine, collision-prevention
+obstacle mathematics, CRC-16/32/64 streaming correctness, integer range utilities,
+PID controller convergence, sensor orientation, golden-section search, velocity
+smoothing, radians/degrees conversion, exponential RC curve shaping, and symmetric
+saturation clamping.
 All proofs are mechanically
 checked by \texttt{lake build}; zero \texttt{sorry} remain in any proof body
 (two files use Lean \texttt{axiom} declarations for Mathlib-pending properties).
@@ -147,14 +149,14 @@ language with a growing library ecosystem~\cite{mathlib}.
 
 Our contributions are:
 \begin{itemize}
-  \item A formal verification campaign covering \textbf{50+~C++ targets with Lean proofs}
-        in 54~Lean modules, yielding \textbf{882~fully proved theorems} with
+  \item A formal verification campaign covering \textbf{55+~C++ targets with Lean proofs}
+        in 55~Lean modules, yielding \textbf{805~fully proved theorems} with
         zero \texttt{sorry} in any proof body (two files use \texttt{axiom} declarations
         for Mathlib-pending floor-arithmetic properties) plus hundreds of concrete examples.
   \item Discovery of \textbf{six genuine implementation bugs} through proof failure
         and correspondence analysis, with counterexamples mechanically verified.
   \item A \textbf{correspondence discipline} documenting modelling approximations and
-        their impact on proof validity for all 50 Lean files, including correspondence
+        their impact on proof validity for all 55 Lean files, including correspondence
         Route B correspondence tests for \texttt{SlewRate::update}.
   \item Practical experience with Lean~4 proof automation on embedded C++ in a
         \emph{stdlib-only} setting (no Mathlib, no network access to the package cache).
@@ -313,16 +315,14 @@ We applied proof tactics in order of increasing effort:
 
 \subsection{Proof Inventory}
 
-Table~\ref{tab:theorems} summarises the 50~Lean files (50+~C++ targets). In total,
-\textbf{882~theorems} are stated and proved with zero \texttt{sorry} in any proof
+Table~\ref{tab:theorems} summarises the 55~Lean files (55+~C++ targets). In total,
+\textbf{805~theorems} are stated and proved with zero \texttt{sorry} in any proof
 body. Two files (\texttt{SqrtLinear.lean}, \texttt{WrapAngle.lean}) use Lean
-\texttt{axiom} declarations for Mathlib-pending properties (16~axioms total).
-Additionally, hundreds of concrete \texttt{example}/\texttt{\#eval} checks serve as
-property-based regression tests.
+\texttt{axiom} declarations for Mathlib-pending properties (11~axioms total).
 
 \begin{table}[t]
 \centering
-\caption{Lean 4 verification summary by file (54 files, 54+ C++ targets).
+\caption{Lean 4 verification summary by file (55 files, 55+ C++ targets).
          ✅~=~all proved; ⚠~=~uses \texttt{axiom} for Mathlib-pending props.}
 \label{tab:theorems}
 \small
@@ -331,22 +331,23 @@ property-based regression tests.
 Lean file & C++ target(s) & Thms & Key properties \\
 \midrule
 \texttt{MathFunctions} & \texttt{constrain}, \texttt{signNoZero}, \texttt{countSetBits} & 27 & Range clamp, sign, bits ✅ \\
-\texttt{SlewRate}      & \texttt{SlewRate::update}          & 15  & Rate limit, no-overshoot, conv. ✅ \\
-\texttt{Deadzone}      & \texttt{deadzone}                  & 13 & Zero-zone, odd symmetry ✅ \\
-\texttt{AlphaFilter}   & \texttt{AlphaFilter::updateCalc.}  & 18 & No-overshoot, closed form ✅ \\
+\texttt{SlewRate}      & \texttt{SlewRate::update}          & 12  & Rate limit, no-overshoot, conv. ✅ \\
+\texttt{Deadzone}      & \texttt{deadzone}                  & 17 & Zero-zone, odd symmetry ✅ \\
+\texttt{AlphaFilter}   & \texttt{AlphaFilter::updateCalc.}  & 17 & No-overshoot, closed form ✅ \\
 \texttt{Interpolate}   & \texttt{interpolate}               & 10 & Monotone, range ✅ \\
-\texttt{WelfordMean}   & \texttt{WelfordMean::update}       & 11 & Mean invariant, M2~$\geq0$ ✅ \\
+\texttt{WelfordMean}   & \texttt{WelfordMean::update}       & 8 & Mean invariant, M2~$\geq0$ ✅ \\
+\texttt{WelfordMeanVector2D} & \texttt{WelfordMeanVector::update} (2D) & 15 & Mean/M2 fold invariant, M2~$\geq0$ ✅ \\
 \texttt{WrapAngle}     & \texttt{wrap\_pi} (int+rat)        & 10 & Range, idempotent, period ⚠ \\
 \texttt{Lerp}          & \texttt{lerp}                      & 10 & Endpoints, range, monotone ✅ \\
 \texttt{Negate}        & \texttt{negate<int16\_t>} (Fin~65536)& 13 & 🐛 Not involution ✅ \\
 \texttt{Negate16}      & \texttt{negate<int16\_t>} (Int)    & 18 & 🐛 Non-invol., non-inj., non-surj. ✅ \\
-\texttt{Expo}          & \texttt{expo}                      & 20 & Odd, range, fixed pts, mono ✅ \\
+\texttt{Expo}          & \texttt{expo}                      & 16 & Odd, range, fixed pts, mono ✅ \\
 \texttt{RingBuffer}    & \texttt{TimestampedRingBuffer}     & 24 & FIFO, cap, index, wrap ✅ \\
-\texttt{MedianFilter}  & \texttt{MedianFilter}              & 10 & Sort order, range ✅ \\
-\texttt{SuperExpo}     & \texttt{superexpo}                 & 17 & Odd, denom~$>0$, range ✅ \\
-\texttt{ExpoDeadzone}  & \texttt{expo+deadzone}             &  9 & Odd, range, fixed pts ✅ \\
+\texttt{MedianFilter}  & \texttt{MedianFilter}              &  6 & Sort order, range ✅ \\
+\texttt{SuperExpo}     & \texttt{superexpo}                 &  8 & Odd, denom~$>0$, range ✅ \\
+\texttt{ExpoDeadzone}  & \texttt{expo+deadzone}             & 10 & Odd, range, fixed pts ✅ \\
 \texttt{InterpolateNXY}& \texttt{interpolateNXY} (3-pt)     &  9 & Clamp, continuity, mono ✅ \\
-\texttt{InterpolateN}  & \texttt{interpolateN} (N=2,3)      & 19 & Node exact, range, mono ✅ \\
+\texttt{InterpolateN}  & \texttt{interpolateN} (N=2,3)      & 14 & Node exact, range, mono ✅ \\
 \texttt{Hysteresis}    & \texttt{Hysteresis}                & 20 & Dwell, commit, cancel ✅ \\
 \texttt{SignFromBoolSq}& \texttt{signFromBool}, \texttt{sq} & 17 & Range $\{-1,1\}$, non-neg, even ✅ \\
 \texttt{Crc16Fold}     & \texttt{buffer\_crc16}             &  8 & Fold/split, streaming CRC ✅ \\
@@ -357,27 +358,34 @@ Lean file & C++ target(s) & Thms & Key properties \\
 \texttt{IsInRange}     & \texttt{math::isInRange}           & 13 & Closed interval, mono, shift ✅ \\
 \texttt{ConstrainToInt16} & \texttt{constrainFloatToInt16} & 10 & Range, clamp, id, mono, idem ✅ \\
 \texttt{CommanderArming}& \texttt{Arming FSM}               & 20 & State inv, transitions ✅ \\
-\texttt{Atmosphere}    & density, temperature               & 18 & Formula fidelity, monotone ✅ \\
-\texttt{WrapBin}       & \texttt{wrap\_bin}                 & 20 & 🐛 Negative index bug ✅ \\
+\texttt{Atmosphere}    & density, temperature               & 15 & Formula fidelity, monotone ✅ \\
+\texttt{WrapBin}       & \texttt{wrap\_bin}                 & 19 & 🐛 Negative index bug ✅ \\
 \texttt{SqrtLinear}    & \texttt{sqrtLinear}                & 15 & Range, id, monotone ⚠ \\
-\texttt{BrakingDist}   & \texttt{BrakingDistance}           & 14 & Pos, mono, closed form ✅ \\
+\texttt{BrakingDist}   & \texttt{BrakingDistance}           &  9 & Pos, mono, closed form ✅ \\
 \texttt{GetBinAtAngle} & \texttt{getBinAtAngle}             & 13 & Range, exact, comp ✅ \\
-\texttt{GetLowerBound} & \texttt{getLowerBoundAngle}        & 13 & Round-trip, range ✅ \\
+\texttt{GetLowerBound} & \texttt{getLowerBoundAngle}        &  8 & Round-trip, range ✅ \\
 \texttt{CollisionPrev} & collision pipeline                 &  8 & Safety, composition ✅ \\
 \texttt{CountSetBits}  & \texttt{countSetBits} (standalone) & 24 & Popcount, bounds, concrete ✅ \\
-\texttt{FilteredDeriv} & \texttt{FilteredDerivative}        & 12 & Bounded, init, range ✅ \\
+\texttt{FilteredDeriv} & \texttt{FilteredDerivative}        & 18 & Bounded, init, range ✅ \\
 \texttt{GainCompress}  & \texttt{gainCompression}           & 11 & Range, slope, clamp ✅ \\
-\texttt{GoldenSection} & \texttt{goldenSection} search      & 19 & Bracket shrink, ratio bound ✅ \\
-\texttt{Min3Max3}      & \texttt{min3}/\texttt{max3}        & 31 & Order, idempotent, assoc ✅ \\
-\texttt{PID}           & \texttt{PID::update}               & 32 & Anti-windup, conv., equilibrium ✅ \\
-\texttt{RadiansDegrees}& \texttt{radians}/\texttt{degrees}  & 43 & Round-trip, range, mono ✅ \\
+\texttt{GoldenSection} & \texttt{goldenSection} search      & 13 & Bracket shrink, ratio bound ✅ \\
+\texttt{Min3Max3}      & \texttt{min3}/\texttt{max3}        & 29 & Order, idempotent, assoc ✅ \\
+\texttt{PID}           & \texttt{PID::update}               & 42 & Anti-windup, conv., equilibrium ✅ \\
+\texttt{RadiansDegrees}& \texttt{radians}/\texttt{degrees}  & 36 & Round-trip, range, mono ✅ \\
 \texttt{SensorOrient}  & \texttt{sensorOrientation}         & 20 & Rotation, decidable by compute ✅ \\
 \texttt{VelocitySmooth}& \texttt{VelocitySmoothing}         & 33 & Jerk, accel, vel bounds ✅ \\
+\texttt{BlockLimit}    & \texttt{BlockLimit::update}        & 10 & Range, saturation, monotone ✅ \\
 \texttt{BlockLimitSym} & \texttt{BlockLimitSym::update}     & 10 & Range, idempotent, odd, mono ✅ \\
+\texttt{BlockStats}    & \texttt{BlockStats::reset/update}  & 10 & Count, min, max, mean bounds ✅ \\
+\texttt{BlockIntTrap}  & \texttt{BlockIntegralTrap::update} & 29 & Anti-windup, trapezoid rule ✅ \\
+\texttt{HighPass}      & \texttt{BlockHighPass::update}     & 12 & High-pass response, init ✅ \\
+\texttt{LowPassFilter2p} & \texttt{LowPassFilter2p::apply}  & 13 & Low-pass response, init ✅ \\
+\texttt{NotchFilter}   & \texttt{NotchFilter::apply}        & 14 & Notch response, init ✅ \\
+\texttt{SecondOrder}   & \texttt{SecondOrderReferenceModel} & 14 & Step response, stability ✅ \\
 \texttt{PurePursuit}  & \texttt{PurePursuit::calcAbsoluteLookaheadDist} & 10 & Range, monotone, symmetric, inverted-bounds ✅ \\
 \texttt{ComputeMaxSpeed} & \texttt{computeMaxSpeedFromDistance} & 6 & Disc. non-neg, accel-zero, mono, quadratic ✅ \\
 \hline
-\textbf{Total}         &                                    & \textbf{882} & \textbf{0 sorry, 11 axioms} \\
+\textbf{Total}         &                                    & \textbf{805} & \textbf{0 sorry, 11 axioms} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -421,6 +429,20 @@ This was proved by establishing a loop invariant
 (\texttt{welfordFoldFrom\_mean\_inv}) and lifting it via \texttt{List.length\_pos\_of\_ne\_nil}.
 The M2~$\geq 0$ invariant (non-negative second moment) was separately proved
 algebraically, confirming the variance estimator's numerical stability property.
+
+\paragraph{2D Welford vector: diagonal covariance non-negativity.}
+\texttt{WelfordMeanVector2D.lean} extends the scalar Welford analysis to
+\texttt{WelfordMeanVector<T,2>}.  The key fold invariant is:
+\begin{lstlisting}[caption=2D fold: diagonal M2 non-negativity]
+theorem welfordVec2FoldFrom_m00_nonneg
+    (s₀ : WelfordVec2State) (pts : List (Rat × Rat))
+    (h : 0 ≤ s₀.m00) :
+    0 ≤ (welfordVec2FoldFrom s₀ pts).m00
+\end{lstlisting}
+This confirms that the diagonal clamp \texttt{max(M2(r,r), 0)} applied in the
+C++ code is \emph{redundant} for exact arithmetic — the accumulator can never
+go negative.  The result holds for arbitrary list length, proved by structural
+induction using the single-step non-negativity lemma.
 
 \paragraph{Hysteresis dwell-time lower bound.}
 The \texttt{Hysteresis} state machine implements a time-delayed boolean filter used
@@ -683,8 +705,9 @@ cannot silently break in a later run.
 \label{sec:conclusion}
 
 We have presented a formal verification campaign for PX4-Autopilot's core utility
-libraries using Lean~4. Across 51~Lean modules and 50+~C++ targets, we proved
-882~theorems covering rate limiting, interpolation, filtering, statistics, data
+libraries using Lean~4. Across 55~Lean modules and 55+~C++ targets, we proved
+805~theorems covering rate limiting, interpolation, filtering (notch, high-pass,
+low-pass, second-order), statistics (Welford scalar and 2D vector), data
 structures, a time-delayed state machine, CRC streaming properties, integer
 range containment, PID controller convergence, sensor orientation, golden-section
 search, velocity smoothing, and RC input curve shaping.
