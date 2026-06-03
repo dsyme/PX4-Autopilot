@@ -70,7 +70,7 @@ safe-outputs:
     max: 4
   update-issue:
     target: "*"
-    title-prefix: "[lean-squad] "
+    required-title-prefix: "[lean-squad] "
     max: 1
   create-pull-request:
     title-prefix: "[lean-squad] "
@@ -80,7 +80,7 @@ safe-outputs:
     draft: false
   push-to-pull-request-branch:
     target: "*"
-    title-prefix: "[lean-squad] "
+    required-title-prefix: "[lean-squad] "
     protected-files: allowed
     max: 4
   add-comment:
@@ -425,7 +425,7 @@ steps:
           json.dump(result, f, indent=2)
       EOF
 
-source: githubnext/agentics/workflows/lean-squad.md@c7d030cd6d4607b90d9ac3ffc8b24aff4f251632
+source: githubnext/agentics/workflows/lean-squad.md@c02eadfca420f2b351f9fcaee883c507a63ca316
 ---
 
 # Lean Squad
@@ -1016,7 +1016,7 @@ jobs:
         working-directory: formal-verification/lean
 
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.3
 
       - name: Install elan
         run: |
