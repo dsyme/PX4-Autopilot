@@ -1346,10 +1346,10 @@ mj-context-menu@^0.6.1:
   resolved "https://registry.yarnpkg.com/mj-context-menu/-/mj-context-menu-0.6.1.tgz#a043c5282bf7e1cf3821de07b13525ca6f85aa69"
   integrity sha512-7NO5s6n10TIV96d4g2uDpG7ZDpIhMh0QNfGdJw/W47JswFcosz457wqz/b5sAKvl12sxINGFCn80NZHKwxQEXA==
 
-nanoid@^3.3.11:
-  version "3.3.11"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.11.tgz#4f4f112cefbe303202f2199838128936266d185b"
-  integrity sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==
+nanoid@^3.3.16:
+  version "3.3.16"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.16.tgz#a04d8ec4b1f10009d2d533947aefe4293737816c"
+  integrity sha512-bzlKTyNJ7+LdGIIwy8ijFpIqEQIvafahV7eYykJ8Cvh42EdJeODoJ6gUJXpQJvej1BddH8OqTXZNE/KfbWAu8Q==
 
 node-fetch@^2.6.0:
   version "2.7.0"
@@ -1440,11 +1440,11 @@ picocolors@^1.1.1:
   integrity sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==
 
 postcss@^8.4.43, postcss@^8.5.8:
-  version "8.5.14"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.14.tgz#a66c2d7808fadf69ebb5b84a03f8bafd76c4919c"
-  integrity sha512-SoSL4+OSEtR99LHFZQiJLkT59C5B1amGO1NzTwj7TT1qCUgUO6hxOvzkOYxD+vMrXBM3XJIKzokoERdqQq/Zmg==
+  version "8.5.25"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.25.tgz#5012a598eaaa897f21bbe8553be3cb7bd2bd78cb"
+  integrity sha512-DTPx3RWSSnWyzLxQnlH0rJP+EW5ekl16ZU4/psbIhA0e53kJfdgaN5vKM+xP7yJtXVu+nfdVFmlgFDEKAe4Pyw==
   dependencies:
-    nanoid "^3.3.11"
+    nanoid "^3.3.16"
     picocolors "^1.1.1"
     source-map-js "^1.2.1"
 
